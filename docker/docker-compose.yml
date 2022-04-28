@@ -1,0 +1,94 @@
+version: "3.9"
+services:
+  ngrok-endorser-agent:
+    image: wernight/ngrok
+    environment:
+      - ACAPY_HTTP_PORT=${ACAPY_HTTP_PORT}
+    ports:
+      - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
+    command: ngrok http endorser-agent:${ACAPY_HTTP_PORT} --log stdout
+
+  endorser-agent:
+    build:
+      context: ./acapy
+      dockerfile: Dockerfile.acapy
+    depends_on:
+      endorser-db:
+        condition: service_healthy
+    ports:
+      - ${ACAPY_ENDORSER_ADMIN_PORT}:${ACAPY_ENDORSER_ADMIN_PORT}
+      - ${ACAPY_ENDORSER_HTTP_PORT}:${ACAPY_ENDORSER_HTTP_PORT}
+    environment:
+      - ENDORSER_ENV=${ENDORSER_ENV}
+      - NGROK_NAME=ngrok-endorser-agent
+      - ACAPY_HTTP_PORT=${ACAPY_HTTP_PORT}
+      - ENDORSER_WEBHOOK_URL=${ENDORSER_WEBHOOK_URL}
+      - LEDGER_URL=${LEDGER_URL}
+      - GENESIS_URL=${GENESIS_URL}
+      - ACAPY_ENDPOINT=${ACAPY_ENDPOINT}
+      - ACAPY_WALLET_DATABASE=${ACAPY_WALLET_DATABASE}
+      - ACAPY_WALLET_ENCRYPTION_KEY=${ACAPY_WALLET_ENCRYPTION_KEY}
+      - ACAPY_WALLET_STORAGE_TYPE=${ACAPY_WALLET_STORAGE_TYPE}
+      - POSTGRESQL_HOST=${WALLET_POSTGRESQL_HOST}
+      - POSTGRESQL_USER=${WALLET_POSTGRESQL_USER}
+      - POSTGRESQL_PASSWORD=${WALLET_POSTGRESQL_PASSWORD}
+      - ACAPY_ADMIN_PORT=${ACAPY_ADMIN_PORT}
+      - AGENT_NAME=${AGENT_NAME}
+      - ACAPY_ADMIN_CONFIG=${ACAPY_ADMIN_CONFIG}
+      - ENDORSER_SEED=${ENDORSER_SEED}
+      - LOG_LEVEL=${LOG_LEVEL}
+    ports:
+      - ${ACAPY_ADMIN_PORT_EXPOSED}:${ACAPY_ADMIN_PORT}
+      - ${ACAPY_HTTP_PORT_EXPOSED}:${ACAPY_HTTP_PORT}
+    entrypoint: /bin/bash
+    command: [
+        "-c",
+        "curl -d '{\"seed\":\"${ENDORSER_SEED}\", \"role\":\"ENDORSER\", \"alias\":\"${AGENT_NAME}\"}' -X POST ${LEDGER_URL}/register; \
+        sleep 5; \
+        ./ngrok-wait.sh"
+      ]
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  endorser-api:
+    build:
+      context: ../endorser
+      dockerfile: Dockerfile.endorser
+    depends_on:
+      endorser-agent:
+        condition: service_started
+      endorser-db:
+        condition: service_healthy
+    environment:
+      - CONTROLLER_POSTGRESQL_HOST=${CONTROLLER_POSTGRESQL_HOST}
+      - CONTROLLER_POSTGRESQL_PORT=${CONTROLLER_POSTGRESQL_PORT}
+      - CONTROLLER_POSTGRESQL_DB=${CONTROLLER_POSTGRESQL_DB}
+      - ENDORSER_API_ADMIN_USER=${ENDORSER_API_ADMIN_USER}
+      - ENDORSER_API_ADMIN_KEY=${ENDORSER_API_ADMIN_KEY}
+      - ACAPY_ADMIN_URL=${ENDORSER_ACAPY_ADMIN_URL}
+      - ACAPY_API_ADMIN_KEY=${ACAPY_API_ADMIN_KEY}
+      - ENDORSER_ENV=${ENDORSER_ENV}
+      - WEB_CONCURRENCY=${WEB_CONCURRENCY}
+      - ACAPY_WEBHOOK_URL_API_KEY=${ACAPY_WEBHOOK_URL_API_KEY}
+    ports:
+      - ${ENDORSER_SERVICE_PORT_EXPOSED}:${ENDORSER_SERVICE_PORT}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  endorser-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
+    ports:
+      - ${ENDORSER_POSTGRESQL_PORT_EXPOSED}:${ENDORSER_POSTGRESQL_PORT}
+    volumes:
+      - endorser-wallet:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  endorser-wallet:

@@ -1,0 +1,181 @@
+#!/bin/bash
+export MSYS_NO_PATHCONV=1
+# getDockerHost; for details refer to https://github.com/bcgov/DITP-DevOps/tree/main/code/snippets#getdockerhost
+. /dev/stdin <<<"$(cat <(curl -s --raw https://raw.githubusercontent.com/bcgov/DITP-DevOps/main/code/snippets/getDockerHost))" 
+export DOCKERHOST=$(getDockerHost)
+set -e
+
+SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
+
+# =================================================================================================================
+# Usage:
+# -----------------------------------------------------------------------------------------------------------------
+usage() {
+  cat <<-EOF
+      Usage: $0 [command] [options]
+      Commands:
+      build       - Build the endorser docker images
+      start | up  - Run endorser
+      logs        - To tail the logs of running containers (ctrl-c to exit).
+      stop | down - Stop endorser
+      rm          - Stop endorser and remove volumes
+EOF
+  exit 1
+}
+
+toLower() {
+  echo $(echo ${@} | tr '[:upper:]' '[:lower:]')
+}
+
+exportEnvironment() {
+  for arg in "$@"; do
+    case "$arg" in
+      *=*)
+        export "${arg}"
+        ;;
+      --logs)
+        TAIL_LOGS=1
+        ;;
+      *)
+        # If not recognized, save it for later procesing ...
+        set -- "$@" "$arg"
+        ;;
+    esac
+  done
+
+  # global
+  export ENDORSER_ENV=local
+  export WEB_CONCURRENCY=2
+
+  # ngrok
+  export NGROK_ENDORSER_AGENT_PORT=4040
+  export NGROK_ENDORSER_AGENT_PORT_EXPOSED=4052
+
+  # endorser aca-py agent
+  export LEDGER_URL=${LEDGER_URL-http://test.bcovrin.vonx.io}
+  export GENESIS_URL=${GENESIS_URL-${LEDGER_URL}/genesis}
+  export LOG_LEVEL=${LOG_LEVEL-INFO}
+  if [ ! -z "${ENDORSER_SEED}" ]; then
+    # generate a random seed unless one is provided
+    export ENDORSER_SEED="$(echo $RANDOM | md5sum | head -c 32; echo;)"
+  fi
+  export ACAPY_HTTP_PORT=8050
+  export ACAPY_HTTP_PORT_EXPOSED=8050
+  export ACAPY_ADMIN_PORT=8051
+  export ACAPY_ADMIN_PORT_EXPOSED=8051
+  export ACAPY_ENDPOINT=${ACAPY_ENDPOINT-http://${DOCKERHOST}:${ACAPY_HTTP_PORT}}
+  export ACAPY_WALLET_DATABASE=endorser_agent
+  export ACAPY_WALLET_ENCRYPTION_KEY=key
+  export ACAPY_WALLET_STORAGE_TYPE=postgres_storage
+  export AGENT_NAME=Endorser
+  export ACAPY_API_ADMIN_KEY=change-me
+  if [ ! -z "${ACAPY_API_ADMIN_KEY}" ]; then
+    export ACAPY_ADMIN_CONFIG="--admin-api-key ${ACAPY_API_ADMIN_KEY}"
+  else
+    export ACAPY_ADMIN_CONFIG=--admin-insecure-mode
+  fi
+  export ENDORSER_ACAPY_ADMIN_URL=http://${DOCKERHOST}:${ACAPY_ADMIN_PORT}
+
+  # endorser agent db
+  export WALLET_POSTGRESQL_HOST=endorser-db
+  export WALLET_POSTGRESQL_USER=postgres
+  export WALLET_POSTGRESQL_PASSWORD=password
+  export ENDORSER_POSTGRESQL_PORT=5432
+  export ENDORSER_POSTGRESQL_PORT_EXPOSED=5466
+
+  # endorser api
+  export ENDORSER_SERVICE_PORT=5000
+  export ENDORSER_SERVICE_PORT_EXPOSED=5050
+  export ACAPY_WEBHOOK_URL_API_KEY=change-me
+  export ENDORSER_WEBHOOK_URL="http://endorser-api:${ENDORSER_SERVICE_PORT}/webhook#${ACAPY_WEBHOOK_URL_API_KEY}"
+  export ENDORSER_API_ADMIN_USER=endorser-admin
+  export ENDORSER_API_ADMIN_KEY=change-me
+  export ENDORSER_DATABASE=endorser
+
+  # endorser api db
+  export CONTROLLER_POSTGRESQL_HOST=endorser-db
+  export CONTROLLER_POSTGRESQL_USER=postgres
+  export CONTROLLER_POSTGRESQL_PASSWORD=password
+  export CONTROLLER_POSTGRESQL_PORT=5432
+  export CONTROLLER_POSTGRESQL_PORT_EXPOSED=5467
+}
+
+function logs() {
+  (
+    local OPTIND
+    local unset _force
+    local unset no_tail
+    while getopts ":f-:" FLAG; do
+      case $FLAG in
+        f ) local _force=1 ;;
+        - ) 
+            case ${OPTARG} in
+                "no-tail"*) no_tail=1
+              ;;
+            esac
+      esac
+    done
+    shift $((OPTIND-1))
+
+    log_args=()
+    (( no_tail != 1 )) && log_args+=( '-f' )
+    if [ ! -z "${TAIL_LOGS}" ] || [ ! -z "${_force}" ]; then
+      docker-compose \
+        --log-level ERROR logs \
+         "${log_args[@]}" "$@"
+    fi
+  )
+}
+
+deleteVolumes() {
+  _projectName=${COMPOSE_PROJECT_NAME:-docker}
+
+  echo "Stopping and removing any running containers ..."
+  docker-compose down -v
+
+  _pattern="^${_projectName}_\|^docker_"
+  _volumes=$(docker volume ls -q | grep ${_pattern})
+
+  if [ ! -z "${_volumes}" ]; then
+    echo "Removing project volumes ..."
+    echo ${_volumes} | xargs docker volume rm
+  else
+    echo "No project volumes exist."
+  fi
+}
+
+# =================================================================================================================
+
+pushd "${SCRIPT_HOME}" >/dev/null
+COMMAND=$(toLower ${1})
+shift || COMMAND=usage
+
+case "${COMMAND}" in
+build)
+  exportEnvironment "$@"
+  docker-compose build $@
+  ;;
+start|up)
+  exportEnvironment "$@"
+  docker-compose up -d 
+  logs
+  echo "Run './manage logs' for logs" 
+  ;;
+logs)
+  exportEnvironment "$@"
+  docker-compose logs -f
+  ;;
+stop)
+  exportEnvironment "$@"
+  docker-compose stop
+  ;;
+down|rm)
+  exportEnvironment "$@"
+  deleteVolumes
+  ;;
+*)
+  usage
+  ;;
+esac
+
+popd >/dev/null
