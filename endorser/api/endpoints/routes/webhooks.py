@@ -65,7 +65,8 @@ async def process_webhook(
     topic: WebhookTopicType, payload: dict, api_key: APIKey = Depends(get_api_key)
 ):
     """Called by aca-py agent."""
-    logger.debug(f">>> Called webhook for endorser: {topic}")
+    state = payload.get("state")
+    logger.debug(f">>> Called webhook for endorser: {topic} / {state}")
     if topic == "connections":
         await setup_endorser_connection(payload)
     return {}
@@ -73,7 +74,8 @@ async def process_webhook(
 
 async def setup_endorser_connection(payload: dict):
     """Set endorser role on any connections we receive."""
-    if payload["state"] == "active" or payload["state"] == "completed":
+    # TODO check final state for other connections protocols
+    if (payload["state"] == "completed" and payload["connection_protocol"] == "didexchange/1.0"):
         # confirm if we have already set the role on this connection
         connection_id = payload["connection_id"]
         logger.debug(f">>> check for metadata on connection: {connection_id}")
