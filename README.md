@@ -6,6 +6,8 @@ Information about Aca-Py's Endorser support can be found [here](https://github.c
 
 The Aca-Py Alice/Faber demo also demonstrates the use of the Endorser feature, as described [here](https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/Endorser.md).
 
+This repository is a work in progress, see [this document](https://hackmd.io/hWMLdpu7SBuopNag4mTbcg?view) for the on-going requirements and design.
+
 ## Running Locally
 
 To get up and running quicky, open a bash shell and run the following:
