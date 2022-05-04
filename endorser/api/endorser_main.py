@@ -4,7 +4,7 @@ from starlette.middleware import Middleware
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
-from api.endpoints.routes.endorser import router as endorser_router
+from api.endpoints.routes.endorser_api import endorser_router
 from api.endpoints.dependencies.jwt_security import AccessToken, create_access_token
 from api.core.config import settings as s
 
