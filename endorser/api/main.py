@@ -39,7 +39,19 @@ app.mount("/webhook", webhook_app)
 endorser_app = get_endorserapp()
 app.mount("/endorser", endorser_app)
 
-logger.info("Endorser API running ...")
+
+@app.on_event("startup")
+async def on_endorser_startup():
+    """Register any events we need to respond to."""
+    logger.warn(">>> Starting up app ...")
+
+
+@app.on_event("shutdown")
+def on_endorser_shutdown():
+    """TODO no-op for now."""
+    logger.warn(">>> Sutting down app ...")
+    pass
+
 
 @app.get("/", tags=["liveness"])
 def main():

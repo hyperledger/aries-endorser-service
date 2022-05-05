@@ -80,6 +80,7 @@ class LocalConfig(GlobalConfig):
     """Local configurations."""
 
     DEBUG: bool = True
+    DB_ECHO_LOG = True
     ENVIRONMENT: EnvironmentEnum = EnvironmentEnum.LOCAL
 
 

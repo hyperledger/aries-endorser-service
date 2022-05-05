@@ -7,6 +7,8 @@ from starlette import status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.endpoints.dependencies.db import get_db
+
 
 logger = logging.getLogger(__name__)
 

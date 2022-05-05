@@ -13,7 +13,7 @@ services:
       context: ./acapy
       dockerfile: Dockerfile.acapy
     depends_on:
-      endorser-db:
+      endorser-agent-db:
         condition: service_healthy
     ports:
       - ${ACAPY_ENDORSER_ADMIN_PORT}:${ACAPY_ENDORSER_ADMIN_PORT}
@@ -50,6 +50,21 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
+  endorser-agent-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
+    ports:
+      - ${ENDORSER_POSTGRESQL_PORT_EXPOSED}:${ENDORSER_POSTGRESQL_PORT}
+    volumes:
+      - endorser-wallet:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   endorser-api:
     build:
       context: ../endorser
@@ -78,12 +93,13 @@ services:
   endorser-db:
     image: postgres:12-alpine
     environment:
-      POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
+      POSTGRES_USER: ${CONTROLLER_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${CONTROLLER_POSTGRESQL_PASSWORD}
     ports:
-      - ${ENDORSER_POSTGRESQL_PORT_EXPOSED}:${ENDORSER_POSTGRESQL_PORT}
+      - ${CONTROLLER_POSTGRESQL_PORT_EXPOSED}:${CONTROLLER_POSTGRESQL_PORT}
     volumes:
-      - endorser-wallet:/var/lib/postgresql/data
+      - endorser-controller:/var/lib/postgresql/data
+      - ./db_init.sql:/docker-entrypoint-initdb.d/1-init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -92,3 +108,4 @@ services:
 
 volumes:
   endorser-wallet:
+  endorser-controller:

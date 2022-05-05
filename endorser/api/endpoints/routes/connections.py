@@ -7,6 +7,7 @@ from starlette import status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.connections import (
     ConnectionProtocolType,
     ConnectionStateType,
@@ -23,6 +24,7 @@ router = APIRouter()
 @router.get("/", response_model=list[Connection])
 async def get_connections(
     connection_state: Optional[ConnectionStateType] = None,
+    db: AsyncSession = Depends(get_db),
 ):
     connections = []
     return connections
@@ -31,6 +33,7 @@ async def get_connections(
 @router.get("/{connection_id}", response_model=Connection)
 async def get_connection(
     connection_id: str,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection
@@ -40,6 +43,7 @@ async def get_connection(
 async def update_connection(
     connection_id: str,
     meta_data: dict,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection
@@ -49,6 +53,7 @@ async def update_connection(
 async def configure_connection(
     connection_id: str,
     configuration: dict,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection
@@ -57,6 +62,7 @@ async def configure_connection(
 @router.post("/{connection_id}/accept", response_model=Connection)
 async def accept_connection(
     connection_id: str,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection
@@ -65,6 +71,7 @@ async def accept_connection(
 @router.post("/{connection_id}/reject", response_model=Connection)
 async def reject_connection(
     connection_id: str,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection
@@ -73,6 +80,7 @@ async def reject_connection(
 @router.post("/{connection_id}/disable", response_model=Connection)
 async def disable_connection(
     connection_id: str,
+    db: AsyncSession = Depends(get_db),
 ):
     connection = None
     return connection

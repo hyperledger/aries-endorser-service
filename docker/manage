@@ -77,7 +77,7 @@ exportEnvironment() {
   export ENDORSER_ACAPY_ADMIN_URL=http://${DOCKERHOST}:${ACAPY_ADMIN_PORT}
 
   # endorser agent db
-  export WALLET_POSTGRESQL_HOST=endorser-db
+  export WALLET_POSTGRESQL_HOST=endorser-agent-db
   export WALLET_POSTGRESQL_USER=postgres
   export WALLET_POSTGRESQL_PASSWORD=password
   export ENDORSER_POSTGRESQL_PORT=5432

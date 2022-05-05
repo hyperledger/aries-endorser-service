@@ -2,8 +2,12 @@ import logging
 from typing import List, Optional
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+
+from api.endpoints.dependencies.db import get_db
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
