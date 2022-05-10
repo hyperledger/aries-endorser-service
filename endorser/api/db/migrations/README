@@ -1,0 +1,19 @@
+# Endorser database models and migration scripts
+
+Generic single-database configuration with an async dbapi.
+
+## Adding a New Database Model
+
+Add a new python model file in the `endorser/api/db/models` directory.  You can review the existing model files for examples.
+
+To generate new alembic revision (this will go in the `db/migrations` directory), first update the model file(s) and then from /scripts folder:
+
+From the root of the `endorser` directory:
+
+```shell
+alembic revision --autogenerate -m "comment"
+```
+
+Or, start the docker services (`./manage start --logs`) and then "bash" into the "endorser-api" service and run the above command.
+
+Once your migration file is generated, review the generated code (the autogenerate does not always work perfectly) - you can review the other migrations for examples.

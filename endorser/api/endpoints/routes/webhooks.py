@@ -3,9 +3,13 @@ import logging
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader, APIKey
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_403_FORBIDDEN
 
 from api.core.config import settings
+from api.endpoints.dependencies.db import get_db
+import api.services as api_services
+
 import api.acapy_utils as au
 
 
@@ -62,31 +66,38 @@ def get_webhookapp() -> FastAPI:
 
 @router.post("/topic/{topic}/", response_model=dict)
 async def process_webhook(
-    topic: WebhookTopicType, payload: dict, api_key: APIKey = Depends(get_api_key)
+    topic: WebhookTopicType,
+    payload: dict,
+    api_key: APIKey = Depends(get_api_key),
+    db: AsyncSession = Depends(get_db),
 ):
     """Called by aca-py agent."""
     state = payload.get("state")
-    logger.debug(f">>> Called webhook for endorser: {topic} / {state}")
-    if topic == "connections":
-        await setup_endorser_connection(payload)
-    return {}
+    if state:
+        logger.info(f">>> Called webhook for endorser: {topic} / {state}")
+    else:
+        logger.info(f">>> Called webhook for endorser: {topic}")
 
+    # call the handler to process the hook, if present
+    result = {}
+    try:
+        handler = f"handle_{topic}_{state}" if state else f"handle_{topic}"
+        handler = handler.replace("-", "_")
+        if hasattr(api_services, handler):
+            result = await getattr(api_services, handler)(payload)
+            logger.info(f">>> {handler} returns = {result}")
+        else:
+            logger.info(f">>> no webhook handler available for: {handler}")
 
-async def setup_endorser_connection(payload: dict):
-    """Set endorser role on any connections we receive."""
-    # TODO check final state for other connections protocols
-    if (payload["state"] == "completed" and payload["connection_protocol"] == "didexchange/1.0"):
-        # confirm if we have already set the role on this connection
-        connection_id = payload["connection_id"]
-        logger.debug(f">>> check for metadata on connection: {connection_id}")
-        conn_meta_data = await au.acapy_GET(f"connections/{connection_id}/metadata")
-        if "transaction-jobs" in conn_meta_data["results"]:
-            if "transaction_my_job" in conn_meta_data["results"]["transaction-jobs"]:
-                return
+        # call the "auto-stepper" if we have one, to move to the next state
+        stepper = f"auto_step_{topic}_{state}" if state else f"auto_step_{topic}"
+        stepper = stepper.replace("-", "_")
+        if hasattr(api_services, stepper):
+            _stepper_result = await getattr(api_services, stepper)(payload, result)
+            logger.info(f">>> {stepper} returns = {_stepper_result}")
+        else:
+            logger.info(f">>> no webhook stepper available for: {stepper}")
+    except Exception as e:
+        logger.error(">>> got error:" + str(e))
 
-        # set our endorser role
-        logger.debug(f">>> Setting meta-data for connection: {payload}")
-        params = {"transaction_my_job": "TRANSACTION_ENDORSER"}
-        await au.acapy_POST(
-            f"transactions/{connection_id}/set-endorser-role", params=params
-        )
+    return result

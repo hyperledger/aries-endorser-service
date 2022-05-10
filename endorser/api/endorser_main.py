@@ -1,13 +1,17 @@
+import logging
+
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from starlette.middleware import Middleware
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
-from api.endpoints.routes.endorser import router as endorser_router
+from api.endpoints.routes.endorser_api import endorser_router
 from api.endpoints.dependencies.jwt_security import AccessToken, create_access_token
 from api.core.config import settings as s
 
+
+logger = logging.getLogger(__name__)
 
 middleware = [
     Middleware(
@@ -42,7 +46,7 @@ def get_endorserapp() -> FastAPI:
 async def login_for_traction_api_admin(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
-    authenticated = await authenticate_innkeeper(form_data.username, form_data.password)
+    authenticated = await authenticate_endorser(form_data.username, form_data.password)
     if not authenticated:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,7 +56,7 @@ async def login_for_traction_api_admin(
     return create_access_token(data={"sub": form_data.username})
 
 
-async def authenticate_innkeeper(username: str, password: str):
+async def authenticate_endorser(username: str, password: str):
     if s.ENDORSER_API_ADMIN_USER == username and s.ENDORSER_API_ADMIN_KEY == password:
         return True
     return False
