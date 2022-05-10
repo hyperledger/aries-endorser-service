@@ -8,8 +8,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 
 from api.core.config import settings
 from api.endpoints.dependencies.db import get_db
-from api.services.connections import handle_endorser_connection
-from api.services.endorse import handle_endorse_transaction
+import api.services as api_services
 
 import api.acapy_utils as au
 
@@ -74,11 +73,31 @@ async def process_webhook(
 ):
     """Called by aca-py agent."""
     state = payload.get("state")
-    logger.debug(f">>> Called webhook for endorser: {topic} / {state}")
-    if topic == WebhookTopicType.connections:
-        await handle_endorser_connection(payload)
-    elif topic == WebhookTopicType.endorse_transaction:
-        await handle_endorse_transaction(payload)
+    if state:
+        logger.info(f">>> Called webhook for endorser: {topic} / {state}")
     else:
-        logger.warn(f">>> received unsupported webhook topic: {topic} / {state}")
-    return {}
+        logger.info(f">>> Called webhook for endorser: {topic}")
+
+    # call the handler to process the hook, if present
+    result = {}
+    try:
+        handler = f"handle_{topic}_{state}" if state else f"handle_{topic}"
+        handler = handler.replace("-", "_")
+        if hasattr(api_services, handler):
+            result = await getattr(api_services, handler)(payload)
+            logger.info(f">>> {handler} returns = {result}")
+        else:
+            logger.info(f">>> no webhook handler available for: {handler}")
+
+        # call the "auto-stepper" if we have one, to move to the next state
+        stepper = f"auto_step_{topic}_{state}" if state else f"auto_step_{topic}"
+        stepper = stepper.replace("-", "_")
+        if hasattr(api_services, stepper):
+            _stepper_result = await getattr(api_services, stepper)(payload, result)
+            logger.info(f">>> {stepper} returns = {_stepper_result}")
+        else:
+            logger.info(f">>> no webhook stepper available for: {stepper}")
+    except Exception as e:
+        logger.error(">>> got error:" + str(e))
+
+    return result
