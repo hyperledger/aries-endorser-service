@@ -8,4 +8,3 @@ import api.acapy_utils as au
 
 
 logger = logging.getLogger(__name__)
-

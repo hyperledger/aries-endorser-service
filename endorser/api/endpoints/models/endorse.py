@@ -54,7 +54,9 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
     logger.debug(f">>> from payload: {payload}")
     transaction_request = json.loads(payload["messages_attach"][0]["data"]["json"])
     if 0 < len(payload["signature_response"]):
-        transaction_response = json.loads(payload["signature_response"][0]["signature"][endorser_did])
+        transaction_response = json.loads(
+            payload["signature_response"][0]["signature"][endorser_did]
+        )
     else:
         transaction_response = {}
     transaction: EndorseTransaction = EndorseTransaction(
@@ -91,12 +93,20 @@ def txn_to_db_object(txn: EndorseTransaction) -> EndorseRequest:
     return txn_request
 
 
-def db_to_txn_object(txn_request: EndorseRequest, acapy_txn: dict = None) -> EndorseTransaction:
+def db_to_txn_object(
+    txn_request: EndorseRequest, acapy_txn: dict = None
+) -> EndorseTransaction:
     """Convert from database and acapy objects to model object."""
     if acapy_txn:
-        transaction_request = json.loads(acapy_txn["messages_attach"][0]["data"]["json"])
+        transaction_request = json.loads(
+            acapy_txn["messages_attach"][0]["data"]["json"]
+        )
         if 0 < len(acapy_txn["signature_response"]):
-            transaction_response = json.loads(acapy_txn["signature_response"][0]["signature"][txn_request.endorser_did])
+            transaction_response = json.loads(
+                acapy_txn["signature_response"][0]["signature"][
+                    txn_request.endorser_did
+                ]
+            )
         else:
             transaction_response = {}
     else:

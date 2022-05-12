@@ -16,7 +16,6 @@ router = APIRouter()
 
 
 @router.get("/config", status_code=status.HTTP_200_OK, response_model=dict)
-async def get_config(
-) -> dict:
+async def get_config() -> dict:
     # this should take some query params, sorting and paging params...
     return {}
