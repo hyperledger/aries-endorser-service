@@ -14,6 +14,10 @@ class EnvironmentEnum(str, Enum):
     LOCAL = "local"
 
 
+def to_bool(s: str) -> bool:
+    return s.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
+
+
 class GlobalConfig(BaseSettings):
     TITLE: str = "Endorser"
     DESCRIPTION: str = "An endorser service for aca-py wallets"
@@ -22,6 +26,9 @@ class GlobalConfig(BaseSettings):
     DEBUG: bool = False
     TESTING: bool = False
     TIMEZONE: str = "UTC"
+
+    # configuration
+    ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "true"))
 
     # the following defaults match up with default values in scripts/.env.example
     # these MUST be all set in non-local environments.

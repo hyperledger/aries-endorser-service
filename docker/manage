@@ -47,6 +47,9 @@ exportEnvironment() {
   export ENDORSER_ENV=local
   export WEB_CONCURRENCY=2
 
+  # endorser configuration
+  export ENDORSER_AUTO_ENDORSE_REQUESTS=${ENDORSER_AUTO_ENDORSE_REQUESTS:-true}
+
   # ngrok
   export NGROK_ENDORSER_AGENT_PORT=4040
   export NGROK_ENDORSER_AGENT_PORT_EXPOSED=4057
@@ -55,7 +58,7 @@ exportEnvironment() {
   export LEDGER_URL=${LEDGER_URL-http://test.bcovrin.vonx.io}
   export GENESIS_URL=${GENESIS_URL-${LEDGER_URL}/genesis}
   export LOG_LEVEL=${LOG_LEVEL-INFO}
-  if [ ! -v "${ENDORSER_SEED}" ]; then
+  if [ -z "${ENDORSER_SEED}" ]; then
     # generate a random seed unless one is provided
     export ENDORSER_SEED="$(echo $RANDOM | md5sum | head -c 32; echo;)"
   fi
@@ -69,7 +72,7 @@ exportEnvironment() {
   export ACAPY_WALLET_STORAGE_TYPE=postgres_storage
   export AGENT_NAME=Endorser
   export ACAPY_API_ADMIN_KEY=change-me
-  if [ ! -v "${ACAPY_API_ADMIN_KEY}" ]; then
+  if [ ! -z "${ACAPY_API_ADMIN_KEY}" ]; then
     export ACAPY_ADMIN_CONFIG="--admin-api-key ${ACAPY_API_ADMIN_KEY}"
   else
     export ACAPY_ADMIN_CONFIG=--admin-insecure-mode
