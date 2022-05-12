@@ -3,8 +3,10 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
-from api.core.config import settings
-from api.endpoints.models.endorse import EndorseTransactionState, EndorseTransaction, txn_to_db_object
+from api.endpoints.models.endorse import (
+    EndorseTransaction,
+    txn_to_db_object,
+)
 from api.db.models.endorse_request import EndorseRequest
 from api.db.errors import DoesNotExist
 
@@ -25,11 +27,10 @@ async def db_add_db_txn_record(db: AsyncSession, db_txn: EndorseRequest):
     await db.commit()
 
 
-async def db_fetch_db_txn_record(db: AsyncSession, transaction_id: str) -> EndorseRequest:
-    q = (
-        select(EndorseRequest)
-        .where(EndorseRequest.transaction_id == transaction_id)
-    )
+async def db_fetch_db_txn_record(
+    db: AsyncSession, transaction_id: str
+) -> EndorseRequest:
+    q = select(EndorseRequest).where(EndorseRequest.transaction_id == transaction_id)
     result = await db.execute(q)
     result_rec = result.scalar_one_or_none()
     if not result_rec:
@@ -40,7 +41,9 @@ async def db_fetch_db_txn_record(db: AsyncSession, transaction_id: str) -> Endor
     return db_txn
 
 
-async def db_update_db_txn_record(db: AsyncSession, db_txn: EndorseRequest) -> EndorseRequest:
+async def db_update_db_txn_record(
+    db: AsyncSession, db_txn: EndorseRequest
+) -> EndorseRequest:
     payload_dict = db_txn.dict()
     q = (
         update(EndorseRequest)

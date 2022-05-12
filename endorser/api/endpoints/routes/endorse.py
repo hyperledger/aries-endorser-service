@@ -21,7 +21,11 @@ async def get_transactions(
     return [{}]
 
 
-@router.get("/transactions/{transaction_id}", status_code=status.HTTP_200_OK, response_model=List[dict])
+@router.get(
+    "/transactions/{transaction_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=List[dict],
+)
 async def get_transaction(
     transaction_id: str,
 ) -> dict:
@@ -29,7 +33,11 @@ async def get_transaction(
     return None
 
 
-@router.put("/transactions/{transaction_id}", status_code=status.HTTP_200_OK, response_model=List[dict])
+@router.put(
+    "/transactions/{transaction_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=List[dict],
+)
 async def update_transactions(
     transaction_id: str,
     meta_data: dict,
@@ -38,7 +46,11 @@ async def update_transactions(
     return None
 
 
-@router.post("/transactions/{transaction_id}/endorse", status_code=status.HTTP_200_OK, response_model=List[dict])
+@router.post(
+    "/transactions/{transaction_id}/endorse",
+    status_code=status.HTTP_200_OK,
+    response_model=List[dict],
+)
 async def endorse_transaction(
     transaction_id: str,
 ) -> dict:
@@ -46,7 +58,11 @@ async def endorse_transaction(
     return None
 
 
-@router.post("/transactions/{transaction_id}/reject", status_code=status.HTTP_200_OK, response_model=List[dict])
+@router.post(
+    "/transactions/{transaction_id}/reject",
+    status_code=status.HTTP_200_OK,
+    response_model=List[dict],
+)
 async def reject_transaction(
     transaction_id: str,
 ) -> dict:

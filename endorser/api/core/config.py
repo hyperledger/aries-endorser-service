@@ -15,7 +15,17 @@ class EnvironmentEnum(str, Enum):
 
 
 def to_bool(s: str) -> bool:
-    return s.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
+    return s.lower() in [
+        "true",
+        "1",
+        "t",
+        "y",
+        "yes",
+        "yeah",
+        "yup",
+        "certainly",
+        "uh-huh",
+    ]
 
 
 class GlobalConfig(BaseSettings):
@@ -28,7 +38,9 @@ class GlobalConfig(BaseSettings):
     TIMEZONE: str = "UTC"
 
     # configuration
-    ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "true"))
+    ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
+        os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "true")
+    )
 
     # the following defaults match up with default values in scripts/.env.example
     # these MUST be all set in non-local environments.
@@ -39,8 +51,12 @@ class GlobalConfig(BaseSettings):
     PSQL_USER: str = os.environ.get("CONTROLLER_POSTGRESQL_USER", "endorseruser")
     PSQL_PASS: str = os.environ.get("CONTROLLER_POSTGRESQL_PASSWORD", "endorserPass")
 
-    PSQL_ADMIN_USER: str = os.environ.get("CONTROLLER_POSTGRESQL_ADMIN_USER", "endorseradminuser")
-    PSQL_ADMIN_PASS: str = os.environ.get("CONTROLLER_POSTGRESQL_ADMIN_PASSWORD", "endorseradminPass")
+    PSQL_ADMIN_USER: str = os.environ.get(
+        "CONTROLLER_POSTGRESQL_ADMIN_USER", "endorseradminuser"
+    )
+    PSQL_ADMIN_PASS: str = os.environ.get(
+        "CONTROLLER_POSTGRESQL_ADMIN_PASSWORD", "endorseradminPass"
+    )
 
     # application connection is async
     # fmt: off
@@ -53,12 +69,8 @@ class GlobalConfig(BaseSettings):
     )
     # fmt: on
 
-    ACAPY_ADMIN_URL: str = os.environ.get(
-        "ACAPY_ADMIN_URL", "http://localhost:9031"
-    )
-    ACAPY_ADMIN_URL_API_KEY: str = os.environ.get(
-        "ACAPY_API_ADMIN_KEY", "change-me"
-    )
+    ACAPY_ADMIN_URL: str = os.environ.get("ACAPY_ADMIN_URL", "http://localhost:9031")
+    ACAPY_ADMIN_URL_API_KEY: str = os.environ.get("ACAPY_API_ADMIN_KEY", "change-me")
 
     ENDORSER_API_ADMIN_USER: str = os.environ.get("ENDORSER_API_ADMIN_USER", "endorser")
     ENDORSER_API_ADMIN_KEY: str = os.environ.get("ENDORSER_API_ADMIN_KEY", "change-me")

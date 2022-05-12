@@ -2,9 +2,12 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.core.config import settings
-from api.endpoints.models.connections import ConnectionProtocolType, ConnectionStateType
-from api.endpoints.models.endorse import EndorserRoleType, EndorseTransactionState, EndorseTransaction, webhook_to_txn_object
+from api.endpoints.models.connections import ConnectionProtocolType
+from api.endpoints.models.endorse import (
+    EndorserRoleType,
+    EndorseTransaction,
+    webhook_to_txn_object,
+)
 from api.services.endorse import (
     store_endorser_request,
     update_endorsement_status,
@@ -36,7 +39,9 @@ async def handle_connections_completed(db: AsyncSession, payload: dict):
 
         # set our endorser role
         params = {"transaction_my_job": EndorserRoleType.Endorser.value}
-        logger.info(f">>> Setting meta-data for connection: {payload}, with params: {params}")
+        logger.info(
+            f">>> Setting meta-data for connection: {payload}, with params: {params}"
+        )
         await au.acapy_POST(
             f"transactions/{connection_id}/set-endorser-role", params=params
         )
@@ -53,12 +58,14 @@ async def handle_endorse_transaction_request_received(db: AsyncSession, payload:
     return result
 
 
-async def handle_endorse_transaction_transaction_endorsed(db: AsyncSession, payload: dict):
+async def handle_endorse_transaction_transaction_endorsed(
+    db: AsyncSession, payload: dict
+):
     logger.info(">>> in handle_endorse_transaction_transaction_endorsed() ...")
     endorser_did = await get_endorser_did()
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
     result = await update_endorsement_status(db, transaction)
-    return {}
+    return result
 
 
 async def handle_endorse_transaction_transaction_acked(db: AsyncSession, payload: dict):
@@ -66,4 +73,4 @@ async def handle_endorse_transaction_transaction_acked(db: AsyncSession, payload
     endorser_did = await get_endorser_did()
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
     result = await update_endorsement_status(db, transaction)
-    return {}
+    return result

@@ -1,6 +1,7 @@
 """EndorseRequest Database Tables/Models.
 
-Models of the Endorser tables for EndorseRequests (Author Endorse Requests) and related data.
+Models of the Endorser tables for EndorseRequests (Author Endorse Requests)
+and related data.
 
 """
 import uuid
@@ -9,7 +10,7 @@ from typing import List
 
 from sqlmodel import Field
 from sqlalchemy import Column, func, text, String
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, JSON, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, ARRAY
 
 from api.db.models.base import BaseModel
 
@@ -17,7 +18,8 @@ from api.db.models.base import BaseModel
 class EndorseRequest(BaseModel, table=True):
     """EndorseRequest.
 
-    This is the model for the EndorseRequest table (postgresql specific dialects in use).
+    This is the model for the EndorseRequest table
+    (postgresql specific dialects in use).
 
     Attributes:
       endorse_request_id: Endorser's EndorseRequest ID
