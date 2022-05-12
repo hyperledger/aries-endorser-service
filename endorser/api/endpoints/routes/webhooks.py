@@ -78,7 +78,7 @@ async def process_webhook(
         logger.info(f">>> Called webhook for endorser: {topic} / {state}")
     else:
         logger.info(f">>> Called webhook for endorser: {topic}")
-    logger.info(f">>> payload: {payload}")
+    logger.debug(f">>> payload: {payload}")
 
     # call the handler to process the hook, if present
     result = {}
@@ -87,20 +87,25 @@ async def process_webhook(
         handler = handler.replace("-", "_")
         if hasattr(api_services, handler):
             result = await getattr(api_services, handler)(db, payload)
-            logger.info(f">>> {handler} returns = {result}")
+            logger.debug(f">>> {handler} returns = {result}")
         else:
-            logger.info(f">>> no webhook handler available for: {handler}")
+            logger.warn(f">>> no webhook handler available for: {handler}")
+    except Exception as e:
+        logger.error(">>> handler returned error:" + str(e))
+        traceback.print_exc()
+        return result
 
+    try:
         # call the "auto-stepper" if we have one, to move to the next state
         stepper = f"auto_step_{topic}_{state}" if state else f"auto_step_{topic}"
         stepper = stepper.replace("-", "_")
         if hasattr(api_services, stepper):
             _stepper_result = await getattr(api_services, stepper)(db, payload, result)
-            logger.info(f">>> {stepper} returns = {_stepper_result}")
+            logger.debug(f">>> {stepper} returns = {_stepper_result}")
         else:
-            logger.info(f">>> no webhook stepper available for: {stepper}")
+            logger.warn(f">>> no webhook stepper available for: {stepper}")
     except Exception as e:
-        logger.error(">>> got error:" + str(e))
+        logger.error(">>> auto-stepper returned error:" + str(e))
         traceback.print_exc()
 
     return result

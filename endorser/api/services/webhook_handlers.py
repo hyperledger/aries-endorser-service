@@ -17,8 +17,8 @@ import api.acapy_utils as au
 logger = logging.getLogger(__name__)
 
 
-async def handle_ping(db: AsyncSession, payload: dict) -> dict:
-    logger.info(">>> in handle_ping() ...")
+async def handle_ping_received(db: AsyncSession, payload: dict) -> dict:
+    logger.info(">>> in handle_ping_received() ...")
     return {}
 
 

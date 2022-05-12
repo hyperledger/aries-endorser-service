@@ -50,5 +50,4 @@ exec aca-py start \
     --label "${AGENT_NAME}" \
     ${ACAPY_ADMIN_CONFIG} \
     --endorser-protocol-role endorser \
-    --auto-endorse-transactions \
     --log-level "${LOG_LEVEL}" \

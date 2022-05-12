@@ -26,7 +26,7 @@ async def auto_step_endorse_transaction_request_received(db: AsyncSession, paylo
     logger.info(">>> in auto_step_endorse_transaction_request_received() ...")
     endorser_did = await get_endorser_did()
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
-    logger.info(f">>> transaction = {transaction}")
+    logger.debug(f">>> transaction = {transaction}")
     if settings.ENDORSER_AUTO_ENDORSE_REQUESTS or auto_endorse_connection(transaction):
         result = await endorse_transaction(db, transaction)
     return result

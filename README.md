@@ -39,3 +39,43 @@ By default, the `./manage` script will use a random seed to generate the Endorse
 ```bash
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 ```
+
+## Testing
+
+There are currently no unit or integration tests in this repository.  However you can test using [traction](https://github.com/bcgov/traction).
+
+Open a bash shell and startup the endorser services:
+
+```bash
+git clone https://github.com/bcgov/aries-endorser-service.git
+cd aries-endorser-service/docker
+./manage build
+# note we start with a "known" endorser DID
+ENDORSER_SEED=testendorserseed_123123123123123 ./manage start --logs
+```
+
+Then open a separate bash shell and run the following:
+
+```bash
+git clone https://github.com/bcgov/traction.git
+cd traction/scripts
+git checkout endorser-integration
+cp .env-example .env
+docker-compose build
+docker-compose up
+```
+
+Then open up yet another bash shell and run the traction integration tests.  Traction tenants will connect to the endorser service for creating schemas, credential definitions etc.
+
+```bash
+cd <traction/scripts directory from above>
+docker exec scripts_traction-api_1 pytest --asyncio-mode=strict -m integtest
+```
+
+... or you can run individual tests like this:
+
+```bash
+docker exec scripts_traction-api_1 pytest --asyncio-mode=strict -m integtest tests/integration/endpoints/routes/test_tenant.py::test_tenant_issuer
+```
+
+Traction integration tests create new tenants for each test, so you can rebuild/restart the endorser service without having to restart traction.

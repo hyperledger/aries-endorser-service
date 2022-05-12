@@ -51,7 +51,7 @@ class EndorseTransaction(BaseModel):
 
 def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransaction:
     """Convert from a webhook payload to an endorser transaction."""
-    logger.info(f">>> from payload: {payload}")
+    logger.debug(f">>> from payload: {payload}")
     transaction_request = json.loads(payload["messages_attach"][0]["data"]["json"])
     if 0 < len(payload["signature_response"]):
         transaction_response = json.loads(payload["signature_response"][0]["signature"][endorser_did])
@@ -59,7 +59,7 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
         transaction_response = {}
     transaction: EndorseTransaction = EndorseTransaction(
         connection_id=payload.get("connection_id"),
-        transaction_id=payload.get("connection_id"),
+        transaction_id=payload.get("transaction_id"),
         tags=[],
         created_at=payload.get("created_at"),
         state=payload.get("state"),
@@ -70,13 +70,13 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
         transaction_type=transaction_request["operation"]["type"],
         transaction_response=transaction_response,
     )
-    logger.info(f">>> to transaction: {transaction}")
+    logger.debug(f">>> to transaction: {transaction}")
     return transaction
 
 
 def txn_to_db_object(txn: EndorseTransaction) -> EndorseRequest:
     """Convert from model object to database model object."""
-    logger.info(f">>> from transaction: {txn}")
+    logger.debug(f">>> from transaction: {txn}")
     txn_request: EndorseRequest = EndorseRequest(
         transaction_id=txn.transaction_id,
         connection_id=txn.connection_id,
@@ -87,7 +87,7 @@ def txn_to_db_object(txn: EndorseTransaction) -> EndorseRequest:
         state=txn.state,
         ledger_txn=json.dumps(txn.transaction),
     )
-    logger.info(f">>> to request: {txn_request}")
+    logger.debug(f">>> to request: {txn_request}")
     return txn_request
 
 
