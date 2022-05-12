@@ -13,6 +13,9 @@ from api.endpoints.models.endorse import (
 )
 from api.services.endorse import (
     get_transactions_list,
+    get_transaction_object,
+    endorse_transaction,
+    reject_transaction,
 )
 
 
@@ -53,51 +56,55 @@ async def get_transactions(
 @router.get(
     "/transactions/{transaction_id}",
     status_code=status.HTTP_200_OK,
-    response_model=List[dict],
+    response_model=EndorseTransaction,
 )
 async def get_transaction(
     transaction_id: str,
     db: AsyncSession = Depends(get_db),
-) -> dict:
-    # this should take some query params, sorting and paging params...
-    return None
+) -> EndorseTransaction:
+    transaction = await get_transaction_object(db, transaction_id)
+    return transaction
 
 
 @router.put(
     "/transactions/{transaction_id}",
     status_code=status.HTTP_200_OK,
-    response_model=List[dict],
+    response_model=EndorseTransaction,
 )
 async def update_transactions(
     transaction_id: str,
     meta_data: dict,
     db: AsyncSession = Depends(get_db),
-) -> List[dict]:
-    # this should take some query params, sorting and paging params...
+) -> EndorseTransaction:
+    """Update meta-data (tags) on a transaction."""
     return None
 
 
 @router.post(
     "/transactions/{transaction_id}/endorse",
     status_code=status.HTTP_200_OK,
-    response_model=List[dict],
+    response_model=EndorseTransaction,
 )
-async def endorse_transaction(
+async def endorse_transaction_endpoint(
     transaction_id: str,
     db: AsyncSession = Depends(get_db),
-) -> dict:
-    # this should take some query params, sorting and paging params...
-    return None
+) -> EndorseTransaction:
+    """Manually approve an endorsement."""
+    transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+    endorsed_txn = await endorse_transaction(db, transaction)
+    return endorsed_txn
 
 
 @router.post(
     "/transactions/{transaction_id}/reject",
     status_code=status.HTTP_200_OK,
-    response_model=List[dict],
+    response_model=EndorseTransaction,
 )
-async def reject_transaction(
+async def reject_transaction_endpoint(
     transaction_id: str,
     db: AsyncSession = Depends(get_db),
-) -> dict:
-    # this should take some query params, sorting and paging params...
-    return None
+) -> EndorseTransaction:
+    """Manually reject an endorsement."""
+    transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+    rejected_txn = await reject_transaction(db, transaction)
+    return rejected_txn

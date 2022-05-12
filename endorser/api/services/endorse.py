@@ -32,6 +32,7 @@ async def db_add_db_txn_record(db: AsyncSession, db_txn: EndorseRequest):
 async def db_fetch_db_txn_record(
     db: AsyncSession, transaction_id: str
 ) -> EndorseRequest:
+    logger.info(f">>> db_fetch_db_txn_record() for {transaction_id}")
     q = select(EndorseRequest).where(EndorseRequest.transaction_id == transaction_id)
     result = await db.execute(q)
     result_rec = result.scalar_one_or_none()
@@ -113,6 +114,16 @@ async def get_transactions_list(
     return (count, items)
 
 
+async def get_transaction_object(
+    db: AsyncSession,
+    transaction_id: str,
+) -> EndorseTransaction:
+    logger.info(f">>> get_transaction_object() for {transaction_id}")
+    db_txn: EndorseRequest = await db_fetch_db_txn_record(db, transaction_id)
+    item = db_to_txn_object(db_txn, acapy_txn=None)
+    return item
+
+
 async def store_endorser_request(db: AsyncSession, txn: EndorseTransaction):
     logger.info(f">>> called store_endorser_request with: {txn.transaction_id}")
 
@@ -130,11 +141,29 @@ async def endorse_transaction(db: AsyncSession, txn: EndorseTransaction):
     db_txn: EndorseRequest = await db_fetch_db_txn_record(db, txn.transaction_id)
 
     # endorse transaction and tell aca-py
-    await au.acapy_POST(f"transactions/{txn.transaction_id}/endorse")
+    response = await au.acapy_POST(f"transactions/{txn.transaction_id}/endorse")
 
-    # update local db status
+    # update local db state
+    db_txn.state = response["state"]
     db_txn = await db_update_db_txn_record(db, db_txn)
-    logger.info(f">>> updated endorser_request for {txn.transaction_id}")
+    logger.info(f">>> endorsed endorser_request for {txn.transaction_id}")
+
+    return txn
+
+
+async def reject_transaction(db: AsyncSession, txn: EndorseTransaction):
+    logger.info(f">>> called reject_transaction with: {txn.transaction_id}")
+
+    # fetch existing db object
+    db_txn: EndorseRequest = await db_fetch_db_txn_record(db, txn.transaction_id)
+
+    # endorse transaction and tell aca-py
+    response = await au.acapy_POST(f"transactions/{txn.transaction_id}/refuse")
+
+    # update local db state
+    db_txn.state = response["state"]
+    db_txn = await db_update_db_txn_record(db, db_txn)
+    logger.info(f">>> rejected endorser_request for {txn.transaction_id}")
 
     return txn
 
@@ -145,10 +174,8 @@ async def update_endorsement_status(db: AsyncSession, txn: EndorseTransaction):
     # fetch existing db object
     db_txn: EndorseRequest = await db_fetch_db_txn_record(db, txn.transaction_id)
 
-    # update state from webhook
+    # update local db state
     db_txn.state = txn.state
-
-    # update local db status
     db_txn = await db_update_db_txn_record(db, db_txn)
     logger.info(f">>> updated endorser_request for {txn.transaction_id} {txn.state}")
 

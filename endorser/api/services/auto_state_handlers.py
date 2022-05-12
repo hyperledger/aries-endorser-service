@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def auto_endorse_connection(transaction: EndorseTransaction) -> bool:
-    # TODO check if connection is setup for auto-endorse
-    return True
+    # TODO check if connection or author_did is setup for auto-endorse
+    return False
 
 
 async def auto_step_endorse_transaction_request_received(
@@ -29,6 +29,7 @@ async def auto_step_endorse_transaction_request_received(
     endorser_did = await get_endorser_did()
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
     logger.debug(f">>> transaction = {transaction}")
+    result = {}
     if settings.ENDORSER_AUTO_ENDORSE_REQUESTS or auto_endorse_connection(transaction):
         result = await endorse_transaction(db, transaction)
     return result
