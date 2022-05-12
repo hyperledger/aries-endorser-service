@@ -1,20 +1,28 @@
 import logging
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from api.core.config import settings
 from api.endpoints.models.connections import ConnectionProtocolType, ConnectionStateType
-from api.endpoints.models.endorse import EndorserRoleType, EndorseTransactionState
+from api.endpoints.models.endorse import EndorserRoleType, EndorseTransactionState, EndorseTransaction, webhook_to_txn_object
+from api.services.endorse import (
+    store_endorser_request,
+    update_endorsement_status,
+    get_endorser_did,
+)
+
 import api.acapy_utils as au
 
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_ping(payload: dict) -> dict:
+async def handle_ping(db: AsyncSession, payload: dict) -> dict:
     logger.info(">>> in handle_ping() ...")
     return {}
 
 
-async def handle_connections_completed(payload: dict):
+async def handle_connections_completed(db: AsyncSession, payload: dict):
     """Set endorser role on any connections we receive."""
     # TODO check final state for other connections protocols
     if payload["connection_protocol"] == ConnectionProtocolType.DIDExchange.value:
@@ -35,7 +43,27 @@ async def handle_connections_completed(payload: dict):
     return {}
 
 
-async def handle_endorse_transaction_request_received(payload: dict):
-    """Hande transaction endorse requests."""
-    # TODO ...check if auto-endorse
+async def handle_endorse_transaction_request_received(db: AsyncSession, payload: dict):
+    """Handle transaction endorse requests."""
+    # TODO log the endorsement request
+    logger.info(">>> in handle_endorse_transaction_request_received() ...")
+    endorser_did = await get_endorser_did()
+    transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
+    result = await store_endorser_request(db, transaction)
+    return result
+
+
+async def handle_endorse_transaction_transaction_endorsed(db: AsyncSession, payload: dict):
+    logger.info(">>> in handle_endorse_transaction_transaction_endorsed() ...")
+    endorser_did = await get_endorser_did()
+    transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
+    result = await update_endorsement_status(db, transaction)
+    return {}
+
+
+async def handle_endorse_transaction_transaction_acked(db: AsyncSession, payload: dict):
+    logger.info(">>> in handle_endorse_transaction_transaction_acked() ...")
+    endorser_did = await get_endorser_did()
+    transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
+    result = await update_endorsement_status(db, transaction)
     return {}

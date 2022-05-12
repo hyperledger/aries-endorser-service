@@ -38,10 +38,13 @@ def upgrade():
     sa.Column('tags', postgresql.ARRAY(sa.String()), nullable=True),
     sa.Column('created_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('contact_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('transaction_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('connection_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('endorser_did', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('author_did', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('transaction_type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('state', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('ledger_txn', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.PrimaryKeyConstraint('endorse_request_id')
     )
     # ### end Alembic commands ###

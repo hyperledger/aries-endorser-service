@@ -1,5 +1,6 @@
 from enum import Enum
 import logging
+import traceback
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader, APIKey
@@ -77,6 +78,7 @@ async def process_webhook(
         logger.info(f">>> Called webhook for endorser: {topic} / {state}")
     else:
         logger.info(f">>> Called webhook for endorser: {topic}")
+    logger.info(f">>> payload: {payload}")
 
     # call the handler to process the hook, if present
     result = {}
@@ -84,7 +86,7 @@ async def process_webhook(
         handler = f"handle_{topic}_{state}" if state else f"handle_{topic}"
         handler = handler.replace("-", "_")
         if hasattr(api_services, handler):
-            result = await getattr(api_services, handler)(payload)
+            result = await getattr(api_services, handler)(db, payload)
             logger.info(f">>> {handler} returns = {result}")
         else:
             logger.info(f">>> no webhook handler available for: {handler}")
@@ -93,11 +95,12 @@ async def process_webhook(
         stepper = f"auto_step_{topic}_{state}" if state else f"auto_step_{topic}"
         stepper = stepper.replace("-", "_")
         if hasattr(api_services, stepper):
-            _stepper_result = await getattr(api_services, stepper)(payload, result)
+            _stepper_result = await getattr(api_services, stepper)(db, payload, result)
             logger.info(f">>> {stepper} returns = {_stepper_result}")
         else:
             logger.info(f">>> no webhook stepper available for: {stepper}")
     except Exception as e:
         logger.error(">>> got error:" + str(e))
+        traceback.print_exc()
 
     return result
