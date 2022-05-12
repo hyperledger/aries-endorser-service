@@ -1,11 +1,13 @@
 import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, desc
+from sqlalchemy.sql.functions import func
 
 from api.endpoints.models.endorse import (
     EndorseTransaction,
     txn_to_db_object,
+    db_to_txn_object,
 )
 from api.db.models.endorse_request import EndorseRequest
 from api.db.errors import DoesNotExist
@@ -54,6 +56,61 @@ async def db_update_db_txn_record(
     await db.execute(q)
     await db.commit()
     return await db_fetch_db_txn_record(db, db_txn.transaction_id)
+
+
+async def db_get_txn_records(
+    db: AsyncSession,
+    state: str = None,
+    connection_id: str = None,
+    page_size: int = 10,
+    page_num: int = 1,
+) -> (int, list[EndorseRequest]):
+    limit = page_size
+    skip = (page_num - 1) * limit
+    filters = []
+    if state:
+        filters.append(EndorseRequest.state == state)
+    if connection_id:
+        filters.append(EndorseRequest.connection_id == connection_id)
+
+    # build out a base query with all filters
+    base_q = select(EndorseRequest).filter(*filters)
+
+    # get a count of ALL records matching our base query
+    count_q = select([func.count()]).select_from(base_q)
+    count_q_rec = await db.execute(count_q)
+    total_count = count_q_rec.scalar()
+
+    # add in our paging and ordering to get the result set
+    results_q = (
+        base_q.limit(limit).offset(skip).order_by(desc(EndorseRequest.created_at))
+    )
+
+    results_q_recs = await db.execute(results_q)
+    db_txns = results_q_recs.scalars()
+
+    return (total_count, db_txns)
+
+
+async def get_transactions_list(
+    db: AsyncSession,
+    transaction_state: str = None,
+    connection_id: str = None,
+    page_size: int = 10,
+    page_num: int = 1,
+) -> (int, list[EndorseTransaction]):
+    (count, db_txns) = await db_get_txn_records(
+        db,
+        state=transaction_state,
+        connection_id=connection_id,
+        page_size=page_size,
+        page_num=page_num,
+    )
+    items = []
+    for db_txn in db_txns:
+        item = db_to_txn_object(db_txn, acapy_txn=None)
+        items.append(item)
+    return (count, items)
 
 
 async def store_endorser_request(db: AsyncSession, txn: EndorseTransaction):

@@ -49,6 +49,14 @@ class EndorseTransaction(BaseModel):
     transaction_response: dict
 
 
+class EndorseTransactionList(BaseModel):
+    page_size: int
+    page_num: int
+    count: int
+    total_count: int
+    transactions: list[EndorseTransaction]
+
+
 def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransaction:
     """Convert from a webhook payload to an endorser transaction."""
     logger.debug(f">>> from payload: {payload}")
@@ -101,6 +109,7 @@ def db_to_txn_object(
         transaction_request = json.loads(
             acapy_txn["messages_attach"][0]["data"]["json"]
         )
+        transaction = transaction_request.get("operation")
         if 0 < len(acapy_txn["signature_response"]):
             transaction_response = json.loads(
                 acapy_txn["signature_response"][0]["signature"][
@@ -112,16 +121,17 @@ def db_to_txn_object(
     else:
         transaction_request = {}
         transaction_response = {}
+        transaction = {}
     txn: EndorseTransaction = EndorseTransaction(
-        connection_id=txn_request.connection_id,
-        transaction_id=txn_request.transaction_id,
+        connection_id=str(txn_request.connection_id),
+        transaction_id=str(txn_request.transaction_id),
         tags=txn_request.tags,
-        created_at=txn_request.created_at,
-        state=acapy_txn.get("state"),
+        created_at=str(txn_request.created_at),
+        state=acapy_txn.get("state") if acapy_txn else txn_request.state,
         transaction_request=transaction_request,
         endorser_did=txn_request.endorser_did,
         author_did=txn_request.author_did,
-        transaction=transaction_request.get("operation"),
+        transaction=transaction,
         transaction_type=txn_request.transaction_type,
         transaction_response=transaction_response,
     )
