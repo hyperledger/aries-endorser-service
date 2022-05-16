@@ -42,10 +42,10 @@ def upgrade():
         ),
         sa.Column("author_status", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("endorse_status", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("deleted", sa.Boolean(), nullable=False),
         sa.Column("connection_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
+        sa.Column("connection_protocol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column(
-            "connection_alias", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+            "connection_alias", sqlmodel.sql.sqltypes.AutoString(), nullable=True
         ),
         sa.Column("public_did", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("state", sqlmodel.sql.sqltypes.AutoString(), nullable=False),

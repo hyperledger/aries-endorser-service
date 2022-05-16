@@ -1,10 +1,182 @@
 import logging
 
-from api.core.config import settings
-from api.endpoints.models.connections import ConnectionProtocolType, ConnectionStateType
-from api.endpoints.models.endorse import EndorserRoleType
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update, desc
+from sqlalchemy.sql.functions import func
+
+from api.endpoints.models.endorse import (
+    EndorserRoleType,
+)
+from api.endpoints.models.connections import (
+    ConnectionProtocolType,
+    Connection,
+    connection_to_db_object,
+    db_to_connection_object,
+)
+from api.db.models.contact import Contact
+from api.db.errors import DoesNotExist
 
 import api.acapy_utils as au
 
 
 logger = logging.getLogger(__name__)
+
+
+async def db_add_db_contact_record(db: AsyncSession, db_contact: Contact):
+    logger.debug(f">>> adding contact: {db_contact} ...")
+    db.add(db_contact)
+    await db.commit()
+
+
+async def db_fetch_db_contact_record(
+    db: AsyncSession, connection_id: str
+) -> Contact:
+    logger.info(f">>> db_fetch_db_contact_record() for {connection_id}")
+    q = select(Contact).where(Contact.connection_id == connection_id)
+    result = await db.execute(q)
+    result_rec = result.scalar_one_or_none()
+    if not result_rec:
+        raise DoesNotExist(
+            f"{Contact.__name__}<connection_id:{connection_id}> does not exist"
+        )
+    db_contact: Contact = Contact.from_orm(result_rec)
+    return db_contact
+
+
+async def db_update_db_contact_record(
+    db: AsyncSession, db_contact: Contact
+) -> Contact:
+    payload_dict = db_contact.dict()
+    q = (
+        update(Contact)
+        .where(Contact.contact_id == db_contact.contact_id)
+        .where(Contact.connection_id == db_contact.connection_id)
+        .values(payload_dict)
+    )
+    await db.execute(q)
+    await db.commit()
+    return await db_fetch_db_contact_record(db, db_contact.connection_id)
+
+
+async def db_get_contact_records(
+    db: AsyncSession,
+    state: str = None,
+    page_size: int = 10,
+    page_num: int = 1,
+) -> (int, list[Contact]):
+    limit = page_size
+    skip = (page_num - 1) * limit
+    filters = []
+    if state:
+        filters.append(Contact.state == state)
+
+    # build out a base query with all filters
+    base_q = select(Contact).filter(*filters)
+
+    # get a count of ALL records matching our base query
+    count_q = select([func.count()]).select_from(base_q)
+    count_q_rec = await db.execute(count_q)
+    total_count = count_q_rec.scalar()
+
+    # add in our paging and ordering to get the result set
+    results_q = (
+        base_q.limit(limit).offset(skip).order_by(desc(Contact.created_at))
+    )
+
+    results_q_recs = await db.execute(results_q)
+    db_connections = results_q_recs.scalars()
+
+    return (total_count, db_connections)
+
+
+async def get_connections_list(
+    db: AsyncSession,
+    connection_state: str = None,
+    page_size: int = 10,
+    page_num: int = 1,
+) -> (int, list[Connection]):
+    (count, db_contacts) = await db_get_contact_records(
+        db,
+        state=connection_state,
+        page_size=page_size,
+        page_num=page_num,
+    )
+    items = []
+    for db_contact in db_contacts:
+        item = db_to_connection_object(db_contact, acapy_connection=None)
+        items.append(item)
+    return (count, items)
+
+
+async def get_connection_object(
+    db: AsyncSession,
+    connection_id: str,
+) -> Connection:
+    logger.info(f">>> get_connection_object() for {connection_id}")
+    db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
+    item = db_to_connection_object(db_contact, acapy_connection=None)
+    return item
+
+
+async def store_connection_request(db: AsyncSession, connection: Connection) -> Connection:
+    logger.info(f">>> called store_connection_request with: {connection.connection_id}")
+
+    db_contact: Contact = connection_to_db_object(connection)
+    await db_add_db_contact_record(db, db_contact)
+    logger.info(f">>> stored connection: {db_contact.connection_id}")
+
+    return connection
+
+
+async def accept_connection_request(db: AsyncSession, connection: Connection) -> Connection:
+    logger.info(f">>> called accept_connection_request with: {connection.connection_id}")
+
+    # fetch existing db object
+    db_contact: Contact = await db_fetch_db_contact_record(db, connection.connection_id)
+
+    # accept connection
+    if connection.connection_protocol == ConnectionProtocolType.DIDExchange.value:
+        await au.acapy_POST(
+            f"didexchange/{connection.connection_id}/accept-request",
+        )
+
+    # update local db state
+    db_contact.state = connection.state
+    db_contact = await db_update_db_contact_record(db, db_contact)
+    logger.info(f">>> accepted connection for {connection.connection_id} {db_contact.state}")
+
+    return connection
+
+
+async def update_connection_status(db: AsyncSession, connection: Connection) -> Connection:
+    logger.debug(f">>> called update_connection_status with: {connection.connection_id}")
+
+    # fetch existing db object
+    db_contact: Contact = await db_fetch_db_contact_record(db, connection.connection_id)
+
+    # update local db state
+    db_contact.state = connection.state
+    db_contact = await db_update_db_contact_record(db, db_contact)
+    logger.debug(f">>> updated connection for {connection.connection_id} {db_contact.state}")
+
+    return connection
+
+
+async def set_connection_author_metadata(db: AsyncSession, connection: Connection) -> dict:
+    # confirm if we have already set the role on this connection
+    connection_id = connection.connection_id
+    logger.info(f">>> check for metadata on connection: {connection_id}")
+    conn_meta_data = await au.acapy_GET(f"connections/{connection_id}/metadata")
+    if "transaction-jobs" in conn_meta_data["results"]:
+        if "transaction_my_job" in conn_meta_data["results"]["transaction-jobs"]:
+            return {}
+
+    # set our endorser role
+    params = {"transaction_my_job": EndorserRoleType.Endorser.value}
+    logger.info(
+        f">>> Setting meta-data for connection: {Connection}, with params: {params}"
+    )
+    await au.acapy_POST(
+        f"transactions/{connection_id}/set-endorser-role", params=params
+    )
+    return {}

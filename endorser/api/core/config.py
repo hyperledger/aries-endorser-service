@@ -38,6 +38,12 @@ class GlobalConfig(BaseSettings):
     TIMEZONE: str = "UTC"
 
     # configuration
+    ENDORSER_AUTO_ACCEPT_CONNECTIONS: bool = to_bool(
+        os.environ.get("ENDORSER_AUTO_ACCEPT_CONNECTIONS", "true")
+    )
+    ENDORSER_AUTO_ACCEPT_AUTHORS: bool = to_bool(
+        os.environ.get("ENDORSER_AUTO_ACCEPT_AUTHORS", "true")
+    )
     ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
         os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "true")
     )
