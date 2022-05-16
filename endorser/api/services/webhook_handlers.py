@@ -43,13 +43,15 @@ async def handle_connections_request(db: AsyncSession, payload: dict):
 
 
 async def handle_connections_response(db: AsyncSession, payload: dict):
-    # no-op
-    return {}
+    connection: Connection = webhook_to_connection_object(payload)
+    result = await update_connection_status(db, connection)
+    return result
 
 
 async def handle_connections_active(db: AsyncSession, payload: dict):
-    # no-op
-    return {}
+    connection: Connection = webhook_to_connection_object(payload)
+    result = await update_connection_status(db, connection)
+    return result
 
 
 async def handle_connections_completed(db: AsyncSession, payload: dict):

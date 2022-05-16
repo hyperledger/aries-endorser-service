@@ -38,7 +38,7 @@ async def get_transactions(
 ) -> EndorseTransactionList:
     (total_count, transactions) = await get_transactions_list(
         db,
-        transaction_state=transaction_state.value,
+        transaction_state=transaction_state.value if transaction_state else None,
         connection_id=connection_id,
         page_size=page_size,
         page_num=page_num,

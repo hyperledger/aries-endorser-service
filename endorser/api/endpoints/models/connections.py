@@ -91,6 +91,7 @@ def connection_to_db_object(connection: Connection) -> Contact:
         endorse_status=connection.endorse_status,
         tags=connection.tags,
         connection_id=connection.connection_id,
+        connection_protocol=connection.connection_protocol,
         public_did=connection.their_public_did if connection.their_public_did else "",
         state=connection.state,
         connection_alias=connection.alias if connection.alias else "",
@@ -108,14 +109,14 @@ def db_to_connection_object(
         endorse_status=contact.endorse_status,
         tags=contact.tags,
         connection_id=str(contact.connection_id),
+        connection_protocol=contact.connection_protocol,
         their_public_did=contact.public_did,
         state=contact.state,
         alias=contact.connection_alias,
-        created_at=contact.created_at,
-        updated_at=contact.updated_at,
+        created_at=str(contact.created_at),
+        updated_at=str(contact.updated_at),
     )
     if acapy_connection:
-        connection.connection_protocol = acapy_connection.get("connection_protocol")
         connection.error_msg = acapy_connection.get("error_msg")
         connection.invitation = acapy_connection.get("invitation")
         connection.my_did = acapy_connection.get("my_did")

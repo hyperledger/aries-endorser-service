@@ -36,7 +36,7 @@ async def get_connections(
 ) -> ConnectionList:
     (total_count, connections) = await get_connections_list(
         db,
-        connection_state=connection_state.value,
+        connection_state=connection_state.value if connection_state else None,
         page_size=page_size,
         page_num=page_num,
     )

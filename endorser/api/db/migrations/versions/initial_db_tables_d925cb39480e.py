@@ -43,6 +43,7 @@ def upgrade():
         sa.Column("author_status", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("endorse_status", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("connection_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
+        sa.Column("connection_protocol", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column(
             "connection_alias", sqlmodel.sql.sqltypes.AutoString(), nullable=True
         ),

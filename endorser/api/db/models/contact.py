@@ -46,6 +46,7 @@ class Contact(BaseModel, table=True):
 
     # acapy data ---
     connection_id: uuid.UUID = Field(nullable=False)
+    connection_protocol: str = Field(nullable=False)
     connection_alias: str = Field(nullable=True, default=False)
     public_did: str = Field(nullable=True, default=False)
     state: str = Field(nullable=False)
