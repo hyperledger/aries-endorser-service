@@ -24,7 +24,6 @@ class Contact(BaseModel, table=True):
       author_status: Whether they are an approved author or not
       endorse_status: Whether endorsements are auto-approved or not
       tags: Set by endorser for arbitrary grouping of Contacts
-      deleted: Contacts "soft" delete indicator.
       connection_id: Underlying AcaPy connection id
       connection_alias: Underlying AcaPy connection alias
       public_did: Represents the Contact's agent's Public DID (if any)
@@ -44,12 +43,11 @@ class Contact(BaseModel, table=True):
     author_status: str = Field(nullable=False)
     endorse_status: str = Field(nullable=False)
     tags: List[str] = Field(sa_column=Column(ARRAY(String)))
-    deleted: bool = Field(nullable=False, default=False)
 
     # acapy data ---
     connection_id: uuid.UUID = Field(nullable=False)
-    connection_alias: str = Field(nullable=False)
-    public_did: str = Field(nullable=True)
+    connection_alias: str = Field(nullable=True, default=False)
+    public_did: str = Field(nullable=True, default=False)
     state: str = Field(nullable=False)
     # --- acapy data
 

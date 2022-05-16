@@ -39,7 +39,7 @@ class EndorseTransaction(BaseModel):
     connection_id: str
     transaction_id: str
     tags: list[str]
-    created_at: str
+    created_at: str | None = None
     state: str
     transaction_request: dict
     endorser_did: str
@@ -71,7 +71,6 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
         connection_id=payload.get("connection_id"),
         transaction_id=payload.get("transaction_id"),
         tags=[],
-        created_at=payload.get("created_at"),
         state=payload.get("state"),
         transaction_request=transaction_request,
         endorser_did=endorser_did,
@@ -126,7 +125,6 @@ def db_to_txn_object(
         connection_id=str(txn_request.connection_id),
         transaction_id=str(txn_request.transaction_id),
         tags=txn_request.tags,
-        created_at=str(txn_request.created_at),
         state=acapy_txn.get("state") if acapy_txn else txn_request.state,
         transaction_request=transaction_request,
         endorser_did=txn_request.endorser_did,

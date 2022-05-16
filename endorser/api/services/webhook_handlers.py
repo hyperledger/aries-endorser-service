@@ -3,10 +3,19 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.endpoints.models.connections import ConnectionProtocolType
+from api.endpoints.models.connections import (
+    Connection,
+    webhook_to_connection_object,
+)
 from api.endpoints.models.endorse import (
     EndorserRoleType,
     EndorseTransaction,
     webhook_to_txn_object,
+)
+from api.services.connections import (
+    store_connection_request,
+    update_connection_status,
+    set_connection_author_metadata,
 )
 from api.services.endorse import (
     store_endorser_request,
@@ -25,32 +34,35 @@ async def handle_ping_received(db: AsyncSession, payload: dict) -> dict:
     return {}
 
 
+async def handle_connections_request(db: AsyncSession, payload: dict):
+    """Handle transaction endorse requests."""
+    logger.info(">>> in handle_connections_request() ...")
+    connection: Connection = webhook_to_connection_object(payload)
+    result = await store_connection_request(db, connection)
+    return result
+
+
+async def handle_connections_response(db: AsyncSession, payload: dict):
+    # no-op
+    return {}
+
+
+async def handle_connections_active(db: AsyncSession, payload: dict):
+    # no-op
+    return {}
+
+
 async def handle_connections_completed(db: AsyncSession, payload: dict):
     """Set endorser role on any connections we receive."""
     # TODO check final state for other connections protocols
     if payload["connection_protocol"] == ConnectionProtocolType.DIDExchange.value:
-        # confirm if we have already set the role on this connection
-        connection_id = payload["connection_id"]
-        logger.info(f">>> check for metadata on connection: {connection_id}")
-        conn_meta_data = await au.acapy_GET(f"connections/{connection_id}/metadata")
-        if "transaction-jobs" in conn_meta_data["results"]:
-            if "transaction_my_job" in conn_meta_data["results"]["transaction-jobs"]:
-                return
-
-        # set our endorser role
-        params = {"transaction_my_job": EndorserRoleType.Endorser.value}
-        logger.info(
-            f">>> Setting meta-data for connection: {payload}, with params: {params}"
-        )
-        await au.acapy_POST(
-            f"transactions/{connection_id}/set-endorser-role", params=params
-        )
+        connection: Connection = webhook_to_connection_object(payload)
+        await set_connection_author_metadata(db, connection)
     return {}
 
 
 async def handle_endorse_transaction_request_received(db: AsyncSession, payload: dict):
     """Handle transaction endorse requests."""
-    # TODO log the endorsement request
     logger.info(">>> in handle_endorse_transaction_request_received() ...")
     endorser_did = await get_endorser_did()
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)

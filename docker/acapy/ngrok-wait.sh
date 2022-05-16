@@ -32,8 +32,6 @@ exec aca-py start \
     --webhook-url "${ENDORSER_WEBHOOK_URL}" \
     --genesis-url "${GENESIS_URL}" \
     --endpoint "${ACAPY_ENDPOINT}" \
-    --auto-accept-invites \
-    --auto-accept-requests \
     --auto-respond-messages \
     --auto-ping-connection \
     --monitor-ping \

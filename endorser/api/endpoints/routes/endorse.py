@@ -10,6 +10,7 @@ from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.endorse import (
     EndorseTransaction,
     EndorseTransactionList,
+    EndorseTransactionState,
 )
 from api.services.endorse import (
     get_transactions_list,
@@ -29,16 +30,15 @@ logger = logging.getLogger(__name__)
     response_model=EndorseTransactionList,
 )
 async def get_transactions(
-    transaction_state: Optional[str] = None,
+    transaction_state: Optional[EndorseTransactionState] = None,
     connection_id: Optional[str] = None,
     page_size: int = 10,
     page_num: int = 1,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransactionList:
-    # this should take some query params, sorting and paging params...
     (total_count, transactions) = await get_transactions_list(
         db,
-        transaction_state=transaction_state,
+        transaction_state=transaction_state.value,
         connection_id=connection_id,
         page_size=page_size,
         page_num=page_num,
