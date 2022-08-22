@@ -50,6 +50,7 @@ class Contact(BaseModel, table=True):
     connection_alias: str = Field(nullable=True, default=False)
     public_did: str = Field(nullable=True, default=False)
     state: str = Field(nullable=False)
+    their_label: str = Field(nullable=False)
     # --- acapy data
 
     created_at: datetime = Field(

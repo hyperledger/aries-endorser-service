@@ -49,6 +49,7 @@ def upgrade():
         ),
         sa.Column("public_did", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("state", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("their_label", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.PrimaryKeyConstraint("contact_id"),
     )
     op.create_table(

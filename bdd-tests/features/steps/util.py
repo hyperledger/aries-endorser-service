@@ -15,6 +15,15 @@ ENDORSER_TOKEN_URL = ENDORSER_BASE_URL + "/endorser/token"
 AGENCY_API_KEY = os.getenv("ACAPY_AUTHOR_API_ADMIN_KEY")
 AGENCY_BASE_URL = os.getenv("ACAPY_AUTHOR_BASE_URL")
 
+GET = "GET"
+POST = "POST"
+PUT = "PUT"
+DELETE = "DELETE"
+HEAD = "HEAD"
+OPTIONS = "OPTIONS"
+
+ENDORSER_URL_PREFIX = "/endorser/v1"
+
 
 def endorser_headers(context) -> dict:
     if "endorser_auth_headers" in context.config.userdata:
@@ -86,8 +95,8 @@ def call_agency_service(context, method, url_path, data=None, params=None, json_
 
 
 def author_headers(context, author_name) -> dict:
-    if author_name in context.config.userdata:
-        token = context.config.userdata[author_name]["api_key"]
+    if f"{author_name}_config" in context.config.userdata:
+        token = context.config.userdata[f"{author_name}_config"]["wallet"]["token"]
     else:
         token = "n/a"
     headers = {
@@ -109,39 +118,39 @@ def call_author_service(context, author_name, method, url_path, data=None, param
 def call_http_service(method, url, headers, data=None, params=None, json_data=True):
     method = method.upper()
     data = json.dumps(data) if data else None
-    if method == "POST":
+    if method == POST:
         response = requests.post(
             url=url,
             data=data,
             headers=headers,
             params=params,
         )
-    elif method == "GET":
+    elif method == GET:
         response = requests.get(
             url=url,
             headers=headers,
             params=params,
         )
-    elif method == "PUT":
+    elif method == PUT:
         response = requests.put(
             url=url,
             data=data,
             headers=headers,
             params=params,
         )
-    elif method == "DELETE":
+    elif method == DELETE:
         response = requests.delete(
             url=url,
             headers=headers,
             params=params,
         )
-    elif method == "HEAD":
+    elif method == HEAD:
         response = requests.head(
             url=url,
             headers=headers,
             params=params,
         )
-    elif method == "OPTIONS":
+    elif method == OPTIONS:
         response = requests.options(
             url=url,
             headers=headers,

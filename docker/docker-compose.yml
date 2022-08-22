@@ -88,6 +88,7 @@ services:
       - ENDORSER_AUTO_ENDORSE_REQUESTS=${ENDORSER_AUTO_ENDORSE_REQUESTS}
       - WEB_CONCURRENCY=${WEB_CONCURRENCY}
       - ACAPY_WEBHOOK_URL_API_KEY=${ACAPY_WEBHOOK_URL_API_KEY}
+      - LOG_LEVEL=${API_LOG_LEVEL}
     ports:
       - ${ENDORSER_SERVICE_PORT_EXPOSED}:${ENDORSER_SERVICE_PORT}
     extra_hosts:
@@ -136,7 +137,6 @@ services:
       - ACAPY_AUTHOR_ADMIN_PORT=${ACAPY_AUTHOR_ADMIN_PORT}
       - AUTHOR_AGENT_NAME=${AUTHOR_AGENT_NAME}
       - ACAPY_AUTHOR_ADMIN_CONFIG=${ACAPY_AUTHOR_ADMIN_CONFIG}
-      - ENDORSER_DID=${ENDORSER_DID}
       - LOG_LEVEL=${LOG_LEVEL}
     ports:
       - ${ACAPY_AUTHOR_ADMIN_PORT_EXPOSED}:${ACAPY_AUTHOR_ADMIN_PORT}
@@ -151,7 +151,6 @@ services:
             --outbound-transport http \
             --genesis-url '${GENESIS_URL}' \
             --endpoint '${ACAPY_AUTHOR_ENDPOINT}' \
-            --auto-respond-messages \
             --auto-ping-connection \
             --monitor-ping \
             --multitenant \
@@ -167,6 +166,7 @@ services:
             --label '${AUTHOR_AGENT_NAME}' \
             ${ACAPY_AUTHOR_ADMIN_CONFIG} \
             --endorser-protocol-role author \
+            --endorser-alias '${AUTHOR_ENDORSER_AlIAS}' \
             --log-level '${LOG_LEVEL}'"
       ]
     extra_hosts:
