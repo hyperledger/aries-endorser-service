@@ -145,6 +145,12 @@ async def accept_connection_request(db: AsyncSession, connection: Connection) ->
     db_contact = await db_update_db_contact_record(db, db_contact)
     logger.info(f">>> accepted connection for {connection.connection_id} {db_contact.state}")
 
+    # set author meta-data on this connection
+    resp = await au.acapy_POST(
+        f"transactions/{connection.connection_id}/set-endorser-role",
+        params={"transaction_my_job": "TRANSACTION_ENDORSER"},
+    )
+
     return connection
 
 

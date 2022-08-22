@@ -8,3 +8,8 @@ Feature: Author Endorser Connection
         And "alice" sets endorser meta-data on the connection
         Then "alice" has an "active" connection to the endorser
         And the endorser has an "active" connection with "alice"
+
+    Scenario: Author connects to the Endorser and sets up connection meta-data in one step
+        Given There is a new agent "bob" that is connected to the endorser
+        Then "bob" has an "active" connection to the endorser
+        And the endorser has an "active" connection with "bob"

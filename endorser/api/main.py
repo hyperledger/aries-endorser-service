@@ -16,6 +16,11 @@ from api.endorser_main import get_endorserapp
 logging_file_path = (Path(__file__).parent / "logging.conf").resolve()
 logging.config.fileConfig(logging_file_path, disable_existing_loggers=False)
 
+log_level = os.getenv("LOG_LEVEL", "WARNING")
+log_level = log_level.upper()
+logging.basicConfig(level=log_level)
+logging.root.setLevel(level=log_level)
+
 logger = logging.getLogger(__name__)
 
 os.environ["TZ"] = settings.TIMEZONE

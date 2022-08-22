@@ -72,6 +72,7 @@ def step_impl(context, author: str):
     assert "config" in author_config, pprint.pp(author_config)
 
 
+@given('"{author}" connects to the endorser using their public DID')
 @when('"{author}" connects to the endorser using their public DID')
 def step_impl(context, author: str):
     # request a connection from the author to the endorser via public DID
@@ -93,6 +94,7 @@ def step_impl(context, author: str):
     context.config.userdata[f"{author}_config"]["endorser_connection"] = connection_request
 
 
+@given('the endorser accepts "{author}" connection request')
 @when('the endorser accepts "{author}" connection request')
 def step_impl(context, author: str):
     # find the connection request from "author"
@@ -115,29 +117,124 @@ def step_impl(context, author: str):
             inc += 1
             assert inc < MAX_INC, f"Error too many retries can't find {author_alias}"
 
+    assert author_conn_request, f"Error no connection request from {author_alias}"
+
     # endorser accept the connection request
+    auth_conn_id = author_conn_request["connection_id"]
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/connections/{auth_conn_id}/accept"
+    )
 
-    # endorser set meta-data on the connection
+    # verify meta-data on the connection
+    # TODO not exposed through the endorser api (yet) ...
 
-    pass
 
-
+@given('"{author}" sets endorser meta-data on the connection')
 @when('"{author}" sets endorser meta-data on the connection')
 def step_impl(context, author: str):
+    # find the endorser connection for this author
+    connection_request = context.config.userdata[f"{author}_config"]["endorser_connection"]
+    connection_id = connection_request["connection_id"]
+    endorser_connection = None
+    inc = 0
+    while not endorser_connection:
+        endorser_connection = call_author_service(
+            context,
+            author,
+            GET,
+            f"/connections/{connection_id}"
+        )
+        if not endorser_connection:
+            time.sleep(1)
+            inc += 1
+            assert inc < MAX_INC, pprint.pp(endorser_connection)
+    assert endorser_connection, pprint.pp(endorser_connection)
+
     # author set meta-data on the connection
+    endorser_name = endorser_connection["alias"]
+    endorser_public_did = context.config.userdata["endorser_did"]["did"]
+    time.sleep(2)
+    resp = call_author_service(
+        context,
+        author,
+        POST,
+        f"/transactions/{connection_id}/set-endorser-role",
+        params={"transaction_my_job": "TRANSACTION_AUTHOR"},
+    )
+    resp = call_author_service(
+        context,
+        author,
+        POST,
+        f"/transactions/{connection_id}/set-endorser-info",
+        params={
+            "endorser_did": endorser_public_did,
+            "endorser_name": endorser_name,
+        },
+    )
 
-    pass
 
-
+@given('"{author}" has an "{connection_status}" connection to the endorser')
 @then('"{author}" has an "{connection_status}" connection to the endorser')
 def step_impl(context, author: str, connection_status: str):
     # verify the state of the author connection
+    connection_request = context.config.userdata[f"{author}_config"]["endorser_connection"]
+    connection_id = connection_request["connection_id"]
+    endorser_connection = None
+    inc = 0
+    while not endorser_connection:
+        endorser_connection = call_author_service(
+            context,
+            author,
+            GET,
+            f"/connections/{connection_id}"
+        )
+        if not endorser_connection["state"] == connection_status:
+            time.sleep(1)
+            inc += 1
+            assert inc < MAX_INC, pprint.pp(endorser_connection)
+    assert endorser_connection["state"] == connection_status, pprint.pp(endorser_connection)
 
-    pass
 
-
+@given('the endorser has an "{connection_status}" connection with "{author}"')
 @then('the endorser has an "{connection_status}" connection with "{author}"')
 def step_impl(context, connection_status: str, author: str):
     # verify the state of the endorser connection
+    author_wallet = context.config.userdata[f"{author}_config"]["wallet"]
+    author_alias = author_wallet["settings"]["default_label"]
+    author_conn_request = None
+    inc = 0
+    while not author_conn_request:
+        connection_requests = call_endorser_service(
+            context,
+            GET,
+            f"{ENDORSER_URL_PREFIX}/connections",
+            params={"state": connection_status},
+        )
+        for connection in connection_requests["connections"]:
+            if connection["their_label"] == author_alias:
+                author_conn_request = connection
+        if not author_conn_request:
+            time.sleep(1)
+            inc += 1
+            assert inc < MAX_INC, f"Error too many retries can't find {author_alias}"
 
-    pass
+    assert author_conn_request["state"] == connection_status, pprint.pp(author_conn_request)
+
+
+## COMPOSED ACTIONS
+@given('There is a new agent "{author}" that is connected to the endorser')
+def step_impl(context, author):
+    context.execute_steps(
+        f"""
+            Given the endorser service is running
+            And the endorser has a well-known public DID
+            And there is a new author agent "{author}"
+            And "{author}" connects to the endorser using their public DID
+            And the endorser accepts "{author}" connection request
+            And "{author}" sets endorser meta-data on the connection
+            And "{author}" has an "active" connection to the endorser
+            And the endorser has an "active" connection with "{author}"
+        """
+    )

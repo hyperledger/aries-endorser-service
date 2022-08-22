@@ -9,9 +9,6 @@ from pydantic import BaseSettings, PostgresDsn
 
 logger = logging.getLogger(__name__)
 
-log_level = os.getenv("LOG_LEVEL", "WARN")
-logging.root.setLevel(level = log_level.upper())
-
 
 class EnvironmentEnum(str, Enum):
     PRODUCTION = "production"
