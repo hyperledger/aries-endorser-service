@@ -13,6 +13,7 @@ from util import (
     call_endorser_service,
     call_agency_service,
     call_author_service,
+    set_endorser_config,
     GET,
     POST,
     HEAD,
@@ -32,6 +33,11 @@ def step_impl(context):
     endorser_auth_status = authenticate_endorser_service(context)
     assert endorser_auth_status["Authorization"].startswith("Bearer "), pprint.pp(endorser_auth_status)
 
+    # set "auto" configs to False
+    resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_CONNECTIONS", "false")
+    resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_AUTHORS", "false")
+    resp = set_endorser_config(context, "ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
+
 
 @given('the endorser has a well-known public DID')
 def step_impl(context):
@@ -42,6 +48,12 @@ def step_impl(context):
     # save for future reference
     endorser_did = endorser_config["endorser_config"]["public_did"]
     context.config.userdata["endorser_did"] = endorser_did
+
+
+@given('the endorser has "{config_name}" configured as "{config_value}"')
+def step_impl(context, config_name: str, config_value: str):
+    resp = set_endorser_config(context, config_name, config_value)
+    assert resp["config_value"] == config_value, pprint.pp(resp)
 
 
 @given('there is a new author agent "{author}"')
@@ -112,7 +124,7 @@ def step_impl(context, author: str):
         for connection in connection_requests["connections"]:
             if connection["their_label"] == author_alias:
                 author_conn_request = connection
-        if not author_conn_request:
+        if (not author_conn_request) or (not author_conn_request["state"] == "request"):
             time.sleep(1)
             inc += 1
             assert inc < MAX_INC, f"Error too many retries can't find {author_alias}"
@@ -233,6 +245,23 @@ def step_impl(context, author):
             And there is a new author agent "{author}"
             And "{author}" connects to the endorser using their public DID
             And the endorser accepts "{author}" connection request
+            And "{author}" sets endorser meta-data on the connection
+            And "{author}" has an "active" connection to the endorser
+            And the endorser has an "active" connection with "{author}"
+        """
+    )
+
+
+## COMPOSED ACTIONS
+@given('There is a new agent "{author}" that is connected to the endorser (with auto-accept)')
+def step_impl(context, author):
+    context.execute_steps(
+        f"""
+            Given the endorser service is running
+            And the endorser has "ENDORSER_AUTO_ACCEPT_CONNECTIONS" configured as "true"
+            And the endorser has a well-known public DID
+            And there is a new author agent "{author}"
+            And "{author}" connects to the endorser using their public DID
             And "{author}" sets endorser meta-data on the connection
             And "{author}" has an "active" connection to the endorser
             And the endorser has an "active" connection with "{author}"

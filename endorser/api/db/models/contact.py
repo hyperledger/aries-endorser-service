@@ -1,7 +1,5 @@
 """Contact Database Tables/Models.
-
 Models of the Endorser tables for Contacts (Authors) and related data.
-
 """
 import uuid
 from datetime import datetime
@@ -16,9 +14,7 @@ from api.db.models.base import BaseModel
 
 class Contact(BaseModel, table=True):
     """Contact.
-
     This is the model for the Contact table (postgresql specific dialects in use).
-
     Attributes:
       contact_id: Endorser's Contact ID
       author_status: Whether they are an approved author or not

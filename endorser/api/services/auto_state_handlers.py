@@ -15,6 +15,9 @@ from api.services.connections import (
     update_connection_status,
     accept_connection_request,
 )
+from api.services.configurations import (
+    get_bool_config,
+)
 from api.services.endorse import (
     endorse_transaction,
     get_endorser_did,
@@ -40,7 +43,7 @@ async def auto_step_connections_request(
 ) -> dict:
     # auto-accept connection?
     connection: Connection = webhook_to_connection_object(payload)
-    if settings.ENDORSER_AUTO_ACCEPT_CONNECTIONS:
+    if await get_bool_config(db, "ENDORSER_AUTO_ACCEPT_CONNECTIONS"):
         result = await accept_connection_request(db, connection)
     return {}
 
@@ -75,7 +78,7 @@ async def auto_step_endorse_transaction_request_received(
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
     logger.debug(f">>> transaction = {transaction}")
     result = {}
-    if settings.ENDORSER_AUTO_ENDORSE_REQUESTS or is_auto_endorse_connection(transaction):
+    if await get_bool_config(db, "ENDORSER_AUTO_ENDORSE_REQUESTS") or is_auto_endorse_connection(transaction):
         result = await endorse_transaction(db, transaction)
     return result
 

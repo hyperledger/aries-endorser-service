@@ -163,3 +163,13 @@ def call_http_service(method, url, headers, data=None, params=None, json_data=Tr
         return response.json()
     else:
         return response.text
+
+
+def set_endorser_config(context, config_name, config_value) -> dict:
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/admin/config/{config_name}",
+        params={"config_value": config_value}
+    )
+    return resp
