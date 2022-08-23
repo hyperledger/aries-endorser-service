@@ -1,6 +1,6 @@
 # Aries - Endorser Service
 
-This repository provides an Endoser agent, based on [Aries Cloudagent Pythong (or Aca-Py)](https://github.com/hyperledger/aries-cloudagent-python).
+This repository provides an Endoser agent, based on [Aries Cloudagent Python (or Aca-Py)](https://github.com/hyperledger/aries-cloudagent-python).
 
 Information about Aca-Py's Endorser support can be found [here](https://github.com/hyperledger/aries-cloudagent-python/blob/main/Endorser.md).
 
@@ -18,6 +18,8 @@ cd aries-endorser-service/docker
 ./manage build
 ./manage start --logs
 ```
+
+You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured id and password (endorser-admin/change-me).  (The webhooks api is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
 
 To shut down the service:
 

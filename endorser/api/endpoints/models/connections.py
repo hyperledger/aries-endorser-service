@@ -95,6 +95,7 @@ def connection_to_db_object(connection: Connection) -> Contact:
         public_did=connection.their_public_did if connection.their_public_did else "",
         state=connection.state,
         connection_alias=connection.alias if connection.alias else "",
+        their_label=connection.their_label,
     )
     logger.debug(f">>> to contact: {contact}")
     return contact
@@ -113,6 +114,7 @@ def db_to_connection_object(
         their_public_did=contact.public_did,
         state=contact.state,
         alias=contact.connection_alias,
+        their_label=contact.their_label,
         created_at=str(contact.created_at),
         updated_at=str(contact.updated_at),
     )

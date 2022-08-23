@@ -88,6 +88,7 @@ services:
       - ENDORSER_AUTO_ENDORSE_REQUESTS=${ENDORSER_AUTO_ENDORSE_REQUESTS}
       - WEB_CONCURRENCY=${WEB_CONCURRENCY}
       - ACAPY_WEBHOOK_URL_API_KEY=${ACAPY_WEBHOOK_URL_API_KEY}
+      - LOG_LEVEL=${API_LOG_LEVEL}
     ports:
       - ${ENDORSER_SERVICE_PORT_EXPOSED}:${ENDORSER_SERVICE_PORT}
     extra_hosts:
@@ -109,6 +110,84 @@ services:
       timeout: 5s
       retries: 5
 
+  author-agent:
+    build:
+      context: ./acapy
+      dockerfile: Dockerfile.acapy
+    depends_on:
+      author-agent-db:
+        condition: service_healthy
+    ports:
+      - ${ACAPY_AUTHOR_ADMIN_PORT}:${ACAPY_AUTHOR_ADMIN_PORT}
+      - ${ACAPY_AUTHOR_HTTP_PORT}:${ACAPY_AUTHOR_HTTP_PORT}
+    environment:
+      - AUTHOR_ENV=${AUTHOR_ENV}
+      - NGROK_NAME=ngrok-author-agent
+      - ACAPY_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
+      - LEDGER_URL=${LEDGER_URL}
+      - GENESIS_URL=${GENESIS_URL}
+      - ACAPY_AUTHOR_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
+      - ACAPY_AUTHOR_ENDPOINT=${ACAPY_AUTHOR_ENDPOINT}
+      - ACAPY_AUTHOR_WALLET_DATABASE=${ACAPY_AUTHOR_WALLET_DATABASE}
+      - ACAPY_AUTHOR_WALLET_ENCRYPTION_KEY=${ACAPY_AUTHOR_WALLET_ENCRYPTION_KEY}
+      - ACAPY_AUTHOR_WALLET_STORAGE_TYPE=${ACAPY_AUTHOR_WALLET_STORAGE_TYPE}
+      - AUTHOR_WALLET_POSTGRESQL_HOST=${AUTHOR_WALLET_POSTGRESQL_HOST}
+      - AUTHOR_WALLET_POSTGRESQL_USER=${AUTHOR_WALLET_POSTGRESQL_USER}
+      - AUTHOR_WALLET_POSTGRESQL_PASSWORD=${AUTHOR_WALLET_POSTGRESQL_PASSWORD}
+      - ACAPY_AUTHOR_ADMIN_PORT=${ACAPY_AUTHOR_ADMIN_PORT}
+      - AUTHOR_AGENT_NAME=${AUTHOR_AGENT_NAME}
+      - ACAPY_AUTHOR_ADMIN_CONFIG=${ACAPY_AUTHOR_ADMIN_CONFIG}
+      - LOG_LEVEL=${LOG_LEVEL}
+    ports:
+      - ${ACAPY_AUTHOR_ADMIN_PORT_EXPOSED}:${ACAPY_AUTHOR_ADMIN_PORT}
+      - ${ACAPY_AUTHOR_HTTP_PORT_EXPOSED}:${ACAPY_AUTHOR_HTTP_PORT}
+    entrypoint: /bin/bash
+    command: [
+        "-c",
+        "sleep 5; \
+         aca-py start \
+            --auto-provision \
+            --inbound-transport http '0.0.0.0' ${ACAPY_AUTHOR_HTTP_PORT} \
+            --outbound-transport http \
+            --genesis-url '${GENESIS_URL}' \
+            --endpoint '${ACAPY_AUTHOR_ENDPOINT}' \
+            --auto-ping-connection \
+            --monitor-ping \
+            --multitenant \
+            --multitenant-admin \
+            --jwt-secret '${ACAPY_AUTHOR_JWT_SECRET}' \
+            --wallet-type 'indy' \
+            --wallet-name '${ACAPY_AUTHOR_WALLET_DATABASE}' \
+            --wallet-key '${ACAPY_AUTHOR_WALLET_ENCRYPTION_KEY}' \
+            --wallet-storage-type '${ACAPY_AUTHOR_WALLET_STORAGE_TYPE}' \
+            --wallet-storage-config '{\"url\":\"${AUTHOR_WALLET_POSTGRESQL_HOST}:5432\",\"max_connections\":5,\"wallet_scheme\":\"MultiWalletSingleTable\"}' \
+            --wallet-storage-creds '{\"account\":\"${AUTHOR_WALLET_POSTGRESQL_USER}\",\"password\":\"${AUTHOR_WALLET_POSTGRESQL_PASSWORD}\",\"admin_account\":\"${AUTHOR_WALLET_POSTGRESQL_USER}\",\"admin_password\":\"${AUTHOR_WALLET_POSTGRESQL_PASSWORD}\"}' \
+            --admin '0.0.0.0' ${ACAPY_AUTHOR_ADMIN_PORT} \
+            --label '${AUTHOR_AGENT_NAME}' \
+            ${ACAPY_AUTHOR_ADMIN_CONFIG} \
+            --endorser-protocol-role author \
+            --endorser-alias '${AUTHOR_ENDORSER_AlIAS}' \
+            --log-level '${LOG_LEVEL}'"
+      ]
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  author-agent-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${AUTHOR_WALLET_POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${AUTHOR_WALLET_POSTGRESQL_PASSWORD}
+    ports:
+      - ${AUTHOR_POSTGRESQL_PORT_EXPOSED}:${AUTHOR_POSTGRESQL_PORT}
+    volumes:
+      - author-wallet:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   endorser-wallet:
   endorser-controller:
+  author-wallet:

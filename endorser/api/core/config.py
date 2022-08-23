@@ -6,6 +6,7 @@ from typing import Optional
 
 from pydantic import BaseSettings, PostgresDsn
 
+
 logger = logging.getLogger(__name__)
 
 

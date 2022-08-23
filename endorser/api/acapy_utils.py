@@ -22,27 +22,6 @@ def get_acapy_headers(headers=None, tenant=False) -> dict:
     return headers
 
 
-async def acapy_admin_request_from_request(
-    request: Request,
-) -> dict:
-    body = None
-    try:
-        body = await request.json()
-    except Exception:
-        pass
-    path = request.url.path.replace("/tenant_acapy/", "")
-    resp_text = await acapy_admin_request(
-        request.method,
-        path,
-        data=body,
-        text=False,
-        params=request.query_params,
-        headers=None,
-        tenant=True,
-    )
-    return resp_text
-
-
 async def acapy_admin_request(
     method, path, data=None, text=False, params=None, headers=None, tenant=False
 ) -> ClientResponse:
