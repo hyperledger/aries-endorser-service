@@ -42,9 +42,41 @@ By default, the `./manage` script will use a random seed to generate the Endorse
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 ```
 
-## Testing
+## Testing - Integration tests using Behave
 
-There are currently no unit or integration tests in this repository.  However you can test using [traction](https://github.com/bcgov/traction).
+This repository includes integration tests implemented using Behave.
+
+When you start the endorser service, you can optionally start an additional Author agent which is used for testing:
+
+```bash
+./manage start-bdd --logs
+```
+
+The Author agent (which is configured as multi-tenant) exposes its Admin API on http://localhost:8061/api/doc
+
+Open a second bash shell (cd to the directory where you have checked out this repository) and run:
+
+```bash
+virtuaenv venv
+source ./venv/bin/activate
+pip install -r endorser/requirements.txt
+cd docker
+```
+
+(Note that the above are one-time commands)
+
+To run the BDD tests just run:
+
+```bash
+./manage run-bdd
+
+```
+
+(Note that this runs tests on your local rather than in a docker container, this may get updated at some point ...)
+
+## Testing - Other
+
+You can also test using [traction](https://github.com/bcgov/traction).
 
 Open a bash shell and startup the endorser services:
 
