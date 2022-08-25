@@ -57,7 +57,7 @@ The Author agent (which is configured as multi-tenant) exposes its Admin API on 
 Open a second bash shell (cd to the directory where you have checked out this repository) and run:
 
 ```bash
-virtuaenv venv
+virtualenv venv
 source ./venv/bin/activate
 pip install -r endorser/requirements.txt
 cd docker
