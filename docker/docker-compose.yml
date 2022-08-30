@@ -167,6 +167,9 @@ services:
             ${ACAPY_AUTHOR_ADMIN_CONFIG} \
             --endorser-protocol-role author \
             --endorser-alias '${AUTHOR_ENDORSER_AlIAS}' \
+            --auto-request-endorsement \
+            --auto-write-transactions \
+            --auto-create-revocation-transactions \
             --log-level '${LOG_LEVEL}'"
       ]
     extra_hosts:

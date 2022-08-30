@@ -173,3 +173,36 @@ def set_endorser_config(context, config_name, config_value) -> dict:
         params={"config_value": config_value}
     )
     return resp
+
+
+def get_author_context(context, author: str, context_str: str):
+    if (f"{author}_config" in context.config.userdata and 
+        context_str in context.config.userdata[f"{author}_config"]):
+        return context.config.userdata[f"{author}_config"][context_str]
+    return None
+
+
+def put_author_context(context, author: str, context_str: str, context_val):
+    if not f"{author}_config" in context.config.userdata:
+        context.config.userdata[f"{author}_config"] = {}
+    context.config.userdata[f"{author}_config"][context_str] = context_val
+
+
+def clear_author_context(context, author: str, context_str: str = None):
+    if f"{author}_config" in context.config.userdata:
+        if not context_str:
+            del context.config.userdata[f"{author}_config"]
+        elif context_str in context.config.userdata[f"{author}_config"]:
+            del context.config.userdata[f"{author}_config"][context_str]
+
+
+def get_endorser_context(context, context_str: str):
+    return get_author_context(context, "endorser", context_str)
+
+
+def put_endorser_context(context, context_str: str, context_val):
+    put_author_context(context, "endorser", context_str, context_val)
+
+
+def clear_endorser_context(context, context_str: str = None):
+    clear_author_context(context, "endorser", context_str=context_str)
