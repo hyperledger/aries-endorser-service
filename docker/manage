@@ -59,7 +59,8 @@ exportEnvironment() {
   export NGROK_ENDORSER_AGENT_PORT_EXPOSED=4057
 
   # endorser aca-py agent
-  export LEDGER_URL=${LEDGER_URL-http://test.bcovrin.vonx.io}
+  # export LEDGER_URL=${LEDGER_URL-http://test.bcovrin.vonx.io}
+  export LEDGER_URL=${LEDGER_URL-http://${DOCKERHOST}:9000}
   export GENESIS_URL=${GENESIS_URL-${LEDGER_URL}/genesis}
   export LOG_LEVEL=${LOG_LEVEL-INFO}
   export API_LOG_LEVEL=${API_LOG_LEVEL-DEBUG}

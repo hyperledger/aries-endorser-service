@@ -74,6 +74,12 @@ To run the BDD tests just run:
 
 (Note that this runs tests on your local rather than in a docker container, this may get updated at some point ...)
 
+If you are running your own ledger for the tests, you need to explicitely proved the LEDGER_URL when you run bdd, i.e.:
+
+```bash
+LEDGER_URL=http://localhost:9000 ./manage run-bdd
+```
+
 ## Testing - Other
 
 You can also test using [traction](https://github.com/bcgov/traction).
