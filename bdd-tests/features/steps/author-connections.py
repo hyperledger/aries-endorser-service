@@ -14,6 +14,8 @@ from util import (
     call_agency_service,
     call_author_service,
     set_endorser_config,
+    get_endorsers_author_connection,
+    get_authors_endorser_connection,
     GET,
     POST,
     HEAD,
@@ -198,19 +200,8 @@ def step_impl(context, author: str, connection_status: str):
     # verify the state of the author connection
     connection_request = get_author_context(context, author, "endorser_connection")
     connection_id = connection_request["connection_id"]
-    endorser_connection = None
-    inc = 0
-    while not endorser_connection:
-        endorser_connection = call_author_service(
-            context,
-            author,
-            GET,
-            f"/connections/{connection_id}"
-        )
-        if not endorser_connection["state"] == connection_status:
-            time.sleep(1)
-            inc += 1
-            assert inc < MAX_INC, pprint.pp(endorser_connection)
+    endorser_connection = get_authors_endorser_connection(context, author, connection_id, connection_status)
+
     assert endorser_connection["state"] == connection_status, pprint.pp(endorser_connection)
 
 
@@ -220,22 +211,7 @@ def step_impl(context, connection_status: str, author: str):
     # verify the state of the endorser connection
     author_wallet = get_author_context(context, author, "wallet")
     author_alias = author_wallet["settings"]["default_label"]
-    author_conn_request = None
-    inc = 0
-    while not author_conn_request:
-        connection_requests = call_endorser_service(
-            context,
-            GET,
-            f"{ENDORSER_URL_PREFIX}/connections",
-            params={"state": connection_status},
-        )
-        for connection in connection_requests["connections"]:
-            if connection["their_label"] == author_alias:
-                author_conn_request = connection
-        if not author_conn_request:
-            time.sleep(1)
-            inc += 1
-            assert inc < MAX_INC, f"Error too many retries can't find {author_alias}"
+    author_conn_request = get_endorsers_author_connection(context, author_alias, connection_status)
 
     assert author_conn_request["state"] == connection_status, pprint.pp(author_conn_request)
 

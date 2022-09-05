@@ -15,6 +15,9 @@ from util import (
     call_author_service,
     call_http_service,
     set_endorser_config,
+    get_endorsers_author_connection,
+    get_authors_endorser_connection,
+    get_endorser_transaction_record,
     GET,
     POST,
     HEAD,
@@ -90,16 +93,36 @@ def step_impl(context, author: str):
 
 @when('the endorser receives an endorsement request from "{author}"')
 def step_impl(context, author: str):
-    # GET /v1/endorse/transactions with state request_received
+    # get transaction from context
+    txn_request = get_author_context(context, author, "current_transaction")
+    tnx_id = txn_request["transaction_id"]
+
+    # get endorser's author connection
+    author_wallet = get_author_context(context, author, "wallet")
+    author_alias = author_wallet["settings"]["default_label"]
+    author_conn = get_endorsers_author_connection(context, author_alias)
+    connection_id = author_conn["connection_id"]
+
+    endorser_txn = get_endorser_transaction_record(context, connection_id, "request_received")
+
     # confirm this is from the current "active" author connection
-    # put it into context
-    pass
+    assert author_conn["connection_id"] == endorser_txn["connection_id"], pprint.pp(author_conn)
+    assert "request_received" == endorser_txn["state"], pprint.pp(author_conn)
+    put_endorser_context(context, f"{author}/current_transaction", endorser_txn)
 
 
 @when('the endorser endorses the transaction from "{author}"')
 def step_impl(context, author: str):
     # get transaction from context
+    txn_request = get_endorser_context(context, f"{author}/current_transaction")
+    tnx_id = txn_request["transaction_id"]
+
     # POST /v1/endorse/transactions/<txn id>/endorse
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/endorse/transactions/{tnx_id}/endorse",
+    )
     pass
 
 
