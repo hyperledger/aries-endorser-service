@@ -18,6 +18,7 @@ from util import (
     get_endorsers_author_connection,
     get_authors_endorser_connection,
     get_endorser_transaction_record,
+    get_author_transaction_record,
     GET,
     POST,
     HEAD,
@@ -64,8 +65,8 @@ def step_impl(context, author: str):
             "Content-Type": "application/json",
         },
         data={
-            "did":author_wallet_did["did"],
-            "verkey":author_wallet_did["verkey"],
+            "did": author_wallet_did["did"],
+            "verkey": author_wallet_did["verkey"],
             "role": None,
         },
     )
@@ -129,20 +130,44 @@ def step_impl(context, author: str):
 @when('"{author}" receives the endorsed transaction from the endorser')
 def step_impl(context, author: str):
     # get transaction info from context
-    # check state - wait for it to be written (we have auto write)
-    pass
+    txn_request = get_author_context(context, author, "current_transaction")
+    tnx_id = txn_request["transaction_id"]
 
-
-@when('"{author}" writes the endorsed transaction to the ledger')
-def step_impl(context, author: str):
-    # check no public did GET /wallet/did/public
-    # get did from context
-    # get transaction info from context
     # check state - wait for it to be written (we have auto write)
-    pass
+    author_txn = get_author_transaction_record(context, author, tnx_id, "transaction_acked")
+    assert author_txn, pprint.pp(author_txn)
 
 
 @then('"{author}" has a public DID')
 def step_impl(context, author: str):
     # GET /wallet/did/public
-    pass
+    # get did from context
+    author_wallet_did = get_author_context(context, author, "wallet_did")
+    resp = call_author_service(
+        context,
+        author,
+        GET,
+        f"/wallet/did/public",
+    )
+    public_did = resp["result"]
+    assert public_did["did"], pprint.pp(public_did)
+    assert public_did["did"] == author_wallet_did["did"], pprint.pp(public_did)
+
+
+## COMPOSED ACTIONS
+@given('There is a new agent "{author}" that is connected to the endorser and has a public DID')
+def step_impl(context, author):
+    context.execute_steps(
+        f"""
+            Given There is a new agent "{author}" that is connected to the endorser
+            And "{author}" has an "active" connection to the endorser
+            And the endorser has an "active" connection with "{author}"
+            When "{author}" creates a new local DID in their wallet
+            And "{author}" initiates an out of band process to register their DID
+            And "{author}" sets the new DID to be their wallet public DID
+            And the endorser receives an endorsement request from "{author}"
+            And the endorser endorses the transaction from "{author}"
+            And "{author}" receives the endorsed transaction from the endorser
+            Then "{author}" has a public DID
+        """
+    )

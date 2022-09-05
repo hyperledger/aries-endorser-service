@@ -245,8 +245,29 @@ def get_endorser_transaction_record(context, connection_id: str, txn_state: str)
             assert inc <= MAX_INC, f"Error too many retries can't find {connection_id} with {txn_state}"
             time.sleep(SLEEP_INC)
 
-    assert endorser_txn, pprint.pp(resp)
+    assert endorser_txn, pprint.pp(endorser_txn)
     return endorser_txn
+
+
+def get_author_transaction_record(context, author: str, transaction_id: str, txn_state: str = None):
+    author_txn = None
+    inc = 0
+    while not author_txn:
+        resp = call_author_service(
+            context,
+            author,
+            GET,
+            f"/transactions/{transaction_id}",
+        )
+        if (not resp) or (txn_state and not resp["state"] == txn_state):
+            inc += 1
+            assert inc <= MAX_INC, f"Error too many retries can't find {transaction_id} with {txn_state}"
+            time.sleep(SLEEP_INC)
+        else:
+            author_txn = resp
+
+    assert author_txn, pprint.pp(author_txn)
+    return author_txn
 
 
 def get_author_context(context, author: str, context_str: str):
