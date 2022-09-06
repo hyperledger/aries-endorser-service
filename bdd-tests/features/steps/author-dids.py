@@ -171,3 +171,20 @@ def step_impl(context, author):
             Then "{author}" has a public DID
         """
     )
+
+
+@given('There is a new agent "{author}" that is connected to the endorser and has a public DID (with auto accept)')
+def step_impl(context, author):
+    context.execute_steps(
+        f"""
+            Given There is a new agent "{author}" that is connected to the endorser
+            And "{author}" has an "active" connection to the endorser
+            And the endorser has an "active" connection with "{author}"
+            And the endorser has "{author}" connection configuration "Active" and "AutoEndorse"
+            When "{author}" creates a new local DID in their wallet
+            And "{author}" initiates an out of band process to register their DID
+            And "{author}" sets the new DID to be their wallet public DID
+            And "{author}" receives the endorsed transaction from the endorser
+            Then "{author}" has a public DID
+        """
+    )

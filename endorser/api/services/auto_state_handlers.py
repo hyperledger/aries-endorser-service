@@ -34,12 +34,12 @@ logger = logging.getLogger(__name__)
 
 def is_auto_endorse_connection(connection: Connection) -> bool:
     # check if connection or author_did is setup for auto-endorse
-    return (connection.author_status == AuthorStatusType.active and connection.endorser_status == EndorseStatusType.auto_endorse)
+    return (connection.author_status.name is AuthorStatusType.active.name and connection.endorse_status.name is EndorseStatusType.auto_endorse.name)
 
 
 def is_auto_reject_connection(connection: Connection) -> bool:
     # check if connection or author_did is setup for auto-endorse
-    return (connection.author_status == AuthorStatusType.active and connection.endorser_status == EndorseStatusType.auto_reject)
+    return (connection.author_status.name is AuthorStatusType.active.name and connection.endorse_status.name is EndorseStatusType.auto_reject.name)
 
 
 async def auto_step_ping_received(

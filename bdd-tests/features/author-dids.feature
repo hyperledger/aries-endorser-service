@@ -32,3 +32,11 @@ Feature: Author Creates a new Public DID via Endorser
         Then "bob" has an "active" connection to the endorser
         And the endorser has an "active" connection with "bob"
         And "bob" has a public DID
+
+
+    @DIDs-004
+    Scenario: Author connects to the Endorser and then creates a new Public DID (with auto-accept) in one step
+        Given There is a new agent "bob" that is connected to the endorser and has a public DID (with auto accept)
+        Then "bob" has an "active" connection to the endorser
+        And the endorser has an "active" connection with "bob"
+        And "bob" has a public DID
