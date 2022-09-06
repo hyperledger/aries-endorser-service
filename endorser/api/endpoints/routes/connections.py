@@ -12,6 +12,8 @@ from api.endpoints.models.connections import (
     ConnectionProtocolType,
     ConnectionStateType,
     ConnectionRoleType,
+    AuthorStatusType,
+    EndorseStatusType,
     Connection,
     ConnectionList,
 )
@@ -19,6 +21,8 @@ from api.services.connections import (
     get_connections_list,
     get_connection_object,
     accept_connection_request,
+    update_connection_info,
+    update_connection_config,
 )
 
 
@@ -62,20 +66,22 @@ async def get_connection(
 @router.put("/{connection_id}", response_model=Connection)
 async def update_connection(
     connection_id: str,
-    meta_data: dict,
+    alias: str,
+    public_did: str | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = None
+    connection = await update_connection_info(db, connection_id, alias, public_did)
     return connection
 
 
-@router.post("/{connection_id}/configure", response_model=Connection)
+@router.put("/{connection_id}/configure", response_model=Connection)
 async def configure_connection(
     connection_id: str,
-    configuration: dict,
+    author_status: AuthorStatusType,
+    endorse_status: EndorseStatusType,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = None
+    connection = await update_connection_config(db, connection_id, author_status, endorse_status)
     return connection
 
 
@@ -95,14 +101,5 @@ async def reject_connection(
     connection_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = None
-    return connection
-
-
-@router.post("/{connection_id}/disable", response_model=Connection)
-async def disable_connection(
-    connection_id: str,
-    db: AsyncSession = Depends(get_db),
-) -> Connection:
-    connection = None
-    return connection
+    # TODO this should send a ProblemReport back to the requester
+    raise NotImplementedError

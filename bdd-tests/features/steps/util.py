@@ -178,6 +178,42 @@ def set_endorser_config(context, config_name, config_value) -> dict:
     return resp
 
 
+def set_endorser_author_connection_config(context, author: str, author_status: str, endorse_status: str):
+    author_wallet = get_author_context(context, author, "wallet")
+    author_alias = author_wallet["settings"]["default_label"]
+    connection = get_endorsers_author_connection(context, author_alias)
+    connection_id = connection["connection_id"]
+    params = {
+        "author_status": author_status,
+        "endorse_status": endorse_status,
+    }
+    connection = call_endorser_service(
+        context,
+        PUT,
+        f"{ENDORSER_URL_PREFIX}/connections/{connection_id}/configure",
+        params=params,
+    )
+    return connection
+
+
+def set_endorser_author_connection_info(context, author: str, author_alias: str, public_did: str):
+    author_wallet = get_author_context(context, author, "wallet")
+    author_alias = author_wallet["settings"]["default_label"]
+    connection = get_endorsers_author_connection(context, author_alias)
+    connection_id = connection["connection_id"]
+    params = {
+        "alias": author_alias,
+        "public_did": public_did,
+    }
+    connection = call_endorser_service(
+        context,
+        PUT,
+        f"{ENDORSER_URL_PREFIX}/connections/{connection_id}",
+        params=params,
+    )
+    return connection
+
+
 def get_authors_endorser_connection(context, author: str, connection_id: str, connection_status: str=None):
     endorser_connection = None
     inc = 0
@@ -201,7 +237,9 @@ def get_authors_endorser_connection(context, author: str, connection_id: str, co
 
 def get_endorsers_author_connection(context, author_alias: str, connection_status: str=None):
     author_conn_request = None
-    params = {"state": connection_status} if connection_status else None
+    params = {"page_size": 1000}
+    if connection_status:
+        params["state"] = connection_status
     inc = 0
     while not author_conn_request:
         connection_requests = call_endorser_service(

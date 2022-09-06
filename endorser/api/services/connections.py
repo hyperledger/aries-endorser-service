@@ -9,6 +9,8 @@ from api.endpoints.models.endorse import (
 )
 from api.endpoints.models.connections import (
     ConnectionProtocolType,
+    AuthorStatusType,
+    EndorseStatusType,
     Connection,
     connection_to_db_object,
     db_to_connection_object,
@@ -186,3 +188,24 @@ async def set_connection_author_metadata(db: AsyncSession, connection: Connectio
         f"transactions/{connection_id}/set-endorser-role", params=params
     )
     return {}
+
+
+async def update_connection_info(db: AsyncSession, connection_id: str, alias: str, public_did: str = None):
+    # fetch existing db object
+    db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
+    db_contact.connection_alias = alias
+    if public_did:
+        db_contact.public_did = public_did
+    db_contact = await db_update_db_contact_record(db, db_contact)
+    connection = db_to_connection_object(db_contact, acapy_connection=None)
+    return connection
+
+
+async def update_connection_config(db: AsyncSession, connection_id: str, author_status: AuthorStatusType, endorse_status: EndorseStatusType):
+    # fetch existing db object
+    db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
+    db_contact.author_status = author_status.value
+    db_contact.endorse_status = endorse_status.value
+    db_contact = await db_update_db_contact_record(db, db_contact)
+    connection = db_to_connection_object(db_contact, acapy_connection=None)
+    return connection

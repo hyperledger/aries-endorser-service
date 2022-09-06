@@ -14,6 +14,8 @@ from util import (
     call_agency_service,
     call_author_service,
     set_endorser_config,
+    set_endorser_author_connection_config,
+    set_endorser_author_connection_info,
     get_endorsers_author_connection,
     get_authors_endorser_connection,
     GET,
@@ -62,6 +64,20 @@ def step_impl(context):
 def step_impl(context, config_name: str, config_value: str):
     resp = set_endorser_config(context, config_name, config_value)
     assert resp["config_value"] == config_value, pprint.pp(resp)
+
+
+@given('the endorser has "{author}" connection info "{author_alias}" and "{public_did}"')
+def step_impl(context, author: str, author_alias: str, public_did: str):
+    resp = set_endorser_author_connection_info(context, author, author_alias, public_did)
+    assert resp["author_status"] == author_status, pprint.pp(resp)
+    assert resp["public_did"] == public_did, pprint.pp(resp)
+
+
+@given('the endorser has "{author}" connection configuration "{author_status}" and "{endorse_status}"')
+def step_impl(context, author: str, author_status: str, endorse_status: str):
+    resp = set_endorser_author_connection_config(context, author, author_status, endorse_status)
+    assert resp["author_status"] == author_status, pprint.pp(resp)
+    assert resp["endorse_status"] == endorse_status, pprint.pp(resp)
 
 
 @given('there is a new author agent "{author}"')
