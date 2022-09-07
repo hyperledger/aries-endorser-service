@@ -62,6 +62,7 @@ exportEnvironment() {
   # export LEDGER_URL=${LEDGER_URL-http://test.bcovrin.vonx.io}
   export LEDGER_URL=${LEDGER_URL-http://${DOCKERHOST}:9000}
   export GENESIS_URL=${GENESIS_URL-${LEDGER_URL}/genesis}
+  export TAILS_SERVER_URL=${TAILS_SERVER_URL-http://${DOCKERHOST}:6543}
   export LOG_LEVEL=${LOG_LEVEL-INFO}
   export API_LOG_LEVEL=${API_LOG_LEVEL-DEBUG}
   if [ -z "${ENDORSER_SEED}" ]; then

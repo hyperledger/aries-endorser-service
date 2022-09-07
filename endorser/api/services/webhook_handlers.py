@@ -82,6 +82,16 @@ async def handle_endorse_transaction_transaction_endorsed(
     return result
 
 
+async def handle_endorse_transaction_transaction_refused(
+    db: AsyncSession, payload: dict
+):
+    logger.info(">>> in handle_endorse_transaction_transaction_refused() ...")
+    endorser_did = await get_endorser_did()
+    transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
+    result = await update_endorsement_status(db, transaction)
+    return result
+
+
 async def handle_endorse_transaction_transaction_acked(db: AsyncSession, payload: dict):
     logger.info(">>> in handle_endorse_transaction_transaction_acked() ...")
     endorser_did = await get_endorser_did()

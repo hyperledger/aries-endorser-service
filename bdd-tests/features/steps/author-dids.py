@@ -127,6 +127,21 @@ def step_impl(context, author: str):
     pass
 
 
+@when('the endorser rejects the transaction from "{author}"')
+def step_impl(context, author: str):
+    # get transaction from context
+    txn_request = get_endorser_context(context, f"{author}/current_transaction")
+    tnx_id = txn_request["transaction_id"]
+
+    # POST /v1/endorse/transactions/<txn id>/reject
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/endorse/transactions/{tnx_id}/reject",
+    )
+    pass
+
+
 @when('"{author}" receives the endorsed transaction from the endorser')
 def step_impl(context, author: str):
     # get transaction info from context
@@ -135,6 +150,17 @@ def step_impl(context, author: str):
 
     # check state - wait for it to be written (we have auto write)
     author_txn = get_author_transaction_record(context, author, tnx_id, "transaction_acked")
+    assert author_txn, pprint.pp(author_txn)
+
+
+@when('"{author}" receives the rejected transaction from the endorser')
+def step_impl(context, author: str):
+    # get transaction info from context
+    txn_request = get_author_context(context, author, "current_transaction")
+    tnx_id = txn_request["transaction_id"]
+
+    # check state - wait for it to be written (we have auto write)
+    author_txn = get_author_transaction_record(context, author, tnx_id, "transaction_refused")
     assert author_txn, pprint.pp(author_txn)
 
 
@@ -152,6 +178,17 @@ def step_impl(context, author: str):
     public_did = resp["result"]
     assert public_did["did"], pprint.pp(public_did)
     assert public_did["did"] == author_wallet_did["did"], pprint.pp(public_did)
+
+
+@then('"{author}" has a transaction with status "{txn_state}"')
+def step_impl(context, author: str, txn_state: str):
+    # get transaction info from context
+    txn_request = get_author_context(context, author, "current_transaction")
+    tnx_id = txn_request["transaction_id"]
+
+    # check state - wait for it to be written (we have auto write)
+    author_txn = get_author_transaction_record(context, author, tnx_id, txn_state)
+    assert author_txn, pprint.pp(author_txn)
 
 
 ## COMPOSED ACTIONS

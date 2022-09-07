@@ -31,6 +31,9 @@ exec aca-py start \
     --outbound-transport http \
     --webhook-url "${ENDORSER_WEBHOOK_URL}" \
     --genesis-url "${GENESIS_URL}" \
+    --tails-server-base-url "${TAILS_SERVER_URL}" \
+    --notify-revocation \
+    --monitor-revocation-notification \
     --endpoint "${ACAPY_ENDPOINT}" \
     --auto-ping-connection \
     --monitor-ping \

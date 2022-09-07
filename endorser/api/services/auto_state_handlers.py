@@ -103,6 +103,13 @@ async def auto_step_endorse_transaction_transaction_endorsed(
     return {}
 
 
+async def auto_step_endorse_transaction_transaction_refused(
+    db: AsyncSession, payload: dict, handler_result: dict
+) -> dict:
+    logger.info(">>> in auto_step_endorse_transaction_transaction_refused() ...")
+    return {}
+
+
 async def auto_step_endorse_transaction_transaction_acked(
     db: AsyncSession, payload: dict, handler_result: dict
 ) -> dict:

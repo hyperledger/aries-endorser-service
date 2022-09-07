@@ -25,6 +25,7 @@ services:
       - ENDORSER_WEBHOOK_URL=${ENDORSER_WEBHOOK_URL}
       - LEDGER_URL=${LEDGER_URL}
       - GENESIS_URL=${GENESIS_URL}
+      - TAILS_SERVER_URL=${TAILS_SERVER_URL}
       - ACAPY_ENDPOINT=${ACAPY_ENDPOINT}
       - ACAPY_WALLET_DATABASE=${ACAPY_WALLET_DATABASE}
       - ACAPY_WALLET_ENCRYPTION_KEY=${ACAPY_WALLET_ENCRYPTION_KEY}
@@ -126,6 +127,7 @@ services:
       - ACAPY_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
       - LEDGER_URL=${LEDGER_URL}
       - GENESIS_URL=${GENESIS_URL}
+      - TAILS_SERVER_URL=${TAILS_SERVER_URL}
       - ACAPY_AUTHOR_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
       - ACAPY_AUTHOR_ENDPOINT=${ACAPY_AUTHOR_ENDPOINT}
       - ACAPY_AUTHOR_WALLET_DATABASE=${ACAPY_AUTHOR_WALLET_DATABASE}
@@ -150,6 +152,9 @@ services:
             --inbound-transport http '0.0.0.0' ${ACAPY_AUTHOR_HTTP_PORT} \
             --outbound-transport http \
             --genesis-url '${GENESIS_URL}' \
+            --tails-server-base-url '${TAILS_SERVER_URL}' \
+            --notify-revocation \
+            --monitor-revocation-notification \
             --endpoint '${ACAPY_AUTHOR_ENDPOINT}' \
             --auto-ping-connection \
             --monitor-ping \
