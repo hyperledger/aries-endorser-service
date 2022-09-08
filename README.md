@@ -48,7 +48,7 @@ To shut down the service:
 
 By default, the Endorser runs with a local ledger and tails server.
 
-To run against the BCovrin Test ledger (http://test.bcovrin.vonx.io/) and tails server (), start using the `LEDGER_URL` and `TAILS_SERVER_URL` parameters:
+To run against the BCovrin Test ledger (http://test.bcovrin.vonx.io/) and tails server (https://tails-test.vonx.io), start the endorser using the `LEDGER_URL` and `TAILS_SERVER_URL` parameters:
 
 ```bash
 LEDGER_URL=http://test.bcovrin.vonx.io TAILS_SERVER_URL=https://tails-test.vonx.io ./manage start --logs
@@ -78,9 +78,9 @@ There are 3 "global" configuration options that can be set using environment var
 
 These parameters can be set using the `POST /endorser/v1/admin/config/<env var name>?config_value=<value>` admin API, and the setting is stored in the database (the database setting will override the environment variable).  You can see the configured values using the `GET /endorser/v1/admin/config/<env var name>` endpoint (and it will let you know if the configuration is using a value from the database or environment variable).
 
-The are 2 endpoints to set connection-specific (i.e. author-specific) configuration.
+There are 2 endpoints to set connection-specific (i.e. author-specific) configuration.
 
-`PUT /endorser/v1/connections/<connection_id>` - sets the alias and (optionally) public DID for the author (not currently used anywhere by the Endorser, but may be useful)
+`PUT /endorser/v1/connections/<connection_id>` - sets the alias and (optionally) public DID for the author (not currently used anywhere by the Endorser, but may be useful).
 
 `PUT /endorser/v1/connections/<connection_id>/configure` - sets processing options for the connection:
 
