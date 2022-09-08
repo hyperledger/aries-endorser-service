@@ -33,11 +33,22 @@ class ConnectionRoleType(str, Enum):
     responder = "responder"
 
 
+class AuthorStatusType(str, Enum):
+    active = "Active"
+    suspended = "Suspended"
+
+
+class EndorseStatusType(str, Enum):
+    auto_endorse = "AutoEndorse"
+    manual_endorse = "ManualEndorse"
+    auto_reject = "AutoReject"
+
+
 class Connection(BaseModel):
     connection_id: str
     alias: str | None = None
-    author_status: str
-    endorse_status: str
+    author_status: AuthorStatusType
+    endorse_status: EndorseStatusType
     tags: list[str]
     created_at: str | None = None
     updated_at: str | None = None
@@ -66,8 +77,8 @@ def webhook_to_connection_object(payload: dict) -> Connection:
     connection: Connection = Connection(
         connection_id=payload.get("connection_id"),
         alias=payload.get("alias"),
-        author_status="TBD",
-        endorse_status="TBD",
+        author_status=AuthorStatusType.active.value,
+        endorse_status=EndorseStatusType.manual_endorse.value,
         tags=[],
         state=payload.get("state"),
         connection_protocol=payload.get("connection_protocol"),
@@ -87,8 +98,8 @@ def connection_to_db_object(connection: Connection) -> Contact:
     """Convert from model object to database model object."""
     logger.debug(f">>> from connection: {connection}")
     contact: Contact = Contact(
-        author_status=connection.author_status,
-        endorse_status=connection.endorse_status,
+        author_status=connection.author_status.value,
+        endorse_status=connection.endorse_status.value,
         tags=connection.tags,
         connection_id=connection.connection_id,
         connection_protocol=connection.connection_protocol,
@@ -106,8 +117,8 @@ def db_to_connection_object(
 ) -> Connection:
     """Convert from database and acapy objects to model object."""
     connection: Connection = Connection(
-        author_status=contact.author_status,
-        endorse_status=contact.endorse_status,
+        author_status=AuthorStatusType(contact.author_status),
+        endorse_status=EndorseStatusType(contact.endorse_status),
         tags=contact.tags,
         connection_id=str(contact.connection_id),
         connection_protocol=contact.connection_protocol,
