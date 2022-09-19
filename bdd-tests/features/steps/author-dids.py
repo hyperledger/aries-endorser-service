@@ -74,6 +74,30 @@ def step_impl(context, author: str):
     assert "did" in resp, pprint.pp(resp)
 
 
+@when('"{author}" registers their new DID on the ledger')
+def step_impl(context, author: str):
+    # get did from context
+    author_wallet = get_author_context(context, author, "wallet")
+    author_wallet_did = get_author_context(context, author, "wallet_did")
+    # POST /ledger/register-nym
+    params = {
+        "did": author_wallet_did["did"],
+        "verkey": author_wallet_did["verkey"],
+        "alias": author_wallet["settings"]["wallet.name"],
+    }
+    resp = call_author_service(
+        context,
+        author,
+        POST,
+        "/ledger/register-nym",
+        params=params,
+    )
+    assert "txn" in resp, pprint.pp(resp)
+    assert "transaction_id" in resp["txn"], pprint.pp(resp)
+    # save into context
+    put_author_context(context, author, "current_transaction", resp["txn"])
+
+
 @when('"{author}" sets the new DID to be their wallet public DID')
 def step_impl(context, author: str):
     # get did from context
@@ -83,7 +107,7 @@ def step_impl(context, author: str):
         context,
         author,
         POST,
-        f"/wallet/did/public",
+        "/wallet/did/public",
         params={"did": author_wallet_did["did"]},
     )
     assert "txn" in resp, pprint.pp(resp)

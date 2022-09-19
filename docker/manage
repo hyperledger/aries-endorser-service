@@ -46,7 +46,7 @@ exportEnvironment() {
   done
 
   # global
-  export ENDORSER_ENV=local
+  export ENDORSER_ENV=${ENDORSER_ENV:-local}
   export WEB_CONCURRENCY=2
 
   # endorser configuration

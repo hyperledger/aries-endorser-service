@@ -44,10 +44,10 @@ class EndorseRequest(BaseModel, table=True):
     tags: List[str] = Field(sa_column=Column(ARRAY(String)))
     connection_id: uuid.UUID = Field(nullable=False)
     endorser_did: str = Field(nullable=False)
-    author_did: str = Field(nullable=False)
-    transaction_type: str = Field(nullable=False)
-    state: str = Field(nullable=False)
-    ledger_txn: str = Field(nullable=True, default=False)
+    author_did: str = Field(nullable=True, default=None)
+    transaction_type: str = Field(nullable=True, default=None)
+    state: str = Field(nullable=True, default=None)
+    ledger_txn: str = Field(nullable=True, default=None)
     # --- acapy data
 
     created_at: datetime = Field(

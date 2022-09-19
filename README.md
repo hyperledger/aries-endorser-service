@@ -68,6 +68,20 @@ By default, the `./manage` script will use a random seed to generate the Endorse
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 ```
 
+
+## Exposing the Endorser Agent using Ngrok
+
+By default the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok url when publishign their endpoint.
+
+If you don't want to do this (or if ngrok isnt workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitely.
+
+For example to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
+
+```bash
+ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage start-bdd --logs
+```
+
+
 ## Endorser Configuration
 
 There are 3 "global" configuration options that can be set using environment variables, or can be set using the Endorser Admin API, the environment variables are:

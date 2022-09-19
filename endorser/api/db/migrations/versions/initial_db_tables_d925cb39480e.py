@@ -76,11 +76,11 @@ def upgrade():
         sa.Column("transaction_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
         sa.Column("connection_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
         sa.Column("endorser_did", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("author_did", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("author_did", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column(
-            "transaction_type", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+            "transaction_type", sqlmodel.sql.sqltypes.AutoString(), nullable=True
         ),
-        sa.Column("state", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("state", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("ledger_txn", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.PrimaryKeyConstraint("endorse_request_id"),
     )
