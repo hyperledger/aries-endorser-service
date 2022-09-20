@@ -18,14 +18,14 @@ To run everything locally, open 2 bash shells and run the following:
 git clone https://github.com/bcgov/von-network.git
 cd von-network
 ./manage build
-./manage run --logs
+./manage start --logs
 ```
 
 ```bash
 git clone https://github.com/bcgov/indy-tails-server.git
 cd indy-tails-server/docker
 ./manage build
-./manage run --logs
+./manage start --logs
 ```
 
 Then, to get the endorser service up and running quicky, open a bash shell and run the following:
@@ -122,6 +122,7 @@ Open a second bash shell (cd to the directory where you have checked out this re
 virtualenv venv
 source ./venv/bin/activate
 pip install -r endorser/requirements.txt
+pip install -r bdd-tests/requirements.txt
 cd docker
 ```
 
