@@ -18,14 +18,14 @@ To run everything locally, open 2 bash shells and run the following:
 git clone https://github.com/bcgov/von-network.git
 cd von-network
 ./manage build
-./manage run --logs
+./manage start --logs
 ```
 
 ```bash
 git clone https://github.com/bcgov/indy-tails-server.git
 cd indy-tails-server/docker
 ./manage build
-./manage run --logs
+./manage start --logs
 ```
 
 Then, to get the endorser service up and running quicky, open a bash shell and run the following:
@@ -68,6 +68,20 @@ By default, the `./manage` script will use a random seed to generate the Endorse
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 ```
 
+
+## Exposing the Endorser Agent using Ngrok
+
+By default the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok url when publishign their endpoint.
+
+If you don't want to do this (or if ngrok isnt workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitely.
+
+For example to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
+
+```bash
+ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage start-bdd --logs
+```
+
+
 ## Endorser Configuration
 
 There are 3 "global" configuration options that can be set using environment variables, or can be set using the Endorser Admin API, the environment variables are:
@@ -108,6 +122,7 @@ Open a second bash shell (cd to the directory where you have checked out this re
 virtualenv venv
 source ./venv/bin/activate
 pip install -r endorser/requirements.txt
+pip install -r bdd-tests/requirements.txt
 cd docker
 ```
 

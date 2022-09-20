@@ -43,10 +43,10 @@ class EndorseTransaction(BaseModel):
     state: str
     transaction_request: dict
     endorser_did: str
-    author_did: str
-    transaction: dict
-    transaction_type: str
-    transaction_response: dict
+    author_did: str | None = None
+    transaction: dict | None = None
+    transaction_type: str | None = None
+    transaction_response: dict | None = None
 
 
 class EndorseTransactionList(BaseModel):
@@ -60,10 +60,18 @@ class EndorseTransactionList(BaseModel):
 def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransaction:
     """Convert from a webhook payload to an endorser transaction."""
     logger.debug(f">>> from payload: {payload}")
-    transaction_request = json.loads(payload["messages_attach"][0]["data"]["json"])
+    transaction_request = (
+        json.loads(payload["messages_attach"][0]["data"]["json"])
+        if payload["messages_attach"][0]["data"]["json"]
+        else {}
+    )
     if 0 < len(payload["signature_response"]):
-        transaction_response = json.loads(
-            payload["signature_response"][0]["signature"][endorser_did]
+        transaction_response = (
+            json.loads(
+                payload["signature_response"][0]["signature"][endorser_did]
+            )
+            if payload["signature_response"][0]["signature"][endorser_did]
+            else None
         )
     else:
         transaction_response = {}
@@ -74,9 +82,9 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
         state=payload.get("state"),
         transaction_request=transaction_request,
         endorser_did=endorser_did,
-        author_did=transaction_request["identifier"],
-        transaction=transaction_request["operation"],
-        transaction_type=transaction_request["operation"]["type"],
+        author_did=transaction_request["identifier"] if transaction_request and "identifier" in transaction_request else None,
+        transaction=transaction_request["operation"] if transaction_request and "operation" in transaction_request else None,
+        transaction_type=transaction_request["operation"]["type"] if transaction_request and "operation" in transaction_request else None,
         transaction_response=transaction_response,
     )
     logger.debug(f">>> to transaction: {transaction}")
