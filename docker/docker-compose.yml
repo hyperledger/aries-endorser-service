@@ -1,12 +1,30 @@
 version: "3.9"
 services:
+  endorser-caddy:
+    image: caddy
+    hostname: endorser-caddy
+    environment:
+      - CADDY_PORT=${CADDY_PORT}
+    ports: # Uncomment to access caddy outside of containers
+      - ${CADDY_PORT}:${CADDY_PORT}
+      # - 2019:2019
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:z
+    healthcheck:
+      # Port 2019 is an internal Caddy admin port.
+      test: nc -zv localhost:2019 || exit -1
+      interval: 3s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
   ngrok-endorser-agent:
     image: wernight/ngrok
     environment:
-      - ACAPY_HTTP_PORT=${ACAPY_HTTP_PORT}
+      - CADDY_PORT=${CADDY_PORT}
     ports:
       - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
-    command: ngrok http endorser-agent:${ACAPY_HTTP_PORT} --log stdout
+    command: ngrok http endorser-caddy:${CADDY_PORT} --log stdout
 
   endorser-agent:
     build:
@@ -22,6 +40,7 @@ services:
       - ENDORSER_ENV=${ENDORSER_ENV}
       - NGROK_NAME=ngrok-endorser-agent
       - ACAPY_HTTP_PORT=${ACAPY_HTTP_PORT}
+      - ACAPY_WS_PORT=${ACAPY_WS_PORT}
       - ENDORSER_WEBHOOK_URL=${ENDORSER_WEBHOOK_URL}
       - LEDGER_URL=${LEDGER_URL}
       - GENESIS_URL=${GENESIS_URL}
@@ -41,6 +60,7 @@ services:
     ports:
       - ${ACAPY_ADMIN_PORT_EXPOSED}:${ACAPY_ADMIN_PORT}
       - ${ACAPY_HTTP_PORT_EXPOSED}:${ACAPY_HTTP_PORT}
+      - ${ACAPY_WS_PORT_EXPOSED}:${ACAPY_WS_PORT}
     entrypoint: /bin/bash
     command: [
         "-c",

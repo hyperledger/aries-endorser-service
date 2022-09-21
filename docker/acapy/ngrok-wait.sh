@@ -28,6 +28,7 @@ set -x
 exec aca-py start \
     --auto-provision \
     --inbound-transport http '0.0.0.0' ${ACAPY_HTTP_PORT} \
+    --inbound-transport ws '0.0.0.0' ${ACAPY_WS_PORT} \
     --outbound-transport http \
     --webhook-url "${ENDORSER_WEBHOOK_URL}" \
     --genesis-url "${GENESIS_URL}" \
