@@ -1,5 +1,10 @@
+# un-comment to enable the Caddy admin
+# {
+# 	admin :2019
+# }
+
 # Listen on all interfaces, default Caddy port
-:2015 {
+:{$CADDY_PORT} {
 	# This is the pattern that will be used to detect
 	# WebSockets
 	@websockets {
@@ -9,12 +14,12 @@
 
 	# Handle any traffic that matches the `@websockets` pattern
 	handle @websockets {
-		reverse_proxy http://endorser-agent:8052
+		reverse_proxy http://{$ACAPY_AGENT_HOST}:{$ACAPY_WS_PORT}
 	}
 
 	# Handle all other traffic.
 	handle {
-		reverse_proxy http://endorser-agent:8050
+		reverse_proxy http://{$ACAPY_AGENT_HOST}:{$ACAPY_HTTP_PORT}
 	}
 
 	# What logs should look like.
