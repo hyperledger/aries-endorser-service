@@ -1,8 +1,8 @@
-CREATE DATABASE endorser;
+CREATE DATABASE endorser_controller_db;
 CREATE USER endorseradminuser PASSWORD 'endorseradminPass';
 CREATE USER endorseruser PASSWORD 'endorserPass';
-ALTER DATABASE endorser OWNER TO endorseradminuser;
-\connect endorser
+ALTER DATABASE endorser_controller_db OWNER TO endorseradminuser;
+\connect endorser_controller_db
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO endorseradminuser;

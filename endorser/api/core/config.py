@@ -40,29 +40,29 @@ class GlobalConfig(BaseSettings):
 
     # configuration
     ENDORSER_AUTO_ACCEPT_CONNECTIONS: bool = to_bool(
-        os.environ.get("ENDORSER_AUTO_ACCEPT_CONNECTIONS", "true")
+        os.environ.get("ENDORSER_AUTO_ACCEPT_CONNECTIONS", "false")
     )
     ENDORSER_AUTO_ACCEPT_AUTHORS: bool = to_bool(
-        os.environ.get("ENDORSER_AUTO_ACCEPT_AUTHORS", "true")
+        os.environ.get("ENDORSER_AUTO_ACCEPT_AUTHORS", "false")
     )
     ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
-        os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "true")
+        os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
     )
 
     # the following defaults match up with default values in scripts/.env.example
     # these MUST be all set in non-local environments.
     PSQL_HOST: str = os.environ.get("CONTROLLER_POSTGRESQL_HOST", "localhost")
     PSQL_PORT: int = os.environ.get("CONTROLLER__POSTGRESQL_PORT", 5432)
-    PSQL_DB: str = os.environ.get("ENDORSER_DATABASE", "endorser")
+    PSQL_DB: str = os.environ.get("CONTROLLER_POSTGRESQL_DB", "endorser_controller_db")
 
-    PSQL_USER: str = os.environ.get("CONTROLLER_POSTGRESQL_USER", "endorseruser")
-    PSQL_PASS: str = os.environ.get("CONTROLLER_POSTGRESQL_PASSWORD", "endorserPass")
+    PSQL_USER: str = os.environ.get("CONTROLLER_POSTGRESQL_USER", "")
+    PSQL_PASS: str = os.environ.get("CONTROLLER_POSTGRESQL_PASSWORD", "")
 
     PSQL_ADMIN_USER: str = os.environ.get(
-        "CONTROLLER_POSTGRESQL_ADMIN_USER", "endorseradminuser"
+        "CONTROLLER_POSTGRESQL_ADMIN_USER", ""
     )
     PSQL_ADMIN_PASS: str = os.environ.get(
-        "CONTROLLER_POSTGRESQL_ADMIN_PASSWORD", "endorseradminPass"
+        "CONTROLLER_POSTGRESQL_ADMIN_PASSWORD", ""
     )
 
     # application connection is async

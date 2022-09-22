@@ -30,6 +30,7 @@ exec aca-py start \
     --inbound-transport http '0.0.0.0' ${ACAPY_HTTP_PORT} \
     --inbound-transport ws '0.0.0.0' ${ACAPY_WS_PORT} \
     --outbound-transport http \
+    --outbound-transport ws \
     --webhook-url "${ENDORSER_WEBHOOK_URL}" \
     --genesis-url "${GENESIS_URL}" \
     --tails-server-base-url "${TAILS_SERVER_URL}" \
@@ -39,7 +40,7 @@ exec aca-py start \
     --auto-ping-connection \
     --monitor-ping \
     --public-invites \
-    --wallet-type "indy" \
+    --wallet-type "askar" \
     --wallet-name "${ACAPY_WALLET_DATABASE}" \
     --wallet-key "${ACAPY_WALLET_ENCRYPTION_KEY}" \
     --wallet-storage-type "${ACAPY_WALLET_STORAGE_TYPE}" \
