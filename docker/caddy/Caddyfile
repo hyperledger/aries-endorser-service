@@ -4,7 +4,7 @@
 # }
 
 # Listen on all interfaces, default Caddy port
-:{$CADDY_PORT} {
+:{$CADDY_AGENT_PORT} {
 	# This is the pattern that will be used to detect
 	# WebSockets
 	@websockets {
@@ -20,6 +20,19 @@
 	# Handle all other traffic.
 	handle {
 		reverse_proxy http://{$ACAPY_AGENT_HOST}:{$ACAPY_HTTP_PORT}
+	}
+
+	# What logs should look like.
+	log {
+		output stdout 
+		# format single_field common_log
+		level DEBUG
+	}
+}
+
+:{$CADDY_AGENT_ADMIN_PORT} {
+	handle {
+		reverse_proxy http://{$ACAPY_AGENT_HOST}:{$ACAPY_ADMIN_PORT}
 	}
 
 	# What logs should look like.

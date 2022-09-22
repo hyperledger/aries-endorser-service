@@ -69,7 +69,8 @@ exportEnvironment() {
     # generate a random seed unless one is provided
     export ENDORSER_SEED="$(echo $RANDOM | md5sum | head -c 32; echo;)"
   fi
-  export CADDY_PORT=2015
+  export CADDY_AGENT_PORT=2015
+  export CADDY_AGENT_ADMIN_PORT=2016
   export CADDY_HOST=endorser-caddy
   export ACAPY_AGENT_HOST=endorser-agent
   export CADDY_ADMIN_PORT=2019

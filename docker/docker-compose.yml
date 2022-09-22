@@ -4,13 +4,17 @@ services:
     image: caddy
     hostname: endorser-caddy
     environment:
-      - CADDY_PORT=${CADDY_PORT}
+      - CADDY_AGENT_PORT=${CADDY_AGENT_PORT}
+      - CADDY_AGENT_ADMIN_PORT=${CADDY_AGENT_ADMIN_PORT}
       - CADDY_ADMIN_PORT=${CADDY_ADMIN_PORT}
       - ACAPY_AGENT_HOST=${ACAPY_AGENT_HOST}
       - ACAPY_HTTP_PORT=${ACAPY_HTTP_PORT}
       - ACAPY_WS_PORT=${ACAPY_WS_PORT}
-    ports: # Uncomment to access caddy outside of containers
-      - ${CADDY_PORT}:${CADDY_PORT}
+      - ACAPY_ADMIN_PORT=${ACAPY_ADMIN_PORT}
+    ports:
+      - ${CADDY_AGENT_PORT}:${CADDY_AGENT_PORT}
+      - ${CADDY_AGENT_ADMIN_PORT}:${CADDY_AGENT_ADMIN_PORT}
+      # Uncomment to access caddy outside of containers
       # - ${CADDY_ADMIN_PORT}:${CADDY_ADMIN_PORT}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:z
@@ -25,11 +29,11 @@ services:
   ngrok-endorser-agent:
     image: wernight/ngrok
     environment:
-      - CADDY_PORT=${CADDY_PORT}
+      - CADDY_AGENT_PORT=${CADDY_AGENT_PORT}
       - CADDY_HOST=${CADDY_HOST}
     ports:
       - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
-    command: ngrok http ${CADDY_HOST}:${CADDY_PORT} --log stdout
+    command: ngrok http ${CADDY_HOST}:${CADDY_AGENT_PORT} --log stdout
 
   endorser-agent:
     build:
