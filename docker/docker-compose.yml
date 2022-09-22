@@ -83,7 +83,7 @@ services:
       POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
     ports:
-      - ${ENDORSER_POSTGRESQL_PORT_EXPOSED}:${ENDORSER_POSTGRESQL_PORT}
+      - ${WALLET_POSTGRESQL_PORT_EXPOSED}:${WALLET_POSTGRESQL_PORT}
     volumes:
       - endorser-wallet:/var/lib/postgresql/data
     healthcheck:
@@ -105,6 +105,10 @@ services:
       - CONTROLLER_POSTGRESQL_HOST=${CONTROLLER_POSTGRESQL_HOST}
       - CONTROLLER_POSTGRESQL_PORT=${CONTROLLER_POSTGRESQL_PORT}
       - CONTROLLER_POSTGRESQL_DB=${CONTROLLER_POSTGRESQL_DB}
+      - CONTROLLER_POSTGRESQL_USER=${CONTROLLER_POSTGRESQL_USER}
+      - CONTROLLER_POSTGRESQL_PASSWORD=${CONTROLLER_POSTGRESQL_PASSWORD}
+      - CONTROLLER_POSTGRESQL_ADMIN_USER=${CONTROLLER_POSTGRESQL_ADMIN_USER}
+      - CONTROLLER_POSTGRESQL_ADMIN_PASSWORD=${CONTROLLER_POSTGRESQL_ADMIN_PASSWORD}
       - ENDORSER_API_ADMIN_USER=${ENDORSER_API_ADMIN_USER}
       - ENDORSER_API_ADMIN_KEY=${ENDORSER_API_ADMIN_KEY}
       - ACAPY_ADMIN_URL=${ENDORSER_ACAPY_ADMIN_URL}
@@ -124,8 +128,8 @@ services:
   endorser-db:
     image: postgres:12-alpine
     environment:
-      POSTGRES_USER: ${CONTROLLER_POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${CONTROLLER_POSTGRESQL_PASSWORD}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
     ports:
       - ${CONTROLLER_POSTGRESQL_PORT_EXPOSED}:${CONTROLLER_POSTGRESQL_PORT}
     volumes:
@@ -175,8 +179,8 @@ services:
         "sleep 5; \
          aca-py start \
             --auto-provision \
-            --inbound-transport http '0.0.0.0' ${ACAPY_AUTHOR_HTTP_PORT} \
-            --outbound-transport http \
+            --inbound-transport ${ACAPY_AUTHOR_TRANSPORT} '0.0.0.0' ${ACAPY_AUTHOR_HTTP_PORT} \
+            --outbound-transport ${ACAPY_AUTHOR_TRANSPORT} \
             --genesis-url '${GENESIS_URL}' \
             --tails-server-base-url '${TAILS_SERVER_URL}' \
             --notify-revocation \
