@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  endorser-caddy:
+  aries-endorser-proxy:
     image: caddy
-    hostname: endorser-caddy
+    hostname: aries-endorser-proxy
     environment:
       - CADDY_AGENT_PORT=${CADDY_AGENT_PORT}
       - CADDY_AGENT_ADMIN_PORT=${CADDY_AGENT_ADMIN_PORT}
@@ -35,7 +35,7 @@ services:
       - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
     command: ngrok http ${CADDY_HOST}:${CADDY_AGENT_PORT} --log stdout
 
-  endorser-agent:
+  aries-endorser-agent:
     build:
       context: ./acapy
       dockerfile: Dockerfile.acapy
@@ -97,7 +97,7 @@ services:
       context: ../endorser
       dockerfile: Dockerfile.endorser
     depends_on:
-      endorser-agent:
+      aries-endorser-agent:
         condition: service_started
       endorser-db:
         condition: service_healthy
@@ -141,7 +141,7 @@ services:
       timeout: 5s
       retries: 5
 
-  author-agent:
+  aries-author-agent:
     build:
       context: ./acapy
       dockerfile: Dockerfile.acapy
@@ -153,7 +153,6 @@ services:
       - ${ACAPY_AUTHOR_HTTP_PORT}:${ACAPY_AUTHOR_HTTP_PORT}
     environment:
       - AUTHOR_ENV=${AUTHOR_ENV}
-      - NGROK_NAME=ngrok-author-agent
       - ACAPY_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
       - LEDGER_URL=${LEDGER_URL}
       - GENESIS_URL=${GENESIS_URL}

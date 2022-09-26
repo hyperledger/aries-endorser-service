@@ -71,8 +71,8 @@ exportEnvironment() {
   fi
   export CADDY_AGENT_PORT=2015
   export CADDY_AGENT_ADMIN_PORT=2016
-  export CADDY_HOST=endorser-caddy
-  export ACAPY_AGENT_HOST=endorser-agent
+  export CADDY_HOST=aries-endorser-proxy
+  export ACAPY_AGENT_HOST=aries-endorser-agent
   export CADDY_ADMIN_PORT=2019
   export ACAPY_HTTP_PORT=8050
   export ACAPY_HTTP_PORT_EXPOSED=8050
@@ -197,8 +197,8 @@ deleteVolumes() {
 }
 
 # =================================================================================================================
-DEFAULT_CONTAINERS="endorser-caddy ngrok-endorser-agent endorser-agent aries-endorser-wallet endorser-api endorser-db"
-TEST_CONTAINERS="author-agent aries-author-wallet"
+DEFAULT_CONTAINERS="aries-endorser-proxy ngrok-endorser-agent aries-endorser-agent aries-endorser-wallet endorser-api endorser-db"
+TEST_CONTAINERS="aries-author-agent aries-author-wallet"
 
 pushd "${SCRIPT_HOME}" >/dev/null
 COMMAND=$(toLower ${1})
