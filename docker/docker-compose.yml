@@ -40,7 +40,7 @@ services:
       context: ./acapy
       dockerfile: Dockerfile.acapy
     depends_on:
-      endorser-agent-db:
+      aries-endorser-wallet:
         condition: service_healthy
     environment:
       - ENDORSER_ENV=${ENDORSER_ENV}
@@ -77,7 +77,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  endorser-agent-db:
+  aries-endorser-wallet:
     image: postgres:12-alpine
     environment:
       POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
@@ -146,7 +146,7 @@ services:
       context: ./acapy
       dockerfile: Dockerfile.acapy
     depends_on:
-      author-agent-db:
+      aries-author-wallet:
         condition: service_healthy
     ports:
       - ${ACAPY_AUTHOR_ADMIN_PORT}:${ACAPY_AUTHOR_ADMIN_PORT}
@@ -210,7 +210,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  author-agent-db:
+  aries-author-wallet:
     image: postgres:12-alpine
     environment:
       POSTGRES_USER: ${AUTHOR_WALLET_POSTGRESQL_USER}

@@ -94,7 +94,7 @@ exportEnvironment() {
   export ENDORSER_ACAPY_ADMIN_URL=http://${DOCKERHOST}:${ACAPY_ADMIN_PORT}
 
   # endorser agent db
-  export WALLET_POSTGRESQL_HOST=endorser-agent-db
+  export WALLET_POSTGRESQL_HOST=aries-endorser-wallet
   export WALLET_POSTGRESQL_USER=postgres
   export WALLET_POSTGRESQL_PASSWORD=password
   export WALLET_POSTGRESQL_PORT=5432
@@ -109,7 +109,6 @@ exportEnvironment() {
   export ENDORSER_WEBHOOK_URL="http://${ENDORSER_SERVICE_HOST}:${ENDORSER_SERVICE_PORT}/webhook#${ACAPY_WEBHOOK_URL_API_KEY}"
   export ENDORSER_API_ADMIN_USER=endorser-admin
   export ENDORSER_API_ADMIN_KEY=change-me
-  export ENDORSER_DATABASE=endorser
 
   # endorser api db
   export POSTGRESQL_USER=postgres
@@ -146,7 +145,7 @@ exportEnvironment() {
   export AUTHOR_ACAPY_ADMIN_URL=http://${DOCKERHOST}:${ACAPY_AUTHOR_ADMIN_PORT}
 
   # author agent db
-  export AUTHOR_WALLET_POSTGRESQL_HOST=author-agent-db
+  export AUTHOR_WALLET_POSTGRESQL_HOST=aries-author-wallet
   export AUTHOR_WALLET_POSTGRESQL_USER=postgres
   export AUTHOR_WALLET_POSTGRESQL_PASSWORD=password
   export AUTHOR_POSTGRESQL_PORT=5432
@@ -198,8 +197,8 @@ deleteVolumes() {
 }
 
 # =================================================================================================================
-DEFAULT_CONTAINERS="endorser-caddy ngrok-endorser-agent endorser-agent endorser-agent-db endorser-api endorser-db"
-TEST_CONTAINERS="author-agent author-agent-db"
+DEFAULT_CONTAINERS="endorser-caddy ngrok-endorser-agent endorser-agent aries-endorser-wallet endorser-api endorser-db"
+TEST_CONTAINERS="author-agent aries-author-wallet"
 
 pushd "${SCRIPT_HOME}" >/dev/null
 COMMAND=$(toLower ${1})
