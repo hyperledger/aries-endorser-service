@@ -92,14 +92,14 @@ services:
       timeout: 5s
       retries: 5
 
-  endorser-api:
+  aries-endorser-api:
     build:
       context: ../endorser
       dockerfile: Dockerfile.endorser
     depends_on:
       aries-endorser-agent:
         condition: service_started
-      endorser-db:
+      aries-endorser-api-db:
         condition: service_healthy
     environment:
       - CONTROLLER_POSTGRESQL_HOST=${CONTROLLER_POSTGRESQL_HOST}
@@ -125,16 +125,21 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  endorser-db:
+  aries-endorser-api-db:
     image: postgres:12-alpine
     environment:
-      POSTGRES_USER: ${POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      - POSTGRES_USER=${POSTGRESQL_USER}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - CONTROLLER_POSTGRESQL_DB=${CONTROLLER_POSTGRESQL_DB}
+      - CONTROLLER_POSTGRESQL_USER=${CONTROLLER_POSTGRESQL_USER}
+      - CONTROLLER_POSTGRESQL_PASSWORD=${CONTROLLER_POSTGRESQL_PASSWORD}
+      - CONTROLLER_POSTGRESQL_ADMIN_USER=${CONTROLLER_POSTGRESQL_ADMIN_USER}
+      - CONTROLLER_POSTGRESQL_ADMIN_PASSWORD=${CONTROLLER_POSTGRESQL_ADMIN_PASSWORD}
     ports:
       - ${CONTROLLER_POSTGRESQL_PORT_EXPOSED}:${CONTROLLER_POSTGRESQL_PORT}
     volumes:
       - endorser-controller:/var/lib/postgresql/data
-      - ./db_init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./database/1-init.sh:/docker-entrypoint-initdb.d/1-init.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
