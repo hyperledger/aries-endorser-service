@@ -83,7 +83,7 @@ class GlobalConfig(BaseSettings):
     ENDORSER_API_ADMIN_KEY: str = os.environ.get("ENDORSER_API_ADMIN_KEY", "change-me")
 
     ENDORSER_WEBHOOK_URL: str = os.environ.get(
-        "ENDORSER_WEBHOOK_URL", "http://endorser-api:5000/webhook"
+        "ENDORSER_WEBHOOK_URL", "http://aries-endorser-api:5000/webhook"
     )
     ACAPY_WEBHOOK_URL_API_KEY_NAME = "x-api-key"
     ACAPY_WEBHOOK_URL_API_KEY: str = os.environ.get("ACAPY_WEBHOOK_URL_API_KEY", "")

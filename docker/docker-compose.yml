@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  endorser-caddy:
+  aries-endorser-proxy:
     image: caddy
-    hostname: endorser-caddy
+    hostname: aries-endorser-proxy
     environment:
       - CADDY_AGENT_PORT=${CADDY_AGENT_PORT}
       - CADDY_AGENT_ADMIN_PORT=${CADDY_AGENT_ADMIN_PORT}
@@ -35,12 +35,12 @@ services:
       - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
     command: ngrok http ${CADDY_HOST}:${CADDY_AGENT_PORT} --log stdout
 
-  endorser-agent:
+  aries-endorser-agent:
     build:
       context: ./acapy
       dockerfile: Dockerfile.acapy
     depends_on:
-      endorser-agent-db:
+      aries-endorser-wallet:
         condition: service_healthy
     environment:
       - ENDORSER_ENV=${ENDORSER_ENV}
@@ -77,7 +77,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  endorser-agent-db:
+  aries-endorser-wallet:
     image: postgres:12-alpine
     environment:
       POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
@@ -92,14 +92,14 @@ services:
       timeout: 5s
       retries: 5
 
-  endorser-api:
+  aries-endorser-api:
     build:
       context: ../endorser
       dockerfile: Dockerfile.endorser
     depends_on:
-      endorser-agent:
+      aries-endorser-agent:
         condition: service_started
-      endorser-db:
+      aries-endorser-api-db:
         condition: service_healthy
     environment:
       - CONTROLLER_POSTGRESQL_HOST=${CONTROLLER_POSTGRESQL_HOST}
@@ -125,35 +125,39 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  endorser-db:
+  aries-endorser-api-db:
     image: postgres:12-alpine
     environment:
-      POSTGRES_USER: ${POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      - POSTGRES_USER=${POSTGRESQL_USER}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - CONTROLLER_POSTGRESQL_DB=${CONTROLLER_POSTGRESQL_DB}
+      - CONTROLLER_POSTGRESQL_USER=${CONTROLLER_POSTGRESQL_USER}
+      - CONTROLLER_POSTGRESQL_PASSWORD=${CONTROLLER_POSTGRESQL_PASSWORD}
+      - CONTROLLER_POSTGRESQL_ADMIN_USER=${CONTROLLER_POSTGRESQL_ADMIN_USER}
+      - CONTROLLER_POSTGRESQL_ADMIN_PASSWORD=${CONTROLLER_POSTGRESQL_ADMIN_PASSWORD}
     ports:
       - ${CONTROLLER_POSTGRESQL_PORT_EXPOSED}:${CONTROLLER_POSTGRESQL_PORT}
     volumes:
       - endorser-controller:/var/lib/postgresql/data
-      - ./db_init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./database/1-init.sh:/docker-entrypoint-initdb.d/1-init.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  author-agent:
+  aries-author-agent:
     build:
       context: ./acapy
       dockerfile: Dockerfile.acapy
     depends_on:
-      author-agent-db:
+      aries-author-wallet:
         condition: service_healthy
     ports:
       - ${ACAPY_AUTHOR_ADMIN_PORT}:${ACAPY_AUTHOR_ADMIN_PORT}
       - ${ACAPY_AUTHOR_HTTP_PORT}:${ACAPY_AUTHOR_HTTP_PORT}
     environment:
       - AUTHOR_ENV=${AUTHOR_ENV}
-      - NGROK_NAME=ngrok-author-agent
       - ACAPY_HTTP_PORT=${ACAPY_AUTHOR_HTTP_PORT}
       - LEDGER_URL=${LEDGER_URL}
       - GENESIS_URL=${GENESIS_URL}
@@ -210,7 +214,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  author-agent-db:
+  aries-author-wallet:
     image: postgres:12-alpine
     environment:
       POSTGRES_USER: ${AUTHOR_WALLET_POSTGRESQL_USER}
