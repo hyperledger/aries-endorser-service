@@ -18,6 +18,7 @@ from api.services.endorse import (
     endorse_transaction,
     reject_transaction,
 )
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 
 router = APIRouter()
@@ -36,21 +37,26 @@ async def get_transactions(
     page_num: int = 1,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransactionList:
-    (total_count, transactions) = await get_transactions_list(
-        db,
-        transaction_state=transaction_state.value if transaction_state else None,
-        connection_id=connection_id,
-        page_size=page_size,
-        page_num=page_num,
-    )
-    response: EndorseTransactionList = EndorseTransactionList(
-        page_size=page_size,
-        page_num=page_num,
-        count=len(transactions),
-        total_count=total_count,
-        transactions=transactions,
-    )
-    return response
+    try:
+        (total_count, transactions) = await get_transactions_list(
+            db,
+            transaction_state=transaction_state.value if transaction_state else None,
+            connection_id=connection_id,
+            page_size=page_size,
+            page_num=page_num,
+        )
+        response: EndorseTransactionList = EndorseTransactionList(
+            page_size=page_size,
+            page_num=page_num,
+            count=len(transactions),
+            total_count=total_count,
+            transactions=transactions,
+        )
+        return response
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.get(
@@ -62,8 +68,13 @@ async def get_transaction(
     transaction_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
-    transaction = await get_transaction_object(db, transaction_id)
-    return transaction
+    try:
+        transaction = await get_transaction_object(db, transaction_id)
+        return transaction
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.put(
@@ -77,7 +88,7 @@ async def update_transactions(
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Update meta-data (tags) on a transaction."""
-    return None
+    raise NotImplementedError
 
 
 @router.post(
@@ -90,9 +101,14 @@ async def endorse_transaction_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually approve an endorsement."""
-    transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
-    endorsed_txn = await endorse_transaction(db, transaction)
-    return endorsed_txn
+    try:
+        transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+        endorsed_txn = await endorse_transaction(db, transaction)
+        return endorsed_txn
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.post(
@@ -105,6 +121,11 @@ async def reject_transaction_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually reject an endorsement."""
-    transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
-    rejected_txn = await reject_transaction(db, transaction)
-    return rejected_txn
+    try:
+        transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+        rejected_txn = await reject_transaction(db, transaction)
+        return rejected_txn
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )

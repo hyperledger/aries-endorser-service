@@ -24,6 +24,7 @@ from api.services.connections import (
     update_connection_info,
     update_connection_config,
 )
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 
 logger = logging.getLogger(__name__)
