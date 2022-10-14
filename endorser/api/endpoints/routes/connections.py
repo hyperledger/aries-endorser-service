@@ -39,20 +39,25 @@ async def get_connections(
     page_num: int = 1,
     db: AsyncSession = Depends(get_db),
 ) -> ConnectionList:
-    (total_count, connections) = await get_connections_list(
-        db,
-        connection_state=connection_state.value if connection_state else None,
-        page_size=page_size,
-        page_num=page_num,
-    )
-    response: ConnectionList = ConnectionList(
-        page_size=page_size,
-        page_num=page_num,
-        count=len(connections),
-        total_count=total_count,
-        connections=connections,
-    )
-    return response
+    try:
+        (total_count, connections) = await get_connections_list(
+            db,
+            connection_state=connection_state.value if connection_state else None,
+            page_size=page_size,
+            page_num=page_num,
+        )
+        response: ConnectionList = ConnectionList(
+            page_size=page_size,
+            page_num=page_num,
+            count=len(connections),
+            total_count=total_count,
+            connections=connections,
+        )
+        return response
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.get("/{connection_id}", response_model=Connection)
@@ -60,8 +65,13 @@ async def get_connection(
     connection_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = await get_connection_object(db, connection_id)
-    return connection
+    try:
+        connection = await get_connection_object(db, connection_id)
+        return connection
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.put("/{connection_id}", response_model=Connection)
@@ -71,8 +81,13 @@ async def update_connection(
     public_did: str | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = await update_connection_info(db, connection_id, alias, public_did)
-    return connection
+    try:
+        connection = await update_connection_info(db, connection_id, alias, public_did)
+        return connection
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.put("/{connection_id}/configure", response_model=Connection)
@@ -82,8 +97,13 @@ async def configure_connection(
     endorse_status: EndorseStatusType,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
-    connection = await update_connection_config(db, connection_id, author_status, endorse_status)
-    return connection
+    try:
+        connection = await update_connection_config(db, connection_id, author_status, endorse_status)
+        return connection
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.post("/{connection_id}/accept", response_model=Connection)
@@ -92,9 +112,14 @@ async def accept_connection(
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
     """Manually accept a connection."""
-    connection: Connection = await get_connection_object(db, connection_id)
-    accepted_connection = await accept_connection_request(db, connection)
-    return accepted_connection
+    try:
+        connection: Connection = await get_connection_object(db, connection_id)
+        accepted_connection = await accept_connection_request(db, connection)
+        return accepted_connection
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.post("/{connection_id}/reject", response_model=Connection)
