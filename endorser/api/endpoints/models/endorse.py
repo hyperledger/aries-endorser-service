@@ -60,11 +60,15 @@ class EndorseTransactionList(BaseModel):
 def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransaction:
     """Convert from a webhook payload to an endorser transaction."""
     logger.debug(f">>> from payload: {payload}")
-    transaction_request = (
-        json.loads(payload["messages_attach"][0]["data"]["json"])
-        if payload["messages_attach"][0]["data"]["json"]
-        else {}
-    )
+    if "json" in payload["messages_attach"][0]["data"] and payload["messages_attach"][0]["data"]["json"]:
+        # deal with str or dict types
+        payload_json = payload["messages_attach"][0]["data"]["json"]
+        if isinstance(payload_json, dict):
+            transaction_request = payload_json
+        else:
+            transaction_request = json.loads(payload_json)
+    else:
+        transaction_request = {}
     if 0 < len(payload["signature_response"]):
         transaction_response = (
             json.loads(

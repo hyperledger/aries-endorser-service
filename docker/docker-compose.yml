@@ -195,7 +195,7 @@ services:
             --multitenant \
             --multitenant-admin \
             --jwt-secret '${ACAPY_AUTHOR_JWT_SECRET}' \
-            --wallet-type 'indy' \
+            --wallet-type 'askar' \
             --wallet-name '${ACAPY_AUTHOR_WALLET_DATABASE}' \
             --wallet-key '${ACAPY_AUTHOR_WALLET_ENCRYPTION_KEY}' \
             --wallet-storage-type '${ACAPY_AUTHOR_WALLET_STORAGE_TYPE}' \
