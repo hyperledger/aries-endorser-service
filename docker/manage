@@ -53,6 +53,8 @@ exportEnvironment() {
   export ENDORSER_AUTO_ACCEPT_CONNECTIONS=${ENDORSER_AUTO_ACCEPT_CONNECTIONS:-false}
   export ENDORSER_AUTO_ACCEPT_AUTHORS=${ENDORSER_AUTO_ACCEPT_AUTHORS:-false}
   export ENDORSER_AUTO_ENDORSE_REQUESTS=${ENDORSER_AUTO_ENDORSE_REQUESTS:-false}
+  export ENDORSER_PUBLIC_NAME=${ENDORSER_PUBLIC_NAME:-"Demo Endorser"}
+  export ENDORSER_PUBLIC_DESC=${ENDORSER_PUBLIC_DESC:-"An endorser service for aca-py wallets"}
 
   # ngrok
   export NGROK_ENDORSER_AGENT_PORT=4040
@@ -84,7 +86,7 @@ exportEnvironment() {
   export ACAPY_WALLET_DATABASE=endorser_agent_wallet
   export ACAPY_WALLET_ENCRYPTION_KEY=key
   export ACAPY_WALLET_STORAGE_TYPE=postgres_storage
-  export AGENT_NAME=Endorser
+  export AGENT_NAME=${AGENT_NAME:-Endorser}
   export ACAPY_API_ADMIN_KEY=change-me
   if [ ! -z "${ACAPY_API_ADMIN_KEY}" ]; then
     export ACAPY_ADMIN_CONFIG="--admin-api-key ${ACAPY_API_ADMIN_KEY}"
