@@ -44,8 +44,8 @@ def is_auto_reject_connection(connection: Connection) -> bool:
 
 
 async def is_auto_endorse_txn(db: AsyncSession, transaction: EndorseTransaction, connection: Connection):
-    auto_req = get_bool_config(db, "ENDORSER_AUTO_ENDORSE_REQUESTS")
-    auto_req_type = get_config(db, "ENDORSER_AUTO_ENDORSE_TXN_TYPES")
+    auto_req = await get_bool_config(db, "ENDORSER_AUTO_ENDORSE_REQUESTS")
+    auto_req_type = await get_config(db, "ENDORSER_AUTO_ENDORSE_TXN_TYPES")
     if auto_req or is_auto_endorse_connection(connection):
         # auto-req is on, check if any txn types are configures
         if (auto_req_type is None or len(auto_req_type) == 0):
@@ -107,7 +107,7 @@ async def auto_step_endorse_transaction_request_received(
     result = {}
     if is_auto_reject_connection(connection):
         result = await reject_transaction(db, transaction)
-    elif await is_auto_endorse_txn():
+    elif await is_auto_endorse_txn(db, transaction, connection):
         result = await endorse_transaction(db, transaction)
     return result
 

@@ -25,7 +25,7 @@ OPTIONS = "OPTIONS"
 
 ENDORSER_URL_PREFIX = "/endorser/v1"
 MAX_INC = 10
-SLEEP_INC = 1
+SLEEP_INC = 2
 
 
 def endorser_headers(context) -> dict:
@@ -160,7 +160,7 @@ def call_http_service(method, url, headers, data=None, params=None, json_data=Tr
             params=params,
         )
     else:
-        assert False, f"Incorrect method passed: {method}"
+        assert False, pprint.pp("Incorrect method passed: " + method)
     response.raise_for_status()
     if json_data:
         return response.json()
@@ -253,7 +253,7 @@ def get_endorsers_author_connection(context, author_alias: str, connection_statu
                 author_conn_request = connection
         if not author_conn_request:
             inc += 1
-            assert inc <= MAX_INC, f"Error too many retries can't find {author_alias}"
+            assert inc <= MAX_INC, pprint.pp("Error too many retries can't find " + str(author_alias))
             time.sleep(SLEEP_INC)
 
     if author_conn_request and connection_status:
@@ -280,7 +280,7 @@ def get_endorser_transaction_record(context, connection_id: str, txn_state: str)
             endorser_txn = resp["transactions"][0]
         else:
             inc += 1
-            assert inc <= MAX_INC, f"Error too many retries can't find {connection_id} with {txn_state}"
+            assert inc <= MAX_INC, pprint.pp("Error too many retries can't find txn for " + str(connection_id) + ", " + txn_state)
             time.sleep(SLEEP_INC)
 
     assert endorser_txn, pprint.pp(endorser_txn)
@@ -299,7 +299,7 @@ def get_author_transaction_record(context, author: str, transaction_id: str, txn
         )
         if (not resp) or (txn_state and not resp["state"] == txn_state):
             inc += 1
-            assert inc <= MAX_INC, f"Error too many retries can't find {transaction_id} with {txn_state}"
+            assert inc <= MAX_INC, pprint.pp("Error too many retries can't find " + str(transaction_id) + ", " + txn_state)
             time.sleep(SLEEP_INC)
         else:
             author_txn = resp

@@ -238,7 +238,7 @@ def step_impl(context, author):
 def step_impl(context, author):
     context.execute_steps(
         f"""
-            Given There is a new agent "{author}" that is connected to the endorser
+            Given There is a new agent "{author}" that is connected to the endorser (with auto-accept)
             And "{author}" has an "active" connection to the endorser
             And the endorser has an "active" connection with "{author}"
             And the endorser has "{author}" connection configuration "Active" and "AutoEndorse"
