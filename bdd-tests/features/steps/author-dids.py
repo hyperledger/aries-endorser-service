@@ -32,7 +32,8 @@ from util import (
 )
 
 
-MAX_INC = 5
+MAX_INC = 10
+SLEEP_INC = 2
 LEDGER_URL = os.getenv("LEDGER_URL")
 
 
@@ -188,6 +189,7 @@ def step_impl(context, author: str):
     assert author_txn, pprint.pp(author_txn)
 
 
+@given('"{author}" has a public DID')
 @then('"{author}" has a public DID')
 def step_impl(context, author: str):
     # GET /wallet/did/public

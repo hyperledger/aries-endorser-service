@@ -30,7 +30,8 @@ from util import (
     clear_endorser_context,
 )
 
-MAX_INC = 5
+MAX_INC = 10
+SLEEP_INC = 2
 
 
 @given('the endorser service is running')
