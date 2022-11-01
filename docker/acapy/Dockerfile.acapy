@@ -10,4 +10,4 @@ RUN chmod +x ./ngrok-wait.sh
 USER $user
 
 RUN pip uninstall -y aries-cloudagent
-RUN pip install aries-cloudagent[indy,bbs,askar]@git+https://github.com/ianco/aries-cloudagent-python@endorser-write-did
+RUN pip install aries-cloudagent[indy,bbs,askar]@git+https://github.com/hyperledger/aries-cloudagent-python@main

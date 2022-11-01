@@ -29,6 +29,7 @@ class EndorseTransactionState(str, Enum):
 
 class EndorseTransactionType(str, Enum):
     did = "1"
+    attrib = "100"
     schema = "101"
     cred_def = "102"
     revoc_registry = "113"

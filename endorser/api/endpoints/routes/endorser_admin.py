@@ -12,6 +12,7 @@ from api.endpoints.models.configurations import ConfigurationType
 from api.services.admin import (
     get_endorser_configs,
     get_endorser_config,
+    validate_endorser_config,
     update_endorser_config,
 )
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
@@ -60,6 +61,7 @@ async def update_config(
     # throws an exception if we get an invalid config name
     try:
         config_type = ConfigurationType[config_name]
+        validate_endorser_config(config_name, config_value)
         endorser_config = await update_endorser_config(db, config_name, config_value)
         return endorser_config
     except Exception as e:

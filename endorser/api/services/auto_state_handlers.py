@@ -21,6 +21,7 @@ from api.services.connections import (
 )
 from api.services.configurations import (
     get_bool_config,
+    get_config,
 )
 from api.services.endorse import (
     endorse_transaction,
@@ -40,6 +41,21 @@ def is_auto_endorse_connection(connection: Connection) -> bool:
 def is_auto_reject_connection(connection: Connection) -> bool:
     # check if connection or author_did is setup for auto-endorse
     return (connection.author_status.name is AuthorStatusType.active.name and connection.endorse_status.name is EndorseStatusType.auto_reject.name)
+
+
+async def is_auto_endorse_txn(db: AsyncSession, transaction: EndorseTransaction, connection: Connection):
+    auto_req = await get_bool_config(db, "ENDORSER_AUTO_ENDORSE_REQUESTS")
+    auto_req_type = await get_config(db, "ENDORSER_AUTO_ENDORSE_TXN_TYPES")
+    if auto_req or is_auto_endorse_connection(connection):
+        # auto-req is on, check if any txn types are configures
+        if (auto_req_type is None or len(auto_req_type) == 0):
+            # nothing configured, auto-endorse-all
+            return True
+        txn_type = transaction.transaction_type
+        auto_req_types = auto_req_type.split(',')
+        return txn_type in auto_req_types
+
+    return False
 
 
 async def auto_step_ping_received(
@@ -91,7 +107,7 @@ async def auto_step_endorse_transaction_request_received(
     result = {}
     if is_auto_reject_connection(connection):
         result = await reject_transaction(db, transaction)
-    elif await get_bool_config(db, "ENDORSER_AUTO_ENDORSE_REQUESTS") or is_auto_endorse_connection(connection):
+    elif await is_auto_endorse_txn(db, transaction, connection):
         result = await endorse_transaction(db, transaction)
     return result
 

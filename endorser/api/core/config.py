@@ -30,8 +30,10 @@ def to_bool(s: str) -> bool:
 
 
 class GlobalConfig(BaseSettings):
-    TITLE: str = "Endorser"
-    DESCRIPTION: str = "An endorser service for aca-py wallets"
+    TITLE: str = os.environ.get("ENDORSER_PUBLIC_NAME", "Endorser")
+    DESCRIPTION: str = (
+        os.environ.get("ENDORSER_PUBLIC_DESC", "An endorser service for aca-py wallets")
+    )
 
     ENVIRONMENT: EnvironmentEnum
     DEBUG: bool = False
@@ -47,6 +49,9 @@ class GlobalConfig(BaseSettings):
     )
     ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
         os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
+    )
+    ENDORSER_AUTO_ENDORSE_TXN_TYPES: str = (
+        os.environ.get("ENDORSER_AUTO_ENDORSE_TXN_TYPES", "")
     )
 
     # the following defaults match up with default values in scripts/.env.example

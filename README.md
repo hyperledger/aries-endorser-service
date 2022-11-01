@@ -114,6 +114,12 @@ When you start the endorser service, you can optionally start an additional Auth
 ./manage start-bdd --logs
 ```
 
+Or, if you want to connect to the wallet directly (rather than using an ngrok-exposed port), run this instead:
+
+```bash
+ENDORSER_ENV=bdd ./manage start-bdd --logs
+```
+
 The Author agent (which is configured as multi-tenant) exposes its Admin API on http://localhost:8061/api/doc
 
 Open a second bash shell (cd to the directory where you have checked out this repository) and run:

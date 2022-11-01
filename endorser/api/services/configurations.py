@@ -79,10 +79,11 @@ async def get_config_record(db: AsyncSession, config_name: str) -> Configuration
         config = db_to_config_object(db_config)
         return config
     except DoesNotExist:
+        default = CONFIG_DEFAULTS[config_name] if config_name in CONFIG_DEFAULTS[config_name] else ""
         config: Configuration = Configuration(
             config_id=None,
             config_name=ConfigurationType[config_name],
-            config_value=os.getenv(config_name, CONFIG_DEFAULTS[config_name]),
+            config_value=os.getenv(config_name, default),
             config_source=ConfigurationSource.Environment,
         )
         return config
@@ -114,3 +115,9 @@ async def get_bool_config(db: AsyncSession, config_name: str) -> bool:
     config_bool = config.config_value.lower() in TRUE_VALUES
     logger.debug(f"get_bool_config({config_name}) -> {config.config_value} = {config_bool}")
     return config_bool
+
+
+async def get_config(db: AsyncSession, config_name: str) -> str:
+    config = await get_config_record(db, config_name)
+    config_val = config.config_value
+    return config_val
