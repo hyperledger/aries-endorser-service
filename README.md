@@ -1,3 +1,6 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
+
 # Aries - Endorser Service
 
 This repository provides an Endoser agent, based on [Aries Cloudagent Python (or Aca-Py)](https://github.com/hyperledger/aries-cloudagent-python).
@@ -71,9 +74,9 @@ ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 
 ## Exposing the Endorser Agent using Ngrok
 
-By default the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok url when publishign their endpoint.
+By default the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok url when publishing their endpoint.
 
-If you don't want to do this (or if ngrok isnt workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitely.
+If you don't want to do this (or if ngrok isn't workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitly.
 
 For example to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
 
@@ -191,3 +194,31 @@ docker exec scripts_traction-api_1 pytest --asyncio-mode=strict -m integtest tes
 ```
 
 Traction integration tests create new tenants for each test, so you can rebuild/restart the endorser service without having to restart traction.
+
+# Credit
+
+The initial implementation of the Aries Endorser Service was developed by the Government of British Columbia’s Digital Trust Team in Canada, and is based on [aries-cloudagent-python](https://github.com/hyperledger/aries-cloudagent-python) and [traction](https://github.com/bcgov/traction). To learn more about what’s happening with decentralized identity and digital trust in British Columbia, check out https://digital.gov.bc.ca/digital-trust.
+
+# Additional resources
+
+Example OpenShift configurations for deploying an Aries Endorser Service instance can be found in the [Aries Endorser Configurations](https://github.com/bcgov/dts-endorser-service) project.
+
+# Contributing
+
+Pull requests are welcome! Please read our [contributions guide](CONTRIBUTING.md) and submit your PRs. We enforce [developer certificate of origin](https://developercertificate.org/) (DCO) commit signing. See guidance [here](https://github.com/apps/dco).
+
+## Becoming a maintainer
+
+Refer to the [Maintainers](MAINTAINERS.md) document for details.
+
+## Logging bugs, issues, and feature requests
+
+To log bugs/issues/feature requests, please file an [issue](../../issues).
+
+## Reporting security issues
+
+Please refer to the [Hyperledger Security Policy](SECURITY.md) for details.
+
+# License
+
+[Apache License Version 2.0](LICENSE)
