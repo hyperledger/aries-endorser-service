@@ -1,4 +1,4 @@
-FROM bcgovimages/aries-cloudagent:py36-1.16-1_1.0.0-rc0
+FROM bcgovimages/aries-cloudagent:py36-1.16-1_1.0.0-rc1
 
 USER root
 
@@ -8,6 +8,3 @@ COPY ngrok-wait.sh ngrok-wait.sh
 RUN chmod +x ./ngrok-wait.sh
 
 USER $user
-
-RUN pip uninstall -y aries-cloudagent
-RUN pip install aries-cloudagent[indy,bbs,askar]@git+https://github.com/hyperledger/aries-cloudagent-python@main
