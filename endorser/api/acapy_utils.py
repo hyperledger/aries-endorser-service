@@ -19,6 +19,8 @@ def get_acapy_headers(headers=None, tenant=False) -> dict:
         headers["Content-Type"] = "application/json"
     if settings.ACAPY_ADMIN_URL_API_KEY:
         headers["X-API-Key"] = settings.ACAPY_ADMIN_URL_API_KEY
+    if settings.ACAPY_WALLET_AUTH_TOKEN:
+        headers["Authorization"] = "Bearer " + settings.ACAPY_WALLET_AUTH_TOKEN
     return headers
 
 
