@@ -177,9 +177,6 @@ services:
       - AUTHOR_AGENT_NAME=${AUTHOR_AGENT_NAME}
       - ACAPY_AUTHOR_ADMIN_CONFIG=${ACAPY_AUTHOR_ADMIN_CONFIG}
       - LOG_LEVEL=${LOG_LEVEL}
-    ports:
-      - ${ACAPY_AUTHOR_ADMIN_PORT_EXPOSED}:${ACAPY_AUTHOR_ADMIN_PORT}
-      - ${ACAPY_AUTHOR_HTTP_PORT_EXPOSED}:${ACAPY_AUTHOR_HTTP_PORT}
     entrypoint: /bin/bash
     command: [
         "-c",
