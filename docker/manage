@@ -7,6 +7,19 @@ set -e
 
 SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
 
+# ========================================================================================================
+# Check Docker Compose
+# --------------------------------------------------------------------------------------------------------
+
+# Default to deprecated V1 'docker-compose'.
+dockerCompose="docker-compose --log-level ERROR --build"
+
+# Prefer 'docker compose' V2 if available
+if [[ $(docker compose version 2> /dev/null) == 'Docker Compose'* ]]; then
+  dockerCompose="docker --log-level error compose"
+fi
+
+
 # =================================================================================================================
 # Usage:
 # -----------------------------------------------------------------------------------------------------------------
@@ -175,7 +188,7 @@ function logs() {
     log_args=()
     (( no_tail != 1 )) && log_args+=( '-f' )
     if [ ! -z "${TAIL_LOGS}" ] || [ ! -z "${_force}" ]; then
-      docker-compose \
+      ${dockerCompose} \
         --log-level ERROR logs \
          "${log_args[@]}" "$@"
     fi
@@ -186,7 +199,7 @@ deleteVolumes() {
   _projectName=${COMPOSE_PROJECT_NAME:-docker}
 
   echo "Stopping and removing any running containers ..."
-  docker-compose down -v
+  ${dockerCompose} down -v
 
   _pattern="^${_projectName}_\|^docker_"
   _volumes=$(docker volume ls -q | grep ${_pattern})
@@ -210,17 +223,17 @@ shift || COMMAND=usage
 case "${COMMAND}" in
 build)
   exportEnvironment "$@"
-  docker-compose build $@
+  ${dockerCompose} build $@
   ;;
 start|up)
   exportEnvironment "$@"
-  docker-compose up -d ${DEFAULT_CONTAINERS}
+  ${dockerCompose} up -d ${DEFAULT_CONTAINERS}
   logs
   echo "Run './manage logs' for logs" 
   ;;
 start-bdd|up-bdd)
   exportEnvironment "$@"
-  docker-compose up -d ${DEFAULT_CONTAINERS} ${TEST_CONTAINERS}
+  ${dockerCompose} up -d ${DEFAULT_CONTAINERS} ${TEST_CONTAINERS}
   logs
   echo "Run './manage logs' for logs" 
   ;;
@@ -231,11 +244,11 @@ run-bdd)
   ;;
 logs)
   exportEnvironment "$@"
-  docker-compose logs -f
+  ${dockerCompose} logs -f
   ;;
 stop)
   exportEnvironment "$@"
-  docker-compose stop
+  ${dockerCompose} stop
   ;;
 down|rm)
   exportEnvironment "$@"
