@@ -189,8 +189,7 @@ function logs() {
     (( no_tail != 1 )) && log_args+=( '-f' )
     if [ ! -z "${TAIL_LOGS}" ] || [ ! -z "${_force}" ]; then
       ${dockerCompose} \
-        --log-level ERROR logs \
-         "${log_args[@]}" "$@"
+        logs "${log_args[@]}" "$@"
     fi
   )
 }
