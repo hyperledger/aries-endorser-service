@@ -113,7 +113,7 @@ def connection_to_db_object(connection: Connection) -> Contact:
 
 
 def db_to_connection_object(
-    contact: Contact, acapy_connection: dict = None
+    contact: Contact, acapy_connection: dict | None = None
 ) -> Connection:
     """Convert from database and acapy objects to model object."""
     connection: Connection = Connection(
