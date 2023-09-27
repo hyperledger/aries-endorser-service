@@ -53,7 +53,7 @@ def validate_endorser_config(
         txn_type_vals = [e.value for e in EndorseTransactionType]
         for config_val in config_vals:
             if not config_val in txn_type_vals:
-                raise Exception(f"Error {config_val} is nto a valid transaction type")
+                raise Exception(f"Error {config_val} is not a valid transaction type")
     elif config_name == ConfigurationType.ENDORSER_AUTO_ACCEPT_CONNECTIONS.value:
         # TODO
         pass

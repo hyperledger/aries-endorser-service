@@ -2,10 +2,12 @@ import logging
 import traceback
 from typing import cast, Any
 
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 import api.acapy_utils as au
 
+from api.core.config import settings
 from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
@@ -262,24 +264,33 @@ async def auto_step_endorse_transaction_request_received(
     transaction: EndorseTransaction = webhook_to_txn_object(payload, endorser_did)
     logger.debug(f">>> transaction = {transaction}")
     connection = await get_connection_object(db, transaction.connection_id)
-    result: EndorseTransaction | dict = {}
     try:
-        was_allowed = await allowed_p(db, transaction)
-        logger.debug(f">>> from allowed_p: this was allowed? {was_allowed}")
-        if was_allowed:
-            logger.debug(f">>> from allowed_p: endorsing transaction")
+        if is_auto_reject_connection(connection):
+            logger.debug(
+                f">>> from auto_step_endorse_transaction_request_received: this was not"
+            )
+            return await reject_transaction(db, transaction)
+        elif await is_auto_endorse_txn(db, transaction, connection):
+            logger.debug(
+                f">>> from auto_step_endorse_transaction_request_received: this was allowed"
+            )
             return await endorse_transaction(db, transaction)
-    except Exception:
+        elif await allowed_p(db, transaction):
+            logger.debug(
+                f">>> from auto_step_endorse_transaction_request_received: {transaction} was allowed"
+            )
+            return await endorse_transaction(db, transaction)
+        # If we could not auto endorse check if we should reject it or leave it pending
+        elif await get_bool_config(db, "ENDORSER_REJECT_BY_DEFAULT"):
+            return await reject_transaction(db, transaction)
+        else:
+            return {}
+    except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(
-            f">>> in handle_endorse_transaction_request_received: Failed to determine if the transaction should be endorsed"
+            f">>> in handle_endorse_transaction_request_received: Failed to determine if the transaction should be endorsed with error: {e}"
         )
-
-    if is_auto_reject_connection(connection):
-        result = await reject_transaction(db, transaction)
-    elif await is_auto_endorse_txn(db, transaction, connection):
-        result = await endorse_transaction(db, transaction)
-    return result
+        return {}
 
 
 async def auto_step_endorse_transaction_transaction_endorsed(

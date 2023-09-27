@@ -50,8 +50,12 @@ class GlobalConfig(BaseSettings):
     ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
         os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
     )
-    ENDORSER_AUTO_ENDORSE_TXN_TYPES: str = (
-        os.environ.get("ENDORSER_AUTO_ENDORSE_TXN_TYPES", "")
+    ENDORSER_AUTO_ENDORSE_TXN_TYPES: str = os.environ.get(
+        "ENDORSER_AUTO_ENDORSE_TXN_TYPES", ""
+    )
+
+    ENDORSER_REJECT_BY_DEFAULT: bool = to_bool(
+        os.environ.get("ENDORSER_REJECT_BY_DEFAULT", "false")
     )
 
     # the following defaults match up with default values in scripts/.env.example
