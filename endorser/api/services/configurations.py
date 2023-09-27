@@ -68,7 +68,7 @@ async def db_get_config_records(db: AsyncSession) -> list[ConfigurationDB]:
     # build out a base query with all filters
     base_q = select(ConfigurationDB).filter(*filters)
     results_q_recs = await db.execute(base_q)
-    db_configs = results_q_recs.scalars()
+    db_configs = results_q_recs.scalars().all()
 
     return db_configs
 

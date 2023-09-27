@@ -1,9 +1,11 @@
 import logging
+from typing import cast
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
-
+from sqlalchemy.orm.query import Query
 from api.endpoints.models.endorse import (
     EndorseTransaction,
     txn_to_db_object,
@@ -19,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 
 async def get_endorser_did() -> str:
-    diddoc = await au.acapy_GET("wallet/did/public")
-    did = diddoc["result"]["did"]
+    diddoc = cast(dict, await au.acapy_GET("wallet/did/public"))
+    did = cast(str, diddoc["result"]["did"])
     return did
 
 
@@ -61,11 +63,11 @@ async def db_update_db_txn_record(
 
 async def db_get_txn_records(
     db: AsyncSession,
-    state: str = None,
-    connection_id: str = None,
+    state: str | None = None,
+    connection_id: str | None = None,
     page_size: int = 10,
     page_num: int = 1,
-) -> (int, list[EndorseRequest]):
+) -> tuple[int, list[EndorseRequest]]:
     limit = page_size
     skip = (page_num - 1) * limit
     filters = []
@@ -88,18 +90,18 @@ async def db_get_txn_records(
     )
 
     results_q_recs = await db.execute(results_q)
-    db_txns = results_q_recs.scalars()
+    db_txns: list[EndorseRequest] = results_q_recs.scalars().all()
 
     return (total_count, db_txns)
 
 
 async def get_transactions_list(
     db: AsyncSession,
-    transaction_state: str = None,
-    connection_id: str = None,
+    transaction_state: str | None = None,
+    connection_id: str | None = None,
     page_size: int = 10,
     page_num: int = 1,
-) -> (int, list[EndorseTransaction]):
+) -> tuple[int, list[EndorseTransaction]]:
     (count, db_txns) = await db_get_txn_records(
         db,
         state=transaction_state,
@@ -141,7 +143,9 @@ async def endorse_transaction(db: AsyncSession, txn: EndorseTransaction):
     db_txn: EndorseRequest = await db_fetch_db_txn_record(db, txn.transaction_id)
 
     # endorse transaction and tell aca-py
-    response = await au.acapy_POST(f"transactions/{txn.transaction_id}/endorse")
+    response = cast(
+        dict, await au.acapy_POST(f"transactions/{txn.transaction_id}/endorse")
+    )
 
     # update local db state
     db_txn.state = response["state"]
@@ -158,7 +162,9 @@ async def reject_transaction(db: AsyncSession, txn: EndorseTransaction):
     db_txn: EndorseRequest = await db_fetch_db_txn_record(db, txn.transaction_id)
 
     # endorse transaction and tell aca-py
-    response = await au.acapy_POST(f"transactions/{txn.transaction_id}/refuse")
+    response = cast(
+        dict, await au.acapy_POST(f"transactions/{txn.transaction_id}/refuse")
+    )
 
     # update local db state
     db_txn.state = response["state"]
