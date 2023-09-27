@@ -50,6 +50,7 @@ class EndorseRequest(BaseModel, table=True):
     transaction_type: str = Field(nullable=True, default=None)
     state: str = Field(nullable=True, default=None)
     ledger_txn: str = Field(nullable=True, default=None)
+    ledger_txn_request: str = Field(nullable=True, default=None)
     # --- acapy data
 
     created_at: datetime = Field(

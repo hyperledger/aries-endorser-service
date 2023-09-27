@@ -118,9 +118,8 @@ def txn_to_db_object(txn: EndorseTransaction) -> EndorseRequest:
         transaction_type=txn.transaction_type,
         state=txn.state,
         # TODO extract transaction_request into it's own field
-        ledger_txn=json.dumps(txn.transaction)
-        if txn.transaction
-        else json.dumps(txn.transaction_request),
+        ledger_txn=json.dumps(txn.transaction),
+        ledger_txn_request=json.dumps(txn.transaction_request),
     )
     logger.debug(f">>> to request: {txn_request}")
     return txn_request
@@ -144,9 +143,7 @@ def db_to_txn_object(
         else:
             transaction_response = {}
     else:
-        transaction_request = {}
         transaction_response = {}
-        # transaction = {}
     logger.debug(
         f"contents of the ledger_txn for {str(txn_request.transaction_id)} is {txn_request.ledger_txn}"
     )
@@ -156,10 +153,10 @@ def db_to_txn_object(
         transaction_id=str(txn_request.transaction_id),
         tags=txn_request.tags,
         state=acapy_txn.get("state") if acapy_txn else txn_request.state,
-        transaction_request=transaction_request,
         endorser_did=txn_request.endorser_did,
         author_did=txn_request.author_did,
         transaction=json.loads(txn_request.ledger_txn),
+        transaction_request=json.loads(txn_request.ledger_txn_request),
         transaction_type=txn_request.transaction_type,
         transaction_response=transaction_response,
     )
