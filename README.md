@@ -92,6 +92,7 @@ There are 3 "global" configuration options that can be set using environment var
 - `ENDORSER_AUTO_ACCEPT_CONNECTIONS`: set to `true` for the Endorser service to auto-accept connections (otherwise they must be manually accepted)
 - `ENDORSER_AUTO_ACCEPT_AUTHORS`: set to `true` for the Endorser service to auto-configure new connections to be "authors", otherwise author meta-data must be manually set
 - `ENDORSER_AUTO_ENDORSE_REQUESTS`: set to `true` for the Endorser service to auto-accept all "endorse transaction" requests (otherwise they must be manually endorsed) 
+- `ENDORSER_REJECT_BY_DEFAULT`: set to `true` for the Endorser service to auto-reject any "endorse transaction" request that cannot automatically be endorsed (see granular auto-endorse configuration)
 
 These parameters can be set using the `POST /endorser/v1/admin/config/<env var name>?config_value=<value>` admin API, and the setting is stored in the database (the database setting will override the environment variable).  You can see the configured values using the `GET /endorser/v1/admin/config/<env var name>` endpoint (and it will let you know if the configuration is using a value from the database or environment variable).
 
