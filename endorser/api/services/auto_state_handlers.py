@@ -148,7 +148,7 @@ async def check_auto_endorse(
     table: type,
     filters: list[tuple[Any, Any]],
 ) -> bool:
-    wild_filters = map(lambda a: eq_or_wild(a[0], a[1]), filters)
+    wild_filters = [eq_or_wild(x, y) for x, y in filters]
     q = select(table).filter(*wild_filters)
     result = await db.execute(q)
     result_rec: Row | None = result.one_or_none()
