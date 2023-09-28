@@ -128,8 +128,8 @@ class CreddefCriteria:
     Schema_Name: str
     Schema_Version: str
     Tag: str
-    RevRegDef: bool
-    RevRegEntry: bool
+    RevRegDef: str
+    RevRegEntry: str
 
 
 @dataclass
@@ -152,6 +152,7 @@ async def check_auto_endorse(
     q = select(table).filter(*wild_filters)
     result = await db.execute(q)
     result_rec: Row | None = result.one_or_none()
+    logger.debug(f"got the following record {result_rec} with query {q}")
     if result_rec:
         return True
     else:
@@ -181,11 +182,8 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
         db,
         AllowedCredentialDefinition,
         [
-            (AllowedCredentialDefinition.issuer_did, creddef_trans.DID),
-            (
-                AllowedCredentialDefinition.author_did,
-                creddef_trans.Schema_Issuer_DID,
-            ),
+            (AllowedCredentialDefinition.author_did, creddef_trans.DID),
+            (AllowedCredentialDefinition.issuer_did, creddef_trans.Schema_Issuer_DID),
             (AllowedCredentialDefinition.schema_name, creddef_trans.Schema_Name),
             (AllowedCredentialDefinition.version, creddef_trans.Schema_Version),
             (AllowedCredentialDefinition.tag, creddef_trans.Tag),
@@ -248,8 +246,8 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                         Schema_Version=schema_id.split(":")[3],
                         Tag=cast(str, trans.transaction.get("tag")),
                         # TODO determine what these are
-                        RevRegEntry=True,
-                        RevRegDef=False,
+                        RevRegEntry="true",
+                        RevRegDef="true",
                     ),
                 )
 
