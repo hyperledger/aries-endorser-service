@@ -1,14 +1,13 @@
 import logging
-from typing import Optional, TypeVar
-from sqlalchemy.sql.functions import func
-from api.db.models.base import BaseModel
+from typing import Optional, TypeVar, Union
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Field, SQLModel
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, desc, delete, and_
-from api.db.errors import DoesNotExist
 from starlette import status
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from sqlalchemy.sql.functions import func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
 
 from api.endpoints.models.endorse import (
     EndorseTransactionState,
@@ -26,19 +25,18 @@ from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
 )
+from api.db.errors import DoesNotExist
 from api.db.models.endorse_request import EndorseRequest
 
 from api.services.endorse import (
     endorse_transaction,
 )
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from api.services.auto_state_handlers import allowed_p
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-# TODO add a try catch to avoid errors leaking
 async def updated_allowed(db: AsyncSession) -> None:
     try:
         q = select(EndorseRequest).where(
@@ -64,13 +62,21 @@ async def updated_allowed(db: AsyncSession) -> None:
 
 
 T = TypeVar("T")
+J = TypeVar("J")
 
 
-async def construct_getter(
-    db: AsyncSession, filters: list, table: type[T], page_num, page_size
+async def select_from_table(
+    db: AsyncSession,
+    filters: dict[J | None, J],
+    table: type[T],
+    page_num,
+    page_size,
 ) -> tuple[int, list[T]]:
     skip = (page_num - 1) * page_size
-    base_q = select(table).filter(*filters)
+    filter_conditions = [
+        cond == value if value else True for value, cond in filters.items()
+    ]
+    base_q = select(table).filter(*filter_conditions)
     count_q = select([func.count()]).select_from(base_q)
     q = base_q.limit(page_size).offset(skip)
     count_result = await db.execute(count_q)
@@ -86,7 +92,7 @@ async def construct_getter(
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDidList,
 )
-async def get_allowed_dids(
+async def get_allowed_did(
     did: Optional[str] = None,
     page_size: int = 10,
     page_num: int = 1,
@@ -95,8 +101,12 @@ async def get_allowed_dids(
     try:
         total_count: int
         db_txn: list[AllowedPublicDid]
-        total_count, db_txn = await construct_getter(
-            db, [], AllowedPublicDid, page_num, page_size
+        total_count, db_txn = await select_from_table(
+            db,
+            {},
+            AllowedPublicDid,
+            page_num,
+            page_size,
         )
 
         return AllowedPublicDidList(
@@ -106,30 +116,6 @@ async def get_allowed_dids(
             count=len(db_txn),
             connections=db_txn,
         )
-    except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-
-@router.get(
-    "/publish-did/{did}",
-    status_code=status.HTTP_200_OK,
-    response_model=AllowedPublicDid,
-)
-async def get_allowed_did(
-    did: str,
-    db: AsyncSession = Depends(get_db),
-) -> AllowedPublicDid:
-    try:
-        q = select(AllowedPublicDid).where(AllowedPublicDid.registered_did == did)
-        result = await db.execute(q)
-        result_rec = result.scalar_one_or_none()
-        if not result_rec:
-            raise DoesNotExist(
-                f"{AllowedPublicDid.__name__}<transaction_id:{did}> does not exist"
-            )
-
-        db_txn: AllowedPublicDid = AllowedPublicDid.from_orm(result_rec)
-        return db_txn
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -144,16 +130,15 @@ async def add_allowed_did(
     db: AsyncSession = Depends(get_db),
 ) -> AllowedPublicDid:
     try:
-        tmp = AllowedPublicDid(registered_did=did)
-        db.add(tmp)
+        adid = AllowedPublicDid(registered_did=did)
+        db.add(adid)
         await db.commit()
         await updated_allowed(db)
-        return tmp
+        return adid
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# TODO make the result just a 200 or an error
 @router.delete(
     "/publish-did/{did}",
     status_code=status.HTTP_200_OK,
@@ -178,6 +163,7 @@ async def delete_allowed_did(
     response_model=AllowedSchemaList,
 )
 async def get_allowed_schemas(
+    allowed_schema_id: Optional[UUID] = None,
     author_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     version: Optional[str] = None,
@@ -186,14 +172,15 @@ async def get_allowed_schemas(
     db: AsyncSession = Depends(get_db),
 ) -> AllowedSchemaList:
     try:
-        filter = [
-            (AllowedSchema.author_did == author_did if author_did else True),
-            (AllowedSchema.schema_name == schema_name if schema_name else True),
-            (AllowedSchema.version == version if version else True),
-        ]
+        filter = {
+            allowed_schema_id: AllowedSchema.allowed_schema_id,
+            author_did: AllowedSchema.author_did,
+            schema_name: AllowedSchema.schema_name,
+            version: AllowedSchema.version,
+        }
 
         db_txn: list[AllowedSchema]
-        total_count, db_txn = await construct_getter(
+        total_count, db_txn = await select_from_table(
             db, filter, AllowedSchema, page_num, page_size
         )
         return AllowedSchemaList(
@@ -213,9 +200,9 @@ async def get_allowed_schemas(
     response_model=AllowedSchema,
 )
 async def add_allowed_schema(
-    author_did: Optional[str] = None,
-    schema_name: Optional[str] = None,
-    version: Optional[str] = None,
+    author_did: str,
+    schema_name: str,
+    version: str,
     db: AsyncSession = Depends(get_db),
 ) -> AllowedSchema:
     try:
@@ -236,12 +223,12 @@ async def add_allowed_schema(
     response_model=dict,
 )
 async def delete_allowed_schema(
-    allowed_schema_id: str,
+    allowed_schema_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
         q = delete(AllowedSchema).where(
-            AllowedSchema.allowed_schema_id == AllowedSchema.allowed_schema_id
+            AllowedSchema.allowed_schema_id == allowed_schema_id
         )
         await db.execute(q)
         await updated_allowed(db)
@@ -256,6 +243,7 @@ async def delete_allowed_schema(
     response_model=AllowedCredentialDefinitionList,
 )
 async def get_allowed_cred_def(
+    allowed_cred_def_id: Optional[UUID] = None,
     issuer_did: Optional[str] = None,
     author_did: Optional[str] = None,
     schema_name: Optional[str] = None,
@@ -268,28 +256,19 @@ async def get_allowed_cred_def(
     db: AsyncSession = Depends(get_db),
 ) -> AllowedCredentialDefinitionList:
     try:
-        filters = [
-            AllowedCredentialDefinition.issuer_did == issuer_did
-            if issuer_did
-            else True,
-            AllowedCredentialDefinition.author_did == author_did
-            if author_did
-            else True,
-            AllowedCredentialDefinition.schema_name == schema_name
-            if schema_name
-            else True,
-            AllowedCredentialDefinition.version == version if version else True,
-            AllowedCredentialDefinition.tag == tag if tag else True,
-            AllowedCredentialDefinition.rev_reg_def == rev_reg_def
-            if rev_reg_def
-            else True,
-            AllowedCredentialDefinition.rev_reg_entry == rev_reg_entry
-            if rev_reg_entry
-            else True,
-        ]
+        filters = {
+            allowed_cred_def_id: AllowedCredentialDefinition.allowed_cred_def_id,
+            issuer_did: AllowedCredentialDefinition.issuer_did,
+            author_did: AllowedCredentialDefinition.author_did,
+            schema_name: AllowedCredentialDefinition.schema_name,
+            version: AllowedCredentialDefinition.version,
+            tag: AllowedCredentialDefinition.tag,
+            rev_reg_def: AllowedCredentialDefinition.rev_reg_def,
+            rev_reg_entry: AllowedCredentialDefinition.rev_reg_entry,
+        }
 
         db_txn: list[AllowedCredentialDefinition]
-        total_count, db_txn = await construct_getter(
+        total_count, db_txn = await select_from_table(
             db, filters, AllowedCredentialDefinition, page_num, page_size
         )
         await updated_allowed(db)
@@ -310,17 +289,17 @@ async def get_allowed_cred_def(
     response_model=AllowedCredentialDefinition,
 )
 async def add_allowed_cred_def(
-    issuer_did: Optional[str] = None,
-    author_did: Optional[str] = None,
-    schema_name: Optional[str] = None,
-    version: Optional[str] = None,
-    tag: Optional[str] = None,
-    rev_reg_def: Optional[str] = None,
-    rev_reg_entry: Optional[str] = None,
+    issuer_did: str,
+    author_did: str,
+    schema_name: str,
+    version: str,
+    tag: str,
+    rev_reg_def: str,
+    rev_reg_entry: str,
     db: AsyncSession = Depends(get_db),
 ) -> AllowedCredentialDefinition:
     try:
-        tmp = AllowedCredentialDefinition(
+        acreddef = AllowedCredentialDefinition(
             issuer_did=issuer_did,
             author_did=author_did,
             schema_name=schema_name,
@@ -329,10 +308,10 @@ async def add_allowed_cred_def(
             rev_reg_entry=rev_reg_entry,
             version=version,
         )
-        db.add(tmp)
+        db.add(acreddef)
         await db.commit()
         await updated_allowed(db)
-        return tmp
+        return acreddef
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
@@ -343,36 +322,12 @@ async def add_allowed_cred_def(
     response_model=dict,
 )
 async def delete_allowed_cred_def(
-    issuer_did: Optional[str] = None,
-    author_did: Optional[str] = None,
-    schema_name: Optional[str] = None,
-    version: Optional[str] = None,
-    tag: Optional[str] = None,
-    rev_reg_def: Optional[str] = None,
-    rev_reg_entry: Optional[str] = None,
+    allowed_cred_def_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
         q = delete(AllowedCredentialDefinition).where(
-            and_(
-                AllowedCredentialDefinition.issuer_did == issuer_did
-                if issuer_did
-                else True,
-                AllowedCredentialDefinition.author_did == author_did
-                if author_did
-                else True,
-                AllowedCredentialDefinition.schema_name == schema_name
-                if schema_name
-                else True,
-                AllowedCredentialDefinition.version == version if version else True,
-                AllowedCredentialDefinition.tag == tag if tag else True,
-                AllowedCredentialDefinition.rev_reg_def == rev_reg_def
-                if rev_reg_def
-                else True,
-                AllowedCredentialDefinition.rev_reg_entry == rev_reg_entry
-                if rev_reg_entry
-                else True,
-            )
+            AllowedCredentialDefinition.allowed_cred_def_id == allowed_cred_def_id
         )
         await db.execute(q)
         await updated_allowed(db)

@@ -117,7 +117,6 @@ def txn_to_db_object(txn: EndorseTransaction) -> EndorseRequest:
         author_did=txn.author_did,
         transaction_type=txn.transaction_type,
         state=txn.state,
-        # TODO extract transaction_request into it's own field
         ledger_txn=json.dumps(txn.transaction),
         ledger_txn_request=json.dumps(txn.transaction_request),
     )

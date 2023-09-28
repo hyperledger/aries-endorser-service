@@ -14,7 +14,6 @@ from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, ARRAY
 from api.db.models.base import BaseModel
 
 
-# TODO rename author_did to did_being_registered since we do not care about the author's did
 class AllowedPublicDid(BaseModel, table=True):
     """AllowedPublicDid
 
@@ -22,9 +21,9 @@ class AllowedPublicDid(BaseModel, table=True):
     (postgresql specific dialects in use).
 
     Attributes:
-      author_did: DID of the allowed author
-      created_at: Timestamp when record was created
-      updated_at: Timestamp when record was last modified
+      registered_did: DIDs allowed to be registered
+      created_at:     Timestamp when record was created
+      updated_at:     Timestamp when record was last modified
     """
 
     # acapy data ---
@@ -90,6 +89,7 @@ class AllowedCredentialDefinition(BaseModel, table=True):
       author_did: DID of the allowed author
       schema_name: Name of the schema
       version: Version of this schema
+      tag: tag of the creddef
       created_at: Timestamp when record was created
       updated_at: Timestamp when record was last modified
       rev_reg_def: TODO
