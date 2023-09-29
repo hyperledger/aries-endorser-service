@@ -128,8 +128,6 @@ class CreddefCriteria:
     Schema_Name: str
     Schema_Version: str
     Tag: str
-    RevRegDef: str
-    RevRegEntry: str
 
 
 @dataclass
@@ -187,15 +185,12 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
             (AllowedCredentialDefinition.schema_name, creddef_trans.Schema_Name),
             (AllowedCredentialDefinition.version, creddef_trans.Schema_Version),
             (AllowedCredentialDefinition.tag, creddef_trans.Tag),
-            (AllowedCredentialDefinition.rev_reg_def, creddef_trans.RevRegDef),
-            (AllowedCredentialDefinition.rev_reg_entry, creddef_trans.RevRegEntry),
         ],
     )
 
 
 async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
     logger.debug(f">>> from allowed_p: entered")
-    # TODO check that this is how we want to handle this
 
     # Publishing/registering a public did on the ledger
     if (
@@ -217,6 +212,51 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
             return False
 
         match trans.transaction_type:
+            case EndorseTransactionType.revoc_registry:
+                logger.debug(f">>> from allowed_p: {trans} was a revocation registry")
+                # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
+                credDefId: list[str] = trans.transaction["credDefId"].split(":")
+                cred_auth_did = credDefId[0]
+                sequence_num = int(credDefId[3])
+                tag = credDefId[4]
+
+                response = cast(
+                    dict, await au.acapy_GET("schemas/" + str(sequence_num))
+                )
+                schema_id: list[str] = response["schema"]["id"].split(":")
+
+                return await check_auto_endorse(
+                    db,
+                    AllowedCredentialDefinition,
+                    [
+                        (AllowedCredentialDefinition.author_did, cred_auth_did),
+                        (AllowedCredentialDefinition.issuer_did, schema_id[0]),
+                        (AllowedCredentialDefinition.schema_name, schema_id[2]),
+                        (AllowedCredentialDefinition.version, schema_id[3]),
+                        (AllowedCredentialDefinition.tag, tag),
+                        (AllowedCredentialDefinition.rev_reg_def, "True"),
+                    ],
+                )
+            # use this to test it out
+            # https://github.com/hyperledger/aries-cloudagent-python/blob/main/docs/GettingStartedAriesDev/CredentialRevocation.md
+            case EndorseTransactionType.revoc_entry:
+                logger.debug(f">>> from allowed_p: {trans} was a revocation entry")
+                raise Exception("revoc_entry not implemented", trans)
+                # TODO determine the cred def and if this is allowed
+                tmp: CreddefCriteria = None
+                # TODO assign something to tmp
+                return await check_auto_endorse(
+                    db,
+                    AllowedCredentialDefinition,
+                    [
+                        (AllowedCredentialDefinition.author_did, tmp.DID),
+                        (AllowedCredentialDefinition.issuer_did, tmp.Schema_Issuer_DID),
+                        (AllowedCredentialDefinition.schema_name, tmp.Schema_Name),
+                        (AllowedCredentialDefinition.version, tmp.Schema_Version),
+                        (AllowedCredentialDefinition.ta, tmp.Tag),
+                        (AllowedCredentialDefinition.rev_reg_entry, "true"),
+                    ],
+                )
             case EndorseTransactionType.schema:
                 logger.debug(f">>> from allowed_p: {trans} was a schema request")
                 schema = trans.transaction["data"]
@@ -236,18 +276,15 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                 logger.debug(
                     f">>> from allowed_p: {trans} was a cred_def request with response {response}"
                 )
-                schema_id: str = response["schema"]["id"]
+                schema_id: list[str] = response["schema"]["id"].split(":")
                 return await allowed_creddef(
                     db,
                     CreddefCriteria(
                         DID=trans.author_did,
-                        Schema_Issuer_DID=schema_id.split(":")[0],
-                        Schema_Name=schema_id.split(":")[2],
-                        Schema_Version=schema_id.split(":")[3],
+                        Schema_Issuer_DID=schema_id[0],
+                        Schema_Name=schema_id[2],
+                        Schema_Version=schema_id[3],
                         Tag=cast(str, trans.transaction.get("tag")),
-                        # TODO determine what these are
-                        RevRegEntry="true",
-                        RevRegDef="true",
                     ),
                 )
 
