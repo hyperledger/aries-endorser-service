@@ -11,8 +11,6 @@ from api.core.config import settings
 from api.endpoints.dependencies.db import get_db
 import api.services as api_services
 
-import api.acapy_utils as au
-
 
 logger = logging.getLogger(__name__)
 

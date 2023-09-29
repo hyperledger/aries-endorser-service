@@ -5,9 +5,10 @@ from typing import cast, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
+from sqlalchemy.engine.row import Row
+
 import api.acapy_utils as au
 
-from api.core.config import settings
 from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
@@ -16,10 +17,6 @@ from api.endpoints.models.allow import (
     AllowedPublicDid,
 )
 from api.endpoints.models.endorse import EndorseTransactionType
-from sqlalchemy.engine.row import Row
-from api.endpoints.models.endorse import (
-    EndorseTransaction,
-)
 
 from attr import dataclass
 
@@ -190,7 +187,7 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
 
 
 async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
-    logger.debug(f">>> from allowed_p: entered")
+    logger.debug(">>> from allowed_p: entered")
 
     # Publishing/registering a public did on the ledger
     if (
@@ -274,7 +271,8 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                 )
 
                 logger.debug(
-                    f">>> from allowed_p: {trans} was a cred_def request with response {response}"
+                    f">>> from allowed_p:\
+                    {trans} was a cred_def request with response {response}"
                 )
                 schema_id: list[str] = response["schema"]["id"].split(":")
                 return await allowed_creddef(
@@ -291,6 +289,7 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
         return False
 
 
+# TODO look into returning the hander result
 async def auto_step_endorse_transaction_request_received(
     db: AsyncSession, payload: dict, handler_result: dict
 ) -> EndorseTransaction | dict:
@@ -302,17 +301,20 @@ async def auto_step_endorse_transaction_request_received(
     try:
         if is_auto_reject_connection(connection):
             logger.debug(
-                f">>> from auto_step_endorse_transaction_request_received: this was not"
+                ">>> from auto_step_endorse_transaction_request_received:\
+                this was not"
             )
             return await reject_transaction(db, transaction)
         elif await is_auto_endorse_txn(db, transaction, connection):
             logger.debug(
-                f">>> from auto_step_endorse_transaction_request_received: this was allowed"
+                ">>> from auto_step_endorse_transaction_request_received:\
+                this was allowed"
             )
             return await endorse_transaction(db, transaction)
         elif await allowed_p(db, transaction):
             logger.debug(
-                f">>> from auto_step_endorse_transaction_request_received: {transaction} was allowed"
+                f">>> from auto_step_endorse_transaction_request_received:\
+                {transaction} was allowed"
             )
             return await endorse_transaction(db, transaction)
         # If we could not auto endorse check if we should reject it or leave it pending
@@ -323,7 +325,8 @@ async def auto_step_endorse_transaction_request_received(
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(
-            f">>> in handle_endorse_transaction_request_received: Failed to determine if the transaction should be endorsed with error: {e}"
+            f">>> in handle_endorse_transaction_request_received:\
+            Failed to determine if the transaction should be endorsed with error: {e}"
         )
         return {}
 

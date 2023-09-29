@@ -143,9 +143,6 @@ def db_to_txn_object(
             transaction_response = {}
     else:
         transaction_response = {}
-    logger.debug(
-        f"contents of the ledger_txn for {str(txn_request.transaction_id)} is {txn_request.ledger_txn}"
-    )
     txn: EndorseTransaction = EndorseTransaction(
         author_goal_code=str(txn_request.author_goal_code),
         connection_id=str(txn_request.connection_id),

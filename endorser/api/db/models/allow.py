@@ -5,11 +5,10 @@ Models of the Endorser tables for allow list and related data.
 """
 import uuid
 from datetime import datetime
-from typing import List
 
 from sqlmodel import Field
-from sqlalchemy import Column, func, text, String
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, ARRAY
+from sqlalchemy import Column, func, text
+from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 
 from api.db.models.base import BaseModel
 
@@ -85,7 +84,8 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     (postgresql specific dialects in use).
 
     Attributes:
-      issuer_did: DID of the issuer of the schema associated with this credential definition
+      issuer_did: DID of the issuer of the schema associated with this
+                  credential definition
       author_did: DID of the allowed author
       schema_name: Name of the schema
       version: Version of this schema

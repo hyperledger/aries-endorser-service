@@ -34,10 +34,7 @@ async def get_endorser_configs(db: AsyncSession) -> dict:
         endorser_configs[endorser_config.config_name] = endorser_config.json()
     endorser_configs["public_did"] = endorser_public_did["result"]
 
-    return {
-        "acapy_config": acapy_config["config"],
-        "endorser_config": endorser_configs
-    }
+    return {"acapy_config": acapy_config["config"], "endorser_config": endorser_configs}
 
 
 async def get_endorser_config(db: AsyncSession, config_name: str) -> dict:
@@ -49,10 +46,10 @@ def validate_endorser_config(
     config_value: str,
 ):
     if config_name == ConfigurationType.ENDORSER_AUTO_ENDORSE_TXN_TYPES.value:
-        config_vals = config_value.split(',')
+        config_vals = config_value.split(",")
         txn_type_vals = [e.value for e in EndorseTransactionType]
         for config_val in config_vals:
-            if not config_val in txn_type_vals:
+            if config_val not in txn_type_vals:
                 raise Exception(f"Error {config_val} is not a valid transaction type")
     elif config_name == ConfigurationType.ENDORSER_AUTO_ACCEPT_CONNECTIONS.value:
         # TODO

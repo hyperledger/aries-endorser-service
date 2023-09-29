@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, TypeVar, Union
+from typing import Optional, TypeVar
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +16,6 @@ from api.endpoints.models.endorse import (
 
 from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.allow import (
-    AllowedPublicDidList,
     AllowedPublicDid,
     AllowedSchemaList,
     AllowedCredentialDefinitionList,
@@ -25,7 +24,6 @@ from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
 )
-from api.db.errors import DoesNotExist
 from api.db.models.endorse_request import EndorseRequest
 
 from api.services.endorse import (
@@ -111,7 +109,8 @@ async def add_allowed_did(
     "/publish-did/{did}",
     status_code=status.HTTP_200_OK,
     response_model=dict,
-    description="Remove a DID from the list of DIDs that will be auto endorsed when published to the ledger",
+    description="Remove a DID from the list of DIDs that will be auto endorsed\
+    when published to the ledger",
 )
 async def delete_allowed_did(
     did: str,
@@ -130,7 +129,8 @@ async def delete_allowed_did(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=AllowedSchemaList,
-    description="Get a list of schemas that will be auto endorsed when sent to the ledger by an author",
+    description="Get a list of schemas that will be auto endorsed\
+    when sent to the ledger by an author",
 )
 async def get_allowed_schemas(
     allowed_schema_id: Optional[UUID] = None,
@@ -168,7 +168,8 @@ async def get_allowed_schemas(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=AllowedSchema,
-    description="Add a new schema that will be auto endorsed when sent to the ledger by an author",
+    description="Add a new schema that will be auto endorsed\
+    when sent to the ledger by an author",
 )
 async def add_allowed_schema(
     author_did: str = "*",
@@ -192,7 +193,8 @@ async def add_allowed_schema(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=dict,
-    description="Remove a schema from the list of schemas that will be auto endorsed when sent to the ledger",
+    description="Remove a schema from the list of schemas that will be auto endorsed\
+    when sent to the ledger",
 )
 async def delete_allowed_schema(
     allowed_schema_id: UUID,
@@ -213,7 +215,8 @@ async def delete_allowed_schema(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=AllowedCredentialDefinitionList,
-    description="Get a list of credential definitions that will be auto endorsed when sent to the ledger by an author",
+    description="Get a list of credential definitions that will be auto endorsed\
+    when sent to the ledger by an author",
 )
 async def get_allowed_cred_def(
     allowed_cred_def_id: Optional[UUID] = None,
@@ -264,7 +267,8 @@ async def get_allowed_cred_def(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=AllowedCredentialDefinition,
-    description="Add a new credential definition that will be auto endorsed when sent to the ledger by an author",
+    description="Add a new credential definition that will be auto endorsed when\
+    sent to the ledger by an author",
 )
 async def add_allowed_cred_def(
     issuer_did: str = "*",
@@ -298,7 +302,8 @@ async def add_allowed_cred_def(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=dict,
-    description="Remove a credential definition from the list of credential definitions that will be auto endorsed when sent to the ledger",
+    description="Remove a credential definition from the list of credential \
+    definitions that will be auto endorsed when sent to the ledger",
 )
 async def delete_allowed_cred_def(
     allowed_cred_def_id: UUID,

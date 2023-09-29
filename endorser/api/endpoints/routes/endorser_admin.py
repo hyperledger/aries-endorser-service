@@ -1,11 +1,8 @@
 import logging
-from typing import Optional
-import json
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from pydantic import BaseModel
 
 from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.configurations import ConfigurationType
@@ -32,12 +29,12 @@ async def get_config(
         endorser_configs = await get_endorser_configs(db)
         return endorser_configs
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.get("/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict)
+@router.get(
+    "/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict
+)
 async def get_config(
     config_name: str,
     db: AsyncSession = Depends(get_db),
@@ -47,12 +44,12 @@ async def get_config(
         endorser_config = await get_endorser_config(db, config_name)
         return endorser_config
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.post("/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict)
+@router.post(
+    "/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict
+)
 async def update_config(
     config_name: str,
     config_value: str,
@@ -65,6 +62,4 @@ async def update_config(
         endorser_config = await update_endorser_config(db, config_name, config_value)
         return endorser_config
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

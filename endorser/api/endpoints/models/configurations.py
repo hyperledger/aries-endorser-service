@@ -1,6 +1,5 @@
 from enum import Enum
 import logging
-import os
 
 from pydantic import BaseModel
 

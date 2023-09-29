@@ -1,11 +1,9 @@
 import logging
 from typing import cast
-from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
-from sqlalchemy.orm.query import Query
 from api.endpoints.models.endorse import (
     EndorseTransaction,
     txn_to_db_object,
