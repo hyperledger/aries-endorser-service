@@ -87,46 +87,14 @@ async def select_from_table(
     return (total_count, db_txn)
 
 
-@router.get(
-    "/publish-did",
-    status_code=status.HTTP_200_OK,
-    response_model=AllowedPublicDidList,
-)
-async def get_allowed_did(
-    did: Optional[str] = None,
-    page_size: int = 10,
-    page_num: int = 1,
-    db: AsyncSession = Depends(get_db),
-) -> AllowedPublicDidList:
-    try:
-        total_count: int
-        db_txn: list[AllowedPublicDid]
-        total_count, db_txn = await select_from_table(
-            db,
-            {},
-            AllowedPublicDid,
-            page_num,
-            page_size,
-        )
-
-        return AllowedPublicDidList(
-            page_size=page_size,
-            page_num=page_num,
-            total_count=total_count,
-            count=len(db_txn),
-            connections=db_txn,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-
 @router.post(
     "/publish-did/{did}",
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDid,
+    description="Add a new DID that will be auto endorsed when published by an author",
 )
 async def add_allowed_did(
-    did: str,
+    did: str = "*",
     db: AsyncSession = Depends(get_db),
 ) -> AllowedPublicDid:
     try:
@@ -143,6 +111,7 @@ async def add_allowed_did(
     "/publish-did/{did}",
     status_code=status.HTTP_200_OK,
     response_model=dict,
+    description="Remove a DID from the list of DIDs that will be auto endorsed when published to the ledger",
 )
 async def delete_allowed_did(
     did: str,
@@ -161,6 +130,7 @@ async def delete_allowed_did(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=AllowedSchemaList,
+    description="Get a list of schemas that will be auto endorsed when sent to the ledger by an author",
 )
 async def get_allowed_schemas(
     allowed_schema_id: Optional[UUID] = None,
@@ -198,11 +168,12 @@ async def get_allowed_schemas(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=AllowedSchema,
+    description="Add a new schema that will be auto endorsed when sent to the ledger by an author",
 )
 async def add_allowed_schema(
-    author_did: str,
-    schema_name: str,
-    version: str,
+    author_did: str = "*",
+    schema_name: str = "*",
+    version: str = "*",
     db: AsyncSession = Depends(get_db),
 ) -> AllowedSchema:
     try:
@@ -221,6 +192,7 @@ async def add_allowed_schema(
     "/schema",
     status_code=status.HTTP_200_OK,
     response_model=dict,
+    description="Remove a schema from the list of schemas that will be auto endorsed when sent to the ledger",
 )
 async def delete_allowed_schema(
     allowed_schema_id: UUID,
@@ -241,6 +213,7 @@ async def delete_allowed_schema(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=AllowedCredentialDefinitionList,
+    description="Get a list of credential definitions that will be auto endorsed when sent to the ledger by an author",
 )
 async def get_allowed_cred_def(
     allowed_cred_def_id: Optional[UUID] = None,
@@ -249,8 +222,8 @@ async def get_allowed_cred_def(
     schema_name: Optional[str] = None,
     version: Optional[str] = None,
     tag: Optional[str] = None,
-    rev_reg_def: Optional[str] = None,
-    rev_reg_entry: Optional[str] = None,
+    rev_reg_def: Optional[bool] = None,
+    rev_reg_entry: Optional[bool] = None,
     page_size: int = 10,
     page_num: int = 1,
     db: AsyncSession = Depends(get_db),
@@ -263,8 +236,12 @@ async def get_allowed_cred_def(
             schema_name: AllowedCredentialDefinition.schema_name,
             version: AllowedCredentialDefinition.version,
             tag: AllowedCredentialDefinition.tag,
-            rev_reg_def: AllowedCredentialDefinition.rev_reg_def,
-            rev_reg_entry: AllowedCredentialDefinition.rev_reg_entry,
+            str(rev_reg_def)
+            if rev_reg_def
+            else None: AllowedCredentialDefinition.rev_reg_def,
+            str(rev_reg_entry)
+            if rev_reg_entry
+            else None: AllowedCredentialDefinition.rev_reg_entry,
         }
 
         db_txn: list[AllowedCredentialDefinition]
@@ -287,15 +264,16 @@ async def get_allowed_cred_def(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=AllowedCredentialDefinition,
+    description="Add a new credential definition that will be auto endorsed when sent to the ledger by an author",
 )
 async def add_allowed_cred_def(
-    issuer_did: str,
-    author_did: str,
-    schema_name: str,
-    version: str,
-    tag: str,
-    rev_reg_def: str,
-    rev_reg_entry: str,
+    issuer_did: str = "*",
+    author_did: str = "*",
+    schema_name: str = "*",
+    version: str = "*",
+    tag: str = "*",
+    rev_reg_def: bool = True,
+    rev_reg_entry: bool = True,
     db: AsyncSession = Depends(get_db),
 ) -> AllowedCredentialDefinition:
     try:
@@ -304,8 +282,8 @@ async def add_allowed_cred_def(
             author_did=author_did,
             schema_name=schema_name,
             tag=tag,
-            rev_reg_def=rev_reg_def,
-            rev_reg_entry=rev_reg_entry,
+            rev_reg_def=str(rev_reg_def),
+            rev_reg_entry=str(rev_reg_entry),
             version=version,
         )
         db.add(acreddef)
@@ -320,6 +298,7 @@ async def add_allowed_cred_def(
     "/credential-definition",
     status_code=status.HTTP_200_OK,
     response_model=dict,
+    description="Remove a credential definition from the list of credential definitions that will be auto endorsed when sent to the ledger",
 )
 async def delete_allowed_cred_def(
     allowed_cred_def_id: UUID,
