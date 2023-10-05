@@ -217,6 +217,7 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                 sequence_num = int(credDefId[3])
                 tag = credDefId[4]
 
+                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
@@ -234,24 +235,32 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                         (AllowedCredentialDefinition.rev_reg_def, "True"),
                     ],
                 )
-            # use this to test it out
-            # https://github.com/hyperledger/aries-cloudagent-python/blob/main/docs/GettingStartedAriesDev/CredentialRevocation.md
             case EndorseTransactionType.revoc_entry:
                 logger.debug(f">>> from allowed_p: {trans} was a revocation entry")
-                raise Exception("revoc_entry not implemented", trans)
-                # TODO determine the cred def and if this is allowed
-                tmp: CreddefCriteria = None
-                # TODO assign something to tmp
+                # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
+                revocRegDefId: list[str] = trans.transaction["revocRegDefId"].split(":")
+
+                cred_auth_did = revocRegDefId[0]
+                sequence_num = int(revocRegDefId[5])
+                tag = revocRegDefId[6]
+
+                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
+                response = cast(
+                    dict, await au.acapy_GET("schemas/" + str(sequence_num))
+                )
+                schema_id: list[str] = response["schema"]["id"].split(":")
+                logger.debug(f">>> from allowed_p: {trans} was a revocation entry")
+                # raise Exception("revoc_entry not implemented", trans)
                 return await check_auto_endorse(
                     db,
                     AllowedCredentialDefinition,
                     [
-                        (AllowedCredentialDefinition.author_did, tmp.DID),
-                        (AllowedCredentialDefinition.issuer_did, tmp.Schema_Issuer_DID),
-                        (AllowedCredentialDefinition.schema_name, tmp.Schema_Name),
-                        (AllowedCredentialDefinition.version, tmp.Schema_Version),
-                        (AllowedCredentialDefinition.ta, tmp.Tag),
-                        (AllowedCredentialDefinition.rev_reg_entry, "true"),
+                        (AllowedCredentialDefinition.author_did, cred_auth_did),
+                        (AllowedCredentialDefinition.issuer_did, schema_id[0]),
+                        (AllowedCredentialDefinition.schema_name, schema_id[2]),
+                        (AllowedCredentialDefinition.version, schema_id[3]),
+                        (AllowedCredentialDefinition.tag, tag),
+                        (AllowedCredentialDefinition.rev_reg_entry, "True"),
                     ],
                 )
             case EndorseTransactionType.schema:
@@ -266,6 +275,7 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
 
                 sequence_num: int = cast(int, trans.transaction.get("ref"))
 
+                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
@@ -291,7 +301,7 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
 
 # TODO look into returning the hander result
 async def auto_step_endorse_transaction_request_received(
-    db: AsyncSession, payload: dict, handler_result: dict
+    db: AsyncSession, payload: dict, handler_result: EndorseTransaction | dict
 ) -> EndorseTransaction | dict:
     logger.info(">>> in auto_step_endorse_transaction_request_received() ...")
     endorser_did = await get_endorser_did()
@@ -304,31 +314,31 @@ async def auto_step_endorse_transaction_request_received(
                 ">>> from auto_step_endorse_transaction_request_received:\
                 this was not"
             )
-            return await reject_transaction(db, transaction)
+            handler_result = await reject_transaction(db, transaction)
         elif await is_auto_endorse_txn(db, transaction, connection):
             logger.debug(
                 ">>> from auto_step_endorse_transaction_request_received:\
                 this was allowed"
             )
-            return await endorse_transaction(db, transaction)
+            handler_result = await endorse_transaction(db, transaction)
         elif await allowed_p(db, transaction):
             logger.debug(
                 f">>> from auto_step_endorse_transaction_request_received:\
                 {transaction} was allowed"
             )
-            return await endorse_transaction(db, transaction)
+            handler_result = await endorse_transaction(db, transaction)
         # If we could not auto endorse check if we should reject it or leave it pending
         elif await get_bool_config(db, "ENDORSER_REJECT_BY_DEFAULT"):
-            return await reject_transaction(db, transaction)
+            handler_result = await reject_transaction(db, transaction)
         else:
-            return {}
+            handler_result = {}
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(
             f">>> in handle_endorse_transaction_request_received:\
             Failed to determine if the transaction should be endorsed with error: {e}"
         )
-        return {}
+    return handler_result
 
 
 async def auto_step_endorse_transaction_transaction_endorsed(

@@ -45,6 +45,7 @@ def validate_endorser_config(
     config_name: str,
     config_value: str,
 ):
+    # TODO document that we can globally endorse types of transactions in the README
     if config_name == ConfigurationType.ENDORSER_AUTO_ENDORSE_TXN_TYPES.value:
         config_vals = config_value.split(",")
         txn_type_vals = [e.value for e in EndorseTransactionType]
@@ -58,6 +59,9 @@ def validate_endorser_config(
         # TODO
         pass
     elif config_name == ConfigurationType.ENDORSER_AUTO_ENDORSE_REQUESTS.value:
+        # TODO
+        pass
+    elif config_name == ConfigurationType.ENDORSER_REJECT_BY_DEFAULT.value:
         # TODO
         pass
 

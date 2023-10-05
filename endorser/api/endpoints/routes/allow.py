@@ -19,6 +19,7 @@ from api.endpoints.models.allow import (
     AllowedPublicDid,
     AllowedSchemaList,
     AllowedCredentialDefinitionList,
+    AllowedPublicDidList,
 )
 from api.db.models.allow import (
     AllowedSchema,
@@ -85,11 +86,45 @@ async def select_from_table(
     return (total_count, db_txn)
 
 
+@router.get(
+    "/publish-did",
+    status_code=status.HTTP_200_OK,
+    response_model=AllowedPublicDidList,
+)
+async def get_allowed_did(
+    did: Optional[str] = None,
+    page_size: int = 10,
+    page_num: int = 1,
+    db: AsyncSession = Depends(get_db),
+) -> AllowedPublicDidList:
+    try:
+        total_count: int
+        db_txn: list[AllowedPublicDid]
+        total_count, db_txn = await select_from_table(
+            db,
+            {did, AllowedPublicDid.registered_did},
+            AllowedPublicDid,
+            page_num,
+            page_size,
+        )
+
+        return AllowedPublicDidList(
+            page_size=page_size,
+            page_num=page_num,
+            total_count=total_count,
+            count=len(db_txn),
+            connections=db_txn,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
 @router.post(
     "/publish-did/{did}",
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDid,
-    description="Add a new DID that will be auto endorsed when published by an author",
+    description="Add a new DID that will be auto endorsed when published by an author.\
+    Any field marked with a * or left empty match on any value.",
 )
 async def add_allowed_did(
     did: str = "*",
@@ -169,7 +204,8 @@ async def get_allowed_schemas(
     status_code=status.HTTP_200_OK,
     response_model=AllowedSchema,
     description="Add a new schema that will be auto endorsed\
-    when sent to the ledger by an author",
+    when sent to the ledger by an author.\
+    Any field marked with a * or left empty match on any value.",
 )
 async def add_allowed_schema(
     author_did: str = "*",
@@ -268,7 +304,8 @@ async def get_allowed_cred_def(
     status_code=status.HTTP_200_OK,
     response_model=AllowedCredentialDefinition,
     description="Add a new credential definition that will be auto endorsed when\
-    sent to the ledger by an author",
+    sent to the ledger by an author.\
+    Any field marked with a * or left empty match on any value.",
 )
 async def add_allowed_cred_def(
     issuer_did: str = "*",
@@ -286,6 +323,7 @@ async def add_allowed_cred_def(
             author_did=author_did,
             schema_name=schema_name,
             tag=tag,
+            # TODO drop the str when changed back to boolians
             rev_reg_def=str(rev_reg_def),
             rev_reg_entry=str(rev_reg_entry),
             version=version,

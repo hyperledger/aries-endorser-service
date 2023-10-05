@@ -85,8 +85,8 @@ def webhook_to_connection_object(payload: dict) -> Connection:
         error_msg=payload.get("error_msg"),
         invitation=payload.get("invitation"),
         my_did=payload.get("my_did"),
-        their_pdid=payload.get("their_did"),
-        their_lpabel=payload.get("their_label"),
+        their_did=payload.get("their_did"),
+        their_label=payload.get("their_label"),
         their_public_did=payload.get("their_public_did"),
         their_role=payload.get("their_role"),
     )

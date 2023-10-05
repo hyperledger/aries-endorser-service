@@ -86,14 +86,16 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     Attributes:
       issuer_did: DID of the issuer of the schema associated with this
                   credential definition
-      author_did: DID of the allowed author
+      author_did: DID of the author publishing the creddef
       schema_name: Name of the schema
       version: Version of this schema
       tag: tag of the creddef
       created_at: Timestamp when record was created
       updated_at: Timestamp when record was last modified
-      rev_reg_def: TODO
-      rev_reg_entry: TODO
+      rev_reg_def: If a revocation registration definition for this
+                   credential should be endorsed
+      rev_reg_entry: If the revocation registration entry for this
+                     credential should be endorsed
 
     """
 
@@ -111,6 +113,7 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
     tag: str = Field(nullable=False, default=None)
+    # TODO change to boolean
     rev_reg_def: str = Field(nullable=False, default=None)
     rev_reg_entry: str = Field(nullable=False, default=None)
     # --- acapy data
