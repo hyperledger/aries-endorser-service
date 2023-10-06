@@ -107,6 +107,16 @@ There are 2 endpoints to set connection-specific (i.e. author-specific) configur
 
 Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUESTS` setting is `true` *or* if the `endorse_status` is set to `AutoEndorse` on the connection.  So, if manual endorsements are desired, `ENDORSER_AUTO_ENDORSE_REQUESTS` should be set to `false` *and* each connection should be set to `ManualEndorse` (which is the default).
 
+### Granular Configuration of Auto Endorsement
+
+Auto endorsement of transactions can be configured via the `/allow/*` endpoints
+
+Each endpoint supports a `GET`, `POST` and `DELETE` for listing the
+allowed automatically endorsable transactions, adding new transaction
+to be automatically endorsed, and delete transactions.
+
+Any requests using the `POST` method supports using "*" to indicate a
+wild card. For example sending:
 
 ## Testing - Integration tests using Behave
 

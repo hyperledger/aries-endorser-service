@@ -90,8 +90,10 @@ async def select_from_table(
     "/publish-did",
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDidList,
+    description="Get a list of DID that\
+    when sent to the ledger by an author",
 )
-async def get_allowed_did(
+async def get_allowed_dids(
     did: Optional[str] = None,
     page_size: int = 10,
     page_num: int = 1,
