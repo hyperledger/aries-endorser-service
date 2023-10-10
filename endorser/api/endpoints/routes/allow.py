@@ -30,7 +30,7 @@ from api.db.models.endorse_request import EndorseRequest
 from api.services.endorse import (
     endorse_transaction,
 )
-from api.services.auto_state_handlers import allowed_p
+from api.services.auto_state_handlers import is_endorsable_transaction
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ async def updated_allowed(db: AsyncSession) -> None:
             logger.debug(
                 f">>> from updated_allowed: the current transaction is {transaction}"
             )
-            was_allowed = await allowed_p(db, transaction)
+            was_allowed = await is_endorsable_transaction(db, transaction)
             logger.debug(f">>> from updated_allowed: this was allowed? {was_allowed}")
             if was_allowed:
                 logger.debug(

@@ -186,8 +186,8 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
     )
 
 
-async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
-    logger.debug(">>> from allowed_p: entered")
+async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction) -> bool:
+    logger.debug(">>> from is_endorsable_transaction: entered")
 
     # Publishing/registering a public did on the ledger
     if (
@@ -210,14 +210,14 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
 
         match trans.transaction_type:
             case EndorseTransactionType.revoc_registry:
-                logger.debug(f">>> from allowed_p: {trans} was a revocation registry")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation registry")
                 # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
                 credDefId: list[str] = trans.transaction["credDefId"].split(":")
                 cred_auth_did = credDefId[0]
                 sequence_num = int(credDefId[3])
                 tag = credDefId[4]
 
-                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
@@ -236,7 +236,7 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                     ],
                 )
             case EndorseTransactionType.revoc_entry:
-                logger.debug(f">>> from allowed_p: {trans} was a revocation entry")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation entry")
                 # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
                 revocRegDefId: list[str] = trans.transaction["revocRegDefId"].split(":")
 
@@ -244,12 +244,12 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                 sequence_num = int(revocRegDefId[5])
                 tag = revocRegDefId[6]
 
-                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
                 schema_id: list[str] = response["schema"]["id"].split(":")
-                logger.debug(f">>> from allowed_p: {trans} was a revocation entry")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation entry")
                 # raise Exception("revoc_entry not implemented", trans)
                 return await check_auto_endorse(
                     db,
@@ -264,24 +264,24 @@ async def allowed_p(db: AsyncSession, trans: EndorseTransaction) -> bool:
                     ],
                 )
             case EndorseTransactionType.schema:
-                logger.debug(f">>> from allowed_p: {trans} was a schema request")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} was a schema request")
                 schema = trans.transaction["data"]
                 s = SchemaCriteria(trans.author_did, schema["name"], schema["version"])
-                logger.debug(f">>> from allowed_p: {trans} with schema {s}")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} with schema {s}")
                 return await allowed_schema(db, s)
 
             case EndorseTransactionType.cred_def:
-                logger.debug(f">>> from allowed_p: {trans} was a cred_def request")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} was a cred_def request")
 
                 sequence_num: int = cast(int, trans.transaction.get("ref"))
 
-                logger.debug(f">>> from allowed_p: {trans} awaiting schema")
+                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
 
                 logger.debug(
-                    f">>> from allowed_p:\
+                    f">>> from is_endorsable_transaction:\
                     {trans} was a cred_def request with response {response}"
                 )
                 schema_id: list[str] = response["schema"]["id"].split(":")
@@ -321,7 +321,7 @@ async def auto_step_endorse_transaction_request_received(
                 this was allowed"
             )
             handler_result = await endorse_transaction(db, transaction)
-        elif await allowed_p(db, transaction):
+        elif await is_endorsable_transaction(db, transaction):
             logger.debug(
                 f">>> from auto_step_endorse_transaction_request_received:\
                 {transaction} was allowed"
