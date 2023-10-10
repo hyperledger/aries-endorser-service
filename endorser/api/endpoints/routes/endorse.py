@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -62,7 +62,7 @@ async def get_transactions(
     response_model=EndorseTransaction,
 )
 async def get_transaction(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     try:
@@ -92,7 +92,7 @@ async def update_transactions(
     response_model=EndorseTransaction,
 )
 async def endorse_transaction_endpoint(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually approve an endorsement."""
@@ -112,7 +112,7 @@ async def endorse_transaction_endpoint(
     response_model=EndorseTransaction,
 )
 async def reject_transaction_endpoint(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually reject an endorsement."""

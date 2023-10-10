@@ -1,7 +1,7 @@
 from enum import Enum
 import json
 import logging
-
+from uuid import UUID
 from pydantic import BaseModel
 
 from api.db.models.endorse_request import EndorseRequest
@@ -38,8 +38,8 @@ class EndorseTransactionType(str, Enum):
 
 class EndorseTransaction(BaseModel):
     author_goal_code: str | None
-    connection_id: str
-    transaction_id: str
+    connection_id: UUID
+    transaction_id: UUID
     tags: list[str]
     created_at: str | None = None
     state: str
@@ -83,11 +83,13 @@ def webhook_to_txn_object(payload: dict, endorser_did: str) -> EndorseTransactio
     else:
         transaction_response = {}
     transaction: EndorseTransaction = EndorseTransaction(
-        author_goal_code=payload.get("signature_request")[0].get("author_goal_code"),
-        connection_id=payload.get("connection_id"),
-        transaction_id=payload.get("transaction_id"),
+        author_goal_code=payload.get("signature_request", [])[0].get(
+            "author_goal_code"
+        ),
+        connection_id=UUID(payload.get("connection_id")),
+        transaction_id=UUID(payload.get("transaction_id")),
         tags=[],
-        state=payload.get("state"),
+        state=str(payload.get("state")),
         transaction_request=transaction_request,
         endorser_did=endorser_did,
         author_did=transaction_request["identifier"]

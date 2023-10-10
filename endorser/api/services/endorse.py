@@ -1,5 +1,6 @@
 import logging
 from typing import cast
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc
@@ -30,7 +31,7 @@ async def db_add_db_txn_record(db: AsyncSession, db_txn: EndorseRequest):
 
 
 async def db_fetch_db_txn_record(
-    db: AsyncSession, transaction_id: str
+    db: AsyncSession, transaction_id: UUID
 ) -> EndorseRequest:
     logger.info(f">>> db_fetch_db_txn_record() for {transaction_id}")
     q = select(EndorseRequest).where(EndorseRequest.transaction_id == transaction_id)
@@ -80,7 +81,7 @@ async def db_get_txn_records(
     # get a count of ALL records matching our base query
     count_q = select([func.count()]).select_from(base_q)
     count_q_rec = await db.execute(count_q)
-    total_count = count_q_rec.scalar()
+    total_count: int = count_q_rec.scalar()
 
     # add in our paging and ordering to get the result set
     results_q = (
@@ -116,7 +117,7 @@ async def get_transactions_list(
 
 async def get_transaction_object(
     db: AsyncSession,
-    transaction_id: str,
+    transaction_id: UUID,
 ) -> EndorseTransaction:
     logger.info(f">>> get_transaction_object() for {transaction_id}")
     db_txn: EndorseRequest = await db_fetch_db_txn_record(db, transaction_id)

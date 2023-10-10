@@ -9,6 +9,9 @@ from api.endpoints.models.configurations import (
 from api.endpoints.models.endorse import (
     EndorseTransactionType,
 )
+from api.endpoints.models.configurations import (
+    Configuration,
+)
 from api.services.configurations import (
     get_config_records,
     get_config_record,
@@ -37,7 +40,7 @@ async def get_endorser_configs(db: AsyncSession) -> dict:
     return {"acapy_config": acapy_config["config"], "endorser_config": endorser_configs}
 
 
-async def get_endorser_config(db: AsyncSession, config_name: str) -> dict:
+async def get_endorser_config(db: AsyncSession, config_name: str) -> Configuration:
     return await get_config_record(db, config_name)
 
 
@@ -70,5 +73,5 @@ async def update_endorser_config(
     db: AsyncSession,
     config_name: str,
     config_value: str,
-) -> dict:
+) -> Configuration:
     return await update_config_record(db, config_name, config_value)

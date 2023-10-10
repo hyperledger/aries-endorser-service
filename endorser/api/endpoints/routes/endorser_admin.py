@@ -12,6 +12,9 @@ from api.services.admin import (
     validate_endorser_config,
     update_endorser_config,
 )
+from api.endpoints.models.configurations import (
+    Configuration,
+)
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 
@@ -33,12 +36,14 @@ async def get_config(
 
 
 @router.get(
-    "/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict
+    "/config/{config_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=Configuration,
 )
-async def get_config(
+async def get_config_by_name(
     config_name: str,
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> Configuration:
     # this should take some query params, sorting and paging params...
     try:
         endorser_config = await get_endorser_config(db, config_name)
@@ -48,13 +53,15 @@ async def get_config(
 
 
 @router.post(
-    "/config/{config_name}", status_code=status.HTTP_200_OK, response_model=dict
+    "/config/{config_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=Configuration,
 )
 async def update_config(
     config_name: str,
     config_value: str,
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> Configuration:
     # throws an exception if we get an invalid config name
     try:
         config_type = ConfigurationType[config_name]

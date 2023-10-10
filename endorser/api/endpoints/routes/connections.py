@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,7 +55,7 @@ async def get_connections(
 
 @router.get("/{connection_id}", response_model=Connection)
 async def get_connection(
-    connection_id: str,
+    connection_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
     try:
@@ -67,7 +67,7 @@ async def get_connection(
 
 @router.put("/{connection_id}", response_model=Connection)
 async def update_connection(
-    connection_id: str,
+    connection_id: UUID,
     alias: str,
     public_did: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -81,7 +81,7 @@ async def update_connection(
 
 @router.put("/{connection_id}/configure", response_model=Connection)
 async def configure_connection(
-    connection_id: str,
+    connection_id: UUID,
     author_status: AuthorStatusType,
     endorse_status: EndorseStatusType,
     db: AsyncSession = Depends(get_db),
@@ -97,7 +97,7 @@ async def configure_connection(
 
 @router.post("/{connection_id}/accept", response_model=Connection)
 async def accept_connection(
-    connection_id: str,
+    connection_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> Connection:
     """Manually accept a connection."""

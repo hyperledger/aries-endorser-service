@@ -1,5 +1,6 @@
 import logging
 from typing import cast
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
@@ -30,7 +31,7 @@ async def db_add_db_contact_record(db: AsyncSession, db_contact: Contact):
     await db.commit()
 
 
-async def db_fetch_db_contact_record(db: AsyncSession, connection_id: str) -> Contact:
+async def db_fetch_db_contact_record(db: AsyncSession, connection_id: UUID) -> Contact:
     logger.info(f">>> db_fetch_db_contact_record() for {connection_id}")
     q = select(Contact).where(Contact.connection_id == connection_id)
     result = await db.execute(q)
@@ -106,7 +107,7 @@ async def get_connections_list(
 
 async def get_connection_object(
     db: AsyncSession,
-    connection_id: str,
+    connection_id: UUID,
 ) -> Connection:
     logger.info(f">>> get_connection_object() for {connection_id}")
     db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
@@ -203,7 +204,7 @@ async def set_connection_author_metadata(
 
 
 async def update_connection_info(
-    db: AsyncSession, connection_id: str, alias: str, public_did: str | None = None
+    db: AsyncSession, connection_id: UUID, alias: str, public_did: str | None = None
 ):
     # fetch existing db object
     db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
@@ -217,7 +218,7 @@ async def update_connection_info(
 
 async def update_connection_config(
     db: AsyncSession,
-    connection_id: str,
+    connection_id: UUID,
     author_status: AuthorStatusType,
     endorse_status: EndorseStatusType,
 ):

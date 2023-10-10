@@ -198,9 +198,9 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
             db,
             # The location of the DID depends on if the author already
             # has a public DID or not
-            trans.transaction_request.get("did")
-            if trans.author_goal_code == "aries.transaction.register_public_did"
-            else trans.transaction.get("dest"),
+            str(trans.transaction_request.get("did"))
+            if trans.author_goal_code == "aries.transaction.register_public_did" and trans.transaction_request.get("did")
+            else str(trans.transaction.get("dest")),
         )
     else:
         # The author must already have a DID and a transaction in

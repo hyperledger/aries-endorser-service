@@ -1,6 +1,6 @@
 from enum import Enum
 import logging
-
+from uuid import UUID
 from pydantic import BaseModel
 
 from api.db.models.contact import Contact
@@ -45,7 +45,7 @@ class EndorseStatusType(str, Enum):
 
 
 class Connection(BaseModel):
-    connection_id: str
+    connection_id: UUID
     alias: str | None = None
     author_status: AuthorStatusType
     endorse_status: EndorseStatusType
@@ -75,13 +75,13 @@ def webhook_to_connection_object(payload: dict) -> Connection:
     """Convert from a webhook payload to a connection."""
     logger.debug(f">>> from payload: {payload}")
     connection: Connection = Connection(
-        connection_id=payload.get("connection_id"),
+        connection_id=UUID(payload.get("connection_id")),
         alias=payload.get("alias"),
-        author_status=AuthorStatusType.active.value,
-        endorse_status=EndorseStatusType.manual_endorse.value,
+        author_status=AuthorStatusType.active,
+        endorse_status=EndorseStatusType.manual_endorse,
         tags=[],
-        state=payload.get("state"),
-        connection_protocol=payload.get("connection_protocol"),
+        state=str(payload.get("state")),
+        connection_protocol=str(payload.get("connection_protocol")),
         error_msg=payload.get("error_msg"),
         invitation=payload.get("invitation"),
         my_did=payload.get("my_did"),
@@ -98,8 +98,8 @@ def connection_to_db_object(connection: Connection) -> Contact:
     """Convert from model object to database model object."""
     logger.debug(f">>> from connection: {connection}")
     contact: Contact = Contact(
-        author_status=connection.author_status.value,
-        endorse_status=connection.endorse_status.value,
+        author_status=connection.author_status,
+        endorse_status=connection.endorse_status,
         tags=connection.tags,
         connection_id=connection.connection_id,
         connection_protocol=connection.connection_protocol,
@@ -120,7 +120,7 @@ def db_to_connection_object(
         author_status=AuthorStatusType(contact.author_status),
         endorse_status=EndorseStatusType(contact.endorse_status),
         tags=contact.tags,
-        connection_id=str(contact.connection_id),
+        connection_id=contact.connection_id,
         connection_protocol=contact.connection_protocol,
         their_public_did=contact.public_did,
         state=contact.state,
