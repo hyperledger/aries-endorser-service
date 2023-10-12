@@ -147,8 +147,8 @@ def db_to_txn_object(
         transaction_response = {}
     txn: EndorseTransaction = EndorseTransaction(
         author_goal_code=str(txn_request.author_goal_code),
-        connection_id=str(txn_request.connection_id),
-        transaction_id=str(txn_request.transaction_id),
+        connection_id=txn_request.connection_id,
+        transaction_id=txn_request.transaction_id,
         tags=txn_request.tags,
         state=acapy_txn.get("state") if acapy_txn else txn_request.state,
         endorser_did=txn_request.endorser_did,

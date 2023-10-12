@@ -104,7 +104,7 @@ async def get_allowed_dids(
         db_txn: list[AllowedPublicDid]
         total_count, db_txn = await select_from_table(
             db,
-            {did, AllowedPublicDid.registered_did},
+            {did: AllowedPublicDid.registered_did},
             AllowedPublicDid,
             page_num,
             page_size,
@@ -277,12 +277,8 @@ async def get_allowed_cred_def(
             schema_name: AllowedCredentialDefinition.schema_name,
             version: AllowedCredentialDefinition.version,
             tag: AllowedCredentialDefinition.tag,
-            str(rev_reg_def)
-            if rev_reg_def
-            else None: AllowedCredentialDefinition.rev_reg_def,
-            str(rev_reg_entry)
-            if rev_reg_entry
-            else None: AllowedCredentialDefinition.rev_reg_entry,
+            rev_reg_def: AllowedCredentialDefinition.rev_reg_def,
+            rev_reg_entry: AllowedCredentialDefinition.rev_reg_entry,
         }
 
         db_txn: list[AllowedCredentialDefinition]
@@ -326,8 +322,8 @@ async def add_allowed_cred_def(
             schema_name=schema_name,
             tag=tag,
             # TODO drop the str when changed back to boolians
-            rev_reg_def=str(rev_reg_def),
-            rev_reg_entry=str(rev_reg_entry),
+            rev_reg_def=rev_reg_def,
+            rev_reg_entry=rev_reg_entry,
             version=version,
         )
         db.add(acreddef)

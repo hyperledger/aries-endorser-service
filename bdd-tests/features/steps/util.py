@@ -173,16 +173,7 @@ def set_endorser_config(context, config_name, config_value) -> dict:
         context,
         POST,
         f"{ENDORSER_URL_PREFIX}/admin/config/{config_name}",
-        params={"config_value": config_value}
-    )
-    return resp
-
-
-def set_endorser_allowed_publish_did(context, did: str) -> dict:
-    resp = call_endorser_service(
-        context,
-        POST,
-        f"{ENDORSER_URL_PREFIX}/allow/publish-did/{did}",
+        params={"config_value": config_value},
     )
     return resp
 

@@ -53,7 +53,6 @@ class AllowedSchema(BaseModel, table=True):
       updated_at: Timestamp when record was last modified
     """
 
-    # acapy data ---
     allowed_schema_id: uuid.UUID = Field(
         sa_column=Column(
             UUID(as_uuid=True),
@@ -62,6 +61,7 @@ class AllowedSchema(BaseModel, table=True):
         )
     )
 
+    # acapy data ---
     author_did: str = Field(nullable=False, default=None)
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
@@ -99,7 +99,6 @@ class AllowedCredentialDefinition(BaseModel, table=True):
 
     """
 
-    # acapy data ---
     allowed_cred_def_id: uuid.UUID = Field(
         sa_column=Column(
             UUID(as_uuid=True),
@@ -108,14 +107,15 @@ class AllowedCredentialDefinition(BaseModel, table=True):
         )
     )
 
+    # acapy data ---
     issuer_did: str = Field(nullable=False, default=None)
     author_did: str = Field(nullable=False, default=None)
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
     tag: str = Field(nullable=False, default=None)
     # TODO change to boolean
-    rev_reg_def: str = Field(nullable=False, default=None)
-    rev_reg_entry: str = Field(nullable=False, default=None)
+    rev_reg_def: bool = Field(nullable=False, default=None)
+    rev_reg_entry: bool = Field(nullable=False, default=None)
     # --- acapy data
 
     created_at: datetime = Field(

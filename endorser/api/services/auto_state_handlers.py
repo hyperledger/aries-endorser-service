@@ -232,7 +232,7 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                         (AllowedCredentialDefinition.schema_name, schema_id[2]),
                         (AllowedCredentialDefinition.version, schema_id[3]),
                         (AllowedCredentialDefinition.tag, tag),
-                        (AllowedCredentialDefinition.rev_reg_def, "True"),
+                        (AllowedCredentialDefinition.rev_reg_def, True),
                     ],
                 )
             case EndorseTransactionType.revoc_entry:
@@ -260,7 +260,7 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                         (AllowedCredentialDefinition.schema_name, schema_id[2]),
                         (AllowedCredentialDefinition.version, schema_id[3]),
                         (AllowedCredentialDefinition.tag, tag),
-                        (AllowedCredentialDefinition.rev_reg_entry, "True"),
+                        (AllowedCredentialDefinition.rev_reg_entry, True),
                     ],
                 )
             case EndorseTransactionType.schema:

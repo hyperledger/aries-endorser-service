@@ -116,7 +116,7 @@ allowed automatically endorsable transactions, adding new transaction
 to be automatically endorsed, and delete transactions.
 
 Any requests using the `POST` method supports using "*" to indicate a
-wild card. For example sending:
+wild card.
 
 ## Testing - Integration tests using Behave
 
