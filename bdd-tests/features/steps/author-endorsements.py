@@ -16,6 +16,8 @@ from util import (
     call_author_service,
     call_http_service,
     set_endorser_config,
+    set_endorser_allowed_credential_definition,
+    set_endorser_allowed_schema,
     get_endorsers_author_connection,
     get_authors_endorser_connection,
     get_endorser_transaction_record,
@@ -61,6 +63,27 @@ def step_impl(context, author: str):
     assert "transaction_id" in resp["txn"], pprint.pp(resp)
     # save into context
     put_author_context(context, author, "current_transaction", resp["txn"])
+    put_author_context(context, author, "current_schema", schema)
+
+
+@when('the endorser allows "{author}" last schema')
+@then('the endorser allows "{author}" last schema')
+def step_impl(context, author: str):
+    schema = get_author_context(context, author, "current_schema")
+    resp = call_author_service(
+        context,
+        author,
+        GET,
+        f"/wallet/did/public",
+    )
+    public_did = resp["result"]["did"]
+
+    resp = set_endorser_allowed_schema(
+        context,
+        author_did=public_did,
+        schema_name=schema["schema_name"],
+        version=schema["schema_version"],
+    )
 
 
 @when('"{author}" has an active schema on the ledger')
@@ -94,7 +117,12 @@ def step_impl(context, author: str):
     put_author_context(context, author, "current_schema", schema_created["schema"])
 
 
-@when('"{author}" creates a new credential definition "{with_or_without}" revocation support')
+@when(
+    '"{author}" creates a new credential definition "{with_or_without}" revocation support'
+)
+@then(
+    '"{author}" creates a new credential definition "{with_or_without}" revocation support'
+)
 def step_impl(context, author: str, with_or_without: str):
     # POST /credential-definitions
     schema = get_author_context(context, author, "current_schema")
@@ -118,6 +146,38 @@ def step_impl(context, author: str, with_or_without: str):
     assert "transaction_id" in resp["txn"], pprint.pp(resp)
     # save into context
     put_author_context(context, author, "current_transaction", resp["txn"])
+    put_author_context(context, author, "current_cred_def", cred_def)
+
+
+@then(
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support'
+)
+@when(
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support'
+)
+def step_impl(context, author: str, with_or_without: str):
+    schema = get_author_context(context, author, "current_schema")
+    cred_def = get_author_context(context, author, "current_cred_def")
+    resp = call_author_service(
+        context,
+        author,
+        GET,
+        f"/wallet/did/public",
+    )
+    public_did = resp["result"]["did"]
+
+    schema_id = schema["id"].split(":")
+    resp = set_endorser_allowed_credential_definition(
+        context,
+        tag=cred_def["tag"],
+        rev_reg_def=with_or_without.lower() == "with",
+        rev_reg_entry=with_or_without.lower() == "with",
+        author_did=public_did,
+        issuer_did=schema_id[0],
+        schema_name=schema_id[2],
+        version=schema_id[3],
+    )
+
 
 
 @when('"{author}" has an active credential definition on the ledger')

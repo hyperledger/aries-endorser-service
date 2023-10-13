@@ -5,11 +5,10 @@ Models of the Endorser tables for API configuration.
 """
 import uuid
 from datetime import datetime
-from typing import List
 
 from sqlmodel import Field
-from sqlalchemy import Column, func, text, String
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, ARRAY
+from sqlalchemy import Column, func, text
+from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 
 from api.db.models.base import BaseModel
 

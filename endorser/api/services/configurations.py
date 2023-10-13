@@ -2,8 +2,7 @@ import logging
 import os
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, desc
-from sqlalchemy.sql.functions import func
+from sqlalchemy import select, update
 
 from api.endpoints.models.configurations import (
     ConfigurationType,
@@ -19,7 +18,7 @@ from api.db.errors import DoesNotExist
 
 logger = logging.getLogger(__name__)
 
-TRUE_VALUES = ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
+TRUE_VALUES = ["true", "1", "t", "y", "yes", "yeah", "yup", "certainly", "uh-huh"]
 
 
 async def db_add_db_config_record(db: AsyncSession, db_config: ConfigurationDB):
@@ -68,7 +67,7 @@ async def db_get_config_records(db: AsyncSession) -> list[ConfigurationDB]:
     # build out a base query with all filters
     base_q = select(ConfigurationDB).filter(*filters)
     results_q_recs = await db.execute(base_q)
-    db_configs = results_q_recs.scalars()
+    db_configs = results_q_recs.scalars().all()
 
     return db_configs
 
@@ -79,7 +78,11 @@ async def get_config_record(db: AsyncSession, config_name: str) -> Configuration
         config = db_to_config_object(db_config)
         return config
     except DoesNotExist:
-        default = CONFIG_DEFAULTS[config_name] if config_name in CONFIG_DEFAULTS[config_name] else ""
+        default = (
+            CONFIG_DEFAULTS[config_name]
+            if config_name in CONFIG_DEFAULTS[config_name]
+            else ""
+        )
         config: Configuration = Configuration(
             config_id=None,
             config_name=ConfigurationType[config_name],
@@ -113,7 +116,9 @@ async def update_config_record(
 async def get_bool_config(db: AsyncSession, config_name: str) -> bool:
     config = await get_config_record(db, config_name)
     config_bool = config.config_value.lower() in TRUE_VALUES
-    logger.debug(f"get_bool_config({config_name}) -> {config.config_value} = {config_bool}")
+    logger.debug(
+        f"get_bool_config({config_name}) -> {config.config_value} = {config_bool}"
+    )
     return config_bool
 
 

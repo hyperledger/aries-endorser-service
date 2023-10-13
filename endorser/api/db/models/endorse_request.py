@@ -23,6 +23,7 @@ class EndorseRequest(BaseModel, table=True):
 
     Attributes:
       endorse_request_id: Endorser's EndorseRequest ID
+      author_goal_code: Authors Goal for this transaction
       contact_id: Endorser's Contact ID
       transaction_id: Underlying AcaPy transaction_id id
       connection_id: Underlying AcaPy connection id
@@ -41,6 +42,7 @@ class EndorseRequest(BaseModel, table=True):
 
     # acapy data ---
     transaction_id: uuid.UUID = Field(nullable=False)
+    author_goal_code: str = Field(nullable=False)
     tags: List[str] = Field(sa_column=Column(ARRAY(String)))
     connection_id: uuid.UUID = Field(nullable=False)
     endorser_did: str = Field(nullable=False)
@@ -48,6 +50,7 @@ class EndorseRequest(BaseModel, table=True):
     transaction_type: str = Field(nullable=True, default=None)
     state: str = Field(nullable=True, default=None)
     ledger_txn: str = Field(nullable=True, default=None)
+    ledger_txn_request: str = Field(nullable=True, default=None)
     # --- acapy data
 
     created_at: datetime = Field(

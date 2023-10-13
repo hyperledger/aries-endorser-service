@@ -173,12 +173,72 @@ def set_endorser_config(context, config_name, config_value) -> dict:
         context,
         POST,
         f"{ENDORSER_URL_PREFIX}/admin/config/{config_name}",
-        params={"config_value": config_value}
+        params={"config_value": config_value},
     )
     return resp
 
 
-def set_endorser_author_connection_config(context, author: str, author_status: str, endorse_status: str):
+def set_endorser_allowed_publish_did(context, did: str) -> dict:
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/allow/publish-did/{did}",
+    )
+    return resp
+
+
+def set_endorser_allowed_schema(
+    context,
+    author_did: str = "*",
+    schema_name: str = "*",
+    version: str = "*",
+) -> dict:
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/allow/schema",
+        params={
+            "author_did": author_did,
+            "schema_name": schema_name,
+            "version": version,
+        },
+    )
+    return resp
+
+
+def set_endorser_allowed_credential_definition(
+    context,
+    issuer_did: str = "*",
+    author_did: str = "*",
+    schema_name: str = "*",
+    version: str = "*",
+    tag: str = "*",
+    rev_reg_def: bool = True,
+    rev_reg_entry: bool = True,
+) -> dict:
+    resp = call_endorser_service(
+        context,
+        POST,
+        f"{ENDORSER_URL_PREFIX}/allow/credential-definition",
+        params={
+            "issuer_did": issuer_did,
+            "author_did": author_did,
+            "schema_name": schema_name,
+            "version": version,
+            "tag": tag,
+            "rev_reg_def": rev_reg_def,
+            "rev_reg_entry": rev_reg_entry,
+            "author_did": author_did,
+            "schema_name": schema_name,
+            "version": version,
+        },
+    )
+    return resp
+
+
+def set_endorser_author_connection_config(
+    context, author: str, author_status: str, endorse_status: str
+):
     author_wallet = get_author_context(context, author, "wallet")
     author_alias = author_wallet["settings"]["default_label"]
     connection = get_endorsers_author_connection(context, author_alias)

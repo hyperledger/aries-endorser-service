@@ -1,5 +1,6 @@
 import logging
-
+from typing import cast
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
@@ -30,9 +31,7 @@ async def db_add_db_contact_record(db: AsyncSession, db_contact: Contact):
     await db.commit()
 
 
-async def db_fetch_db_contact_record(
-    db: AsyncSession, connection_id: str
-) -> Contact:
+async def db_fetch_db_contact_record(db: AsyncSession, connection_id: UUID) -> Contact:
     logger.info(f">>> db_fetch_db_contact_record() for {connection_id}")
     q = select(Contact).where(Contact.connection_id == connection_id)
     result = await db.execute(q)
@@ -45,9 +44,7 @@ async def db_fetch_db_contact_record(
     return db_contact
 
 
-async def db_update_db_contact_record(
-    db: AsyncSession, db_contact: Contact
-) -> Contact:
+async def db_update_db_contact_record(db: AsyncSession, db_contact: Contact) -> Contact:
     payload_dict = db_contact.dict()
     q = (
         update(Contact)
@@ -62,10 +59,10 @@ async def db_update_db_contact_record(
 
 async def db_get_contact_records(
     db: AsyncSession,
-    state: str = None,
+    state: str | None = None,
     page_size: int = 10,
     page_num: int = 1,
-) -> (int, list[Contact]):
+) -> tuple[int, list[Contact]]:
     limit = page_size
     skip = (page_num - 1) * limit
     filters = []
@@ -78,25 +75,23 @@ async def db_get_contact_records(
     # get a count of ALL records matching our base query
     count_q = select([func.count()]).select_from(base_q)
     count_q_rec = await db.execute(count_q)
-    total_count = count_q_rec.scalar()
+    total_count = cast(int, count_q_rec.scalar())
 
     # add in our paging and ordering to get the result set
-    results_q = (
-        base_q.limit(limit).offset(skip).order_by(desc(Contact.created_at))
-    )
+    results_q = base_q.limit(limit).offset(skip).order_by(desc(Contact.created_at))
 
     results_q_recs = await db.execute(results_q)
-    db_connections = results_q_recs.scalars()
+    db_connections: list[Contact] = results_q_recs.scalars().all()
 
     return (total_count, db_connections)
 
 
 async def get_connections_list(
     db: AsyncSession,
-    connection_state: str = None,
+    connection_state: str | None = None,
     page_size: int = 10,
     page_num: int = 1,
-) -> (int, list[Connection]):
+) -> tuple[int, list[Connection]]:
     (count, db_contacts) = await db_get_contact_records(
         db,
         state=connection_state,
@@ -112,7 +107,7 @@ async def get_connections_list(
 
 async def get_connection_object(
     db: AsyncSession,
-    connection_id: str,
+    connection_id: UUID,
 ) -> Connection:
     logger.info(f">>> get_connection_object() for {connection_id}")
     db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
@@ -120,7 +115,9 @@ async def get_connection_object(
     return item
 
 
-async def store_connection_request(db: AsyncSession, connection: Connection) -> Connection:
+async def store_connection_request(
+    db: AsyncSession, connection: Connection
+) -> Connection:
     logger.info(f">>> called store_connection_request with: {connection.connection_id}")
 
     db_contact: Contact = connection_to_db_object(connection)
@@ -130,8 +127,12 @@ async def store_connection_request(db: AsyncSession, connection: Connection) -> 
     return connection
 
 
-async def accept_connection_request(db: AsyncSession, connection: Connection) -> Connection:
-    logger.info(f">>> called accept_connection_request with: {connection.connection_id}")
+async def accept_connection_request(
+    db: AsyncSession, connection: Connection
+) -> Connection:
+    logger.info(
+        f">>> called accept_connection_request with: {connection.connection_id}"
+    )
 
     # fetch existing db object
     db_contact: Contact = await db_fetch_db_contact_record(db, connection.connection_id)
@@ -145,10 +146,12 @@ async def accept_connection_request(db: AsyncSession, connection: Connection) ->
     # update local db state
     db_contact.state = connection.state
     db_contact = await db_update_db_contact_record(db, db_contact)
-    logger.info(f">>> accepted connection for {connection.connection_id} {db_contact.state}")
+    logger.info(
+        f">>> accepted connection for {connection.connection_id} {db_contact.state}"
+    )
 
     # set author meta-data on this connection
-    resp = await au.acapy_POST(
+    await au.acapy_POST(
         f"transactions/{connection.connection_id}/set-endorser-role",
         params={"transaction_my_job": "TRANSACTION_ENDORSER"},
     )
@@ -156,8 +159,12 @@ async def accept_connection_request(db: AsyncSession, connection: Connection) ->
     return connection
 
 
-async def update_connection_status(db: AsyncSession, connection: Connection) -> Connection:
-    logger.debug(f">>> called update_connection_status with: {connection.connection_id}")
+async def update_connection_status(
+    db: AsyncSession, connection: Connection
+) -> Connection:
+    logger.debug(
+        f">>> called update_connection_status with: {connection.connection_id}"
+    )
 
     # fetch existing db object
     db_contact: Contact = await db_fetch_db_contact_record(db, connection.connection_id)
@@ -165,16 +172,22 @@ async def update_connection_status(db: AsyncSession, connection: Connection) -> 
     # update local db state
     db_contact.state = connection.state
     db_contact = await db_update_db_contact_record(db, db_contact)
-    logger.debug(f">>> updated connection for {connection.connection_id} {db_contact.state}")
+    logger.debug(
+        f">>> updated connection for {connection.connection_id} {db_contact.state}"
+    )
 
     return connection
 
 
-async def set_connection_author_metadata(db: AsyncSession, connection: Connection) -> dict:
+async def set_connection_author_metadata(
+    db: AsyncSession, connection: Connection
+) -> dict:
     # confirm if we have already set the role on this connection
     connection_id = connection.connection_id
     logger.info(f">>> check for metadata on connection: {connection_id}")
-    conn_meta_data = await au.acapy_GET(f"connections/{connection_id}/metadata")
+    conn_meta_data = cast(
+        dict, await au.acapy_GET(f"connections/{connection_id}/metadata")
+    )
     if "transaction-jobs" in conn_meta_data["results"]:
         if "transaction_my_job" in conn_meta_data["results"]["transaction-jobs"]:
             return {}
@@ -190,7 +203,9 @@ async def set_connection_author_metadata(db: AsyncSession, connection: Connectio
     return {}
 
 
-async def update_connection_info(db: AsyncSession, connection_id: str, alias: str, public_did: str = None):
+async def update_connection_info(
+    db: AsyncSession, connection_id: UUID, alias: str, public_did: str | None = None
+):
     # fetch existing db object
     db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
     db_contact.connection_alias = alias
@@ -201,7 +216,12 @@ async def update_connection_info(db: AsyncSession, connection_id: str, alias: st
     return connection
 
 
-async def update_connection_config(db: AsyncSession, connection_id: str, author_status: AuthorStatusType, endorse_status: EndorseStatusType):
+async def update_connection_config(
+    db: AsyncSession,
+    connection_id: UUID,
+    author_status: AuthorStatusType,
+    endorse_status: EndorseStatusType,
+):
     # fetch existing db object
     db_contact: Contact = await db_fetch_db_contact_record(db, connection_id)
     db_contact.author_status = author_status.value

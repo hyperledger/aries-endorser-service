@@ -168,6 +168,7 @@ def step_impl(context, author: str):
 
 
 @when('"{author}" receives the endorsed transaction from the endorser')
+@then('"{author}" receives the endorsed transaction from the endorser')
 def step_impl(context, author: str):
     # get transaction info from context
     txn_request = get_author_context(context, author, "current_transaction")

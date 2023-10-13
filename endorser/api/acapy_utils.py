@@ -3,7 +3,6 @@ from aiohttp import (
     ClientResponse,
 )
 import json
-from fastapi import Request
 
 from api.core.config import settings
 

@@ -1,7 +1,6 @@
 import logging
-from typing import List, Optional
-import json
-
+from typing import Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -54,9 +53,7 @@ async def get_transactions(
         )
         return response
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
@@ -65,16 +62,14 @@ async def get_transactions(
     response_model=EndorseTransaction,
 )
 async def get_transaction(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     try:
         transaction = await get_transaction_object(db, transaction_id)
         return transaction
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.put(
@@ -97,18 +92,18 @@ async def update_transactions(
     response_model=EndorseTransaction,
 )
 async def endorse_transaction_endpoint(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually approve an endorsement."""
     try:
-        transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+        transaction: EndorseTransaction = await get_transaction_object(
+            db, transaction_id
+        )
         endorsed_txn = await endorse_transaction(db, transaction)
         return endorsed_txn
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.post(
@@ -117,15 +112,15 @@ async def endorse_transaction_endpoint(
     response_model=EndorseTransaction,
 )
 async def reject_transaction_endpoint(
-    transaction_id: str,
+    transaction_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> EndorseTransaction:
     """Manually reject an endorsement."""
     try:
-        transaction: EndorseTransaction = await get_transaction_object(db, transaction_id)
+        transaction: EndorseTransaction = await get_transaction_object(
+            db, transaction_id
+        )
         rejected_txn = await reject_transaction(db, transaction)
         return rejected_txn
     except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

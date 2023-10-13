@@ -50,8 +50,12 @@ class GlobalConfig(BaseSettings):
     ENDORSER_AUTO_ENDORSE_REQUESTS: bool = to_bool(
         os.environ.get("ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
     )
-    ENDORSER_AUTO_ENDORSE_TXN_TYPES: str = (
-        os.environ.get("ENDORSER_AUTO_ENDORSE_TXN_TYPES", "")
+    ENDORSER_AUTO_ENDORSE_TXN_TYPES: str = os.environ.get(
+        "ENDORSER_AUTO_ENDORSE_TXN_TYPES", ""
+    )
+
+    ENDORSER_REJECT_BY_DEFAULT: bool = to_bool(
+        os.environ.get("ENDORSER_REJECT_BY_DEFAULT", "false")
     )
 
     # the following defaults match up with default values in scripts/.env.example
@@ -83,7 +87,7 @@ class GlobalConfig(BaseSettings):
 
     ACAPY_ADMIN_URL: str = os.environ.get("ACAPY_ADMIN_URL", "http://localhost:9031")
     ACAPY_ADMIN_URL_API_KEY: str = os.environ.get("ACAPY_API_ADMIN_KEY", "change-me")
-    ACAPY_WALLET_AUTH_TOKEN: str = os.environ.get("ACAPY_WALLET_AUTH_TOKEN")
+    ACAPY_WALLET_AUTH_TOKEN: str | None = os.environ.get("ACAPY_WALLET_AUTH_TOKEN")
 
     ENDORSER_API_ADMIN_USER: str = os.environ.get("ENDORSER_API_ADMIN_USER", "endorser")
     ENDORSER_API_ADMIN_KEY: str = os.environ.get("ENDORSER_API_ADMIN_KEY", "change-me")

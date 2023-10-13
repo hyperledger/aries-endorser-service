@@ -46,6 +46,7 @@ def step_impl(context):
 
     # set "auto" configs to False
     resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_CONNECTIONS", "false")
+    resp = set_endorser_config(context, "ENDORSER_REJECT_BY_DEFAULT", "false")
     resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_AUTHORS", "false")
     resp = set_endorser_config(context, "ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
     resp = set_endorser_config(context, "ENDORSER_AUTO_ENDORSE_TXN_TYPES", "1,100,101,102,113,114")
