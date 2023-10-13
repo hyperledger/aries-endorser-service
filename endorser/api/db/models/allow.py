@@ -113,7 +113,6 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
     tag: str = Field(nullable=False, default=None)
-    # TODO change to boolean
     rev_reg_def: bool = Field(nullable=False, default=None)
     rev_reg_entry: bool = Field(nullable=False, default=None)
     # --- acapy data
