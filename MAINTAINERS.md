@@ -11,6 +11,8 @@
 | Ian Costanzo     | ianco            | ianco            |
 | Stephen Curran   | swcurran         | swcurran         |
 | Wade Barnes      | WadeBarnes       | WadeBarnes       |
+| Emiliano Sune    | esune            | esune            |
+| Gavin Freeborn   | gavinok          |                  |
 
 ## Becoming a Maintainer
 
