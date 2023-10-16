@@ -80,7 +80,7 @@ async def select_from_table(
     count_q = select([func.count()]).select_from(base_q)
     q = base_q.limit(page_size).offset(skip)
     count_result = await db.execute(count_q)
-    total_count: int = count_result.scalar()
+    total_count: int = count_result.scalar() or 0
 
     result = await db.execute(q)
     db_txn: list[T] = result.scalars().all()
