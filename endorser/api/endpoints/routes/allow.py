@@ -58,7 +58,7 @@ async def updated_allowed(db: AsyncSession) -> None:
                 await endorse_transaction(db, transaction)
     except Exception as e:
         # try to retrieve and print text on error
-        logger.error("Failed to update pending transactions ", e)
+        logger.error(f"Failed to update pending transactions {e}")
 
 
 T = TypeVar("T")
@@ -418,8 +418,8 @@ async def set_config(
 )
 async def append_config(
     publish_did: Optional[UploadFile] = File(None),
-    schema: UploadFile = File(None),
-    credential_definition: UploadFile = File(None),
+    schema: Optional[UploadFile] = File(None),
+    credential_definition: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
