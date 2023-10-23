@@ -206,8 +206,8 @@ author_did,schema_name,version
 | `schema_name`   | string      | "*"     |
 | `version`       | string      | "*"     |
 | `tag`           | string      | "*"     |
-| `rev_reg_def`   | boolean     | true    |
-| `rev_reg_entry` | boolean     | true    |
+| `rev_reg_def`   | boolean     | True    |
+| `rev_reg_entry` | boolean     | True    |
 
 Example:
 
