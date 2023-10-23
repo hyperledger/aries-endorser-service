@@ -74,7 +74,7 @@ ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 
 ## Exposing the Endorser Agent using Ngrok
 
-By default, the `./manage`` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok URL when publishing their endpoint.
+By default, the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok URL when publishing their endpoint.
 
 If you don't want to do this (or if ngrok isn't workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitly.
 
@@ -133,7 +133,7 @@ The fields of these CSVs follow the format used in the `POST /allow/{publish-dat
 
 For example, the description for the `POST /allow/`schema` endpoint and the CSV equivalent is
 
-| Name          | Description | default           |
+| Name          | Description | Default           |
 |---------------|-------------|-------------------|
 | `author_did`  | string      | Default value : * |
 | `schema_name` | string      | Default value : * |
@@ -144,9 +144,10 @@ and the CSV equivalent is
 ```csv
 author_did,schema_name,version
 "3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+"9d885f64-5717-4562-b3fc-2c963f66adl1","myschema","2.0"
 ```
 
-NOTE: All string arguments must be quoted
+NOTE: The header (aka `author_did,schema_name,version`) is used to identify each of the fields
 
 To append this to the Endorser's list of allowed schemas the
 corresponding curl command would be
@@ -165,6 +166,55 @@ curl -X 'PUT' \
 For the updated descriptions of the allow lists start the endorser service and open http://localhost:5050/endorser/docs in your browser
 
 The `POST /allow/`{publish-data,` `schema``,credential-definition`}` describes the corresponding CSV file format.
+
+#### CSV Input Description
+##### public_did
+
+| Name             | Description | Default |
+|------------------|-------------|---------|
+| `registered_did` | string      | "*"     |
+
+Example
+
+```csv
+registered_did,
+"5NzdaLiTEpvy5MK5fLiBMV",
+"5NzdaLiTEpvy5MK5fLiBMV",
+```
+##### schema
+
+| Name          | Description | Default |
+|---------------|-------------|---------|
+| `author_did`  | string      | "*"     |
+| `schema_name` | string      | "*"     |
+| `version`     | string      | "*"     |
+	
+Example:
+
+```csv
+author_did,schema_name,version
+"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+```
+
+
+##### credential_definition
+
+| Name            | Description | Default |
+|-----------------|-------------|---------|
+| `issuer_did`    | string      | "*"     |
+| `author_did`    | string      | "*"     |
+| `schema_name`   | string      | "*"     |
+| `version`       | string      | "*"     |
+| `tag`           | string      | "*"     |
+| `rev_reg_def`   | boolean     | true    |
+| `rev_reg_entry` | boolean     | true    |
+
+Example:
+
+```csv
+issuer_did,author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry
+"5NzdaLiTEpvy5MK5fLiBMV","4NzdaLiTEpvy5MK5fLiBMV","demoschema","2.0","test_tag",True,False
+```
 
 ## Testing - Integration tests using Behave
 
