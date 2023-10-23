@@ -109,7 +109,7 @@ Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUEST
 
 ### Granular Configuration of Auto Endorsement
 
-Auto endorsement of transactions can be configured via the `/allow/*` endpoints
+Auto endorsement of transactions can be configured via the `/allow/{publish-data,schema,credential-definition}` endpoints
 
 Each endpoint supports a `GET`, `POST` and `DELETE` for listing the
 allowed automatically endorsable transactions, adding new transaction
@@ -117,6 +117,56 @@ to be automatically endorsed, and delete transactions.
 
 Any requests using the `POST` method supports using "*" to indicate a
 wild card.
+
+#### Configuration with CSV files
+
+Auto endorsement of transactions can be configured via the `/allow/config` endpoints
+
+This endpoint supports `PUT` and `POST` which will allow you to bulk
+modify list of allowed automatically endorsable transactions.
+
+- POST: This method will replace the current configuration with the data from the uploaded CSV file.
+
+- PUT: In contrast, the PUT method appends the data from the CSV file to the existing configuration, preserving the current state.
+
+Each of these endpoints supports uploading a CSV file for publish-data, schema, and credential-definition.
+
+The fields of these CSVs follow the format used in the `POST /allow/{publish-data,schema,credential-definition}` endpoints
+
+For example the description for the `POST /allow/schema` endpoint is 
+
+| Name          | Description | default           |
+|---------------|-------------|-------------------|
+| `author_did`  | string      | Default value : * |
+| `schema_name` | string      | Default value : * |
+| `version`     | string      | Default value : * |
+
+and the csv equivalent is
+
+```csv
+author_did,schema_name,version
+"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+```
+
+NOTE: All string arguments bust be quoted
+
+To append this to the endorsers list of allowed schemas the
+corresponding curl command would be
+
+```sh
+curl -X 'PUT' \
+  'http://ENDORSERURL/v1/allow/config' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN_HERE' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'publish_did=' \
+  -F 'schema=@YOURFILE.csv' \
+  -F 'credential_definition='
+```
+
+For the updated descriptions of the allow lists start the endorser service and open http://localhost:5050/endorser/docs in your browser
+
+The `POST /allow/{publish-data,schema,credential-definition}` describe the correspoinding csv file format.
 
 ## Testing - Integration tests using Behave
 
