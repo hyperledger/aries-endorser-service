@@ -2,7 +2,8 @@ from dataclasses import dataclass
 import json
 import os
 import io
-from typing import Collection, Iterable
+from tempfile import NamedTemporaryFile, TemporaryFile
+from typing import Collection, Iterable, Literal
 import pprint
 import requests
 import time
@@ -335,20 +336,23 @@ def generate_dict_str(
     fields: Collection[str], description: Iterable[Mapping[str, str]]
 ) -> str:
     csv.register_dialect("quoted_excel", QuotedExcel)
-    csvbuffer = io.StringIO()
-    csv_w = csv.DictWriter(
-        csvbuffer,
-        dialect="quoted_excel",
-        fieldnames=fields,
-    )
-    rows = description
-    csv_w.writeheader()
-    csv_w.writerows(rows)
-    return csvbuffer.read()
+    with io.StringIO() as csvbuffer:
+        csv_w = csv.DictWriter(
+            csvbuffer,
+            dialect="quoted_excel",
+            fieldnames=fields,
+        )
+        rows = description
+        csv_w.writeheader()
+        csv_w.writerows(rows)
+
+        csvbuffer.seek(0)
+        return csvbuffer.read()
 
 
 def set_endorser_allowed_from_file(
     context,
+    method: Literal["POST"] | Literal["PUT"],
     public_did: list[AllowedPublicDid] | None = None,
     schemas: list[AllowedSchema] | None = None,
     credential_definition: list[AllowedCredentialDefinition] | None = None,

@@ -383,7 +383,6 @@ async def update_full_config(
     for k, v in correlated_tables.items():
         if k:
             if delete_contents:
-                # TODO look into only deleting after these are stored
                 await db.execute(delete(v))
             modifications[v.__name__] = await update_allowed_config(k, v, db)
     await db.commit()

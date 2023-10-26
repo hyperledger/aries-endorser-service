@@ -4,6 +4,7 @@ import os
 import pprint
 import random
 import time
+from typing import Literal
 from requests import HTTPError
 
 from behave import *
@@ -106,9 +107,9 @@ from util import (
 )
 
 
-@when('the endorser allows "{author}" last schema from file')
-@then('the endorser allows "{author}" last schema from file')
-def step_impl(context, author: str):
+@when('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
+@then('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
+def step_impl(context, author: str, POST_or_PUT: Literal["POST"] | Literal["PUT"]):
     schema = get_author_context(context, author, "current_schema")
     resp = call_author_service(
         context,
@@ -120,6 +121,7 @@ def step_impl(context, author: str):
 
     resp = set_endorser_allowed_from_file(
         context,
+        POST_or_PUT,
         schemas=[
             AllowedSchema(
                 author_did=public_did,
@@ -129,6 +131,30 @@ def step_impl(context, author: str):
         ],
     )
     print(resp)
+
+
+@when("the endorser fails to allow duplicate schemas from file")
+@then("the endorser fails to allow duplicate schemas from file")
+def step_impl(context):
+    try:
+        set_endorser_allowed_from_file(
+            context,
+            POST,
+            schemas=[
+                AllowedSchema(
+                    author_did="FwTnTZgfhjzVyDPEenT4cP",
+                    schema_name="test_schema",
+                    version="46.83.99",
+                ),
+                AllowedSchema(
+                    author_did="FwTnTZgfhjzVyDPEenT4cP",
+                    schema_name="test_schema",
+                    version="46.83.99",
+                ),
+            ],
+        )
+    except HTTPError:
+        pass
 
 
 @when('"{author}" has an active schema on the ledger')
@@ -227,12 +253,17 @@ def step_impl(context, author: str, with_or_without: str):
 
 
 @then(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file'
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
 )
 @when(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file'
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
 )
-def step_impl(context, author: str, with_or_without: str):
+def step_impl(
+    context,
+    author: str,
+    with_or_without: str,
+    POST_or_PUT: Literal["POST"] | Literal["PUT"],
+):
     schema = get_author_context(context, author, "current_schema")
     cred_def = get_author_context(context, author, "current_cred_def")
     resp = call_author_service(
@@ -246,6 +277,7 @@ def step_impl(context, author: str, with_or_without: str):
     schema_id = schema["id"].split(":")
     resp = set_endorser_allowed_from_file(
         context,
+        POST_or_PUT,
         credential_definition=[
             AllowedCredentialDefinition(
                 tag=cred_def["tag"],
