@@ -81,7 +81,7 @@ async def db_get_txn_records(
     # get a count of ALL records matching our base query
     count_q = select([func.count()]).select_from(base_q)
     count_q_rec = await db.execute(count_q)
-    total_count: int = count_q_rec.scalar()
+    total_count: int = count_q_rec.scalar() or 0
 
     # add in our paging and ordering to get the result set
     results_q = (

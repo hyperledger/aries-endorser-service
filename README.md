@@ -9,7 +9,7 @@ Information about Aca-Py's Endorser support can be found [here](https://github.c
 
 The Aca-Py Alice/Faber demo also demonstrates the use of the Endorser feature, as described [here](https://github.com/hyperledger/aries-cloudagent-python/blob/main/demo/Endorser.md).
 
-This repository is a work in progress, see [this document](https://hackmd.io/hWMLdpu7SBuopNag4mTbcg?view) for the on-going requirements and design.
+This repository is a work in progress, see [this document](https://hackmd.io/hWMLdpu7SBuopNag4mTbcg?view) for the ongoing requirements and design.
 
 ## Running Locally
 
@@ -31,7 +31,7 @@ cd indy-tails-server/docker
 ./manage start --logs
 ```
 
-Then, to get the endorser service up and running quicky, open a bash shell and run the following:
+Then, to get the endorser service up and running quickly, open a bash shell and run the following:
 
 ```bash
 git clone https://github.com/bcgov/aries-endorser-service.git
@@ -40,7 +40,7 @@ cd aries-endorser-service/docker
 ./manage start --logs
 ```
 
-You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured id and password (endorser-admin/change-me).  (The webhooks api is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
+You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured ID and password (endorser-admin/change-me).  (The webhooks API is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
 
 To shut down the service:
 
@@ -63,9 +63,9 @@ You can also use the `GENESIS_URL` parameter to run against a non-von-network le
 GENESIS_URL=https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/sovrin/pool_transactions_sandbox_genesis ./manage start --logs
 ```
 
-(And obviously with the above you need to provide a suitable tails server parameter.)
+(And, with the above, you need to provide a suitable tails server parameter.)
 
-By default, the `./manage` script will use a random seed to generate the Endorser's public DID.  Author agents will need to know this public DID in order to create transactions for endorsement.  If you need to start the Endorser using a "well known DID" you can start with the `ENDORSER_SEED` parameter:
+By default, the `./manage` script will use a random seed to generate the Endorser's public DID.  Author agents will need to know this public DID to create transactions for endorsement.  If you need to start the Endorser using a "well-known DID" you can start with the `ENDORSER_SEED` parameter:
 
 ```bash
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
@@ -74,11 +74,11 @@ ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 
 ## Exposing the Endorser Agent using Ngrok
 
-By default the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok url when publishing their endpoint.
+By default, the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok URL when publishing their endpoint.
 
 If you don't want to do this (or if ngrok isn't workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitly.
 
-For example to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
+For example, to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
 
 ```bash
 ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage start-bdd --logs
@@ -87,7 +87,7 @@ ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage st
 
 ## Endorser Configuration
 
-There are 3 "global" configuration options that can be set using environment variables, or can be set using the Endorser Admin API, the environment variables are:
+Three "global" configuration options can be set using environment variables or can be set using the Endorser Admin API, the environment variables are:
 
 - `ENDORSER_AUTO_ACCEPT_CONNECTIONS`: set to `true` for the Endorser service to auto-accept connections (otherwise they must be manually accepted)
 - `ENDORSER_AUTO_ACCEPT_AUTHORS`: set to `true` for the Endorser service to auto-configure new connections to be "authors", otherwise author meta-data must be manually set
@@ -109,14 +109,112 @@ Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUEST
 
 ### Granular Configuration of Auto Endorsement
 
-Auto endorsement of transactions can be configured via the `/allow/*` endpoints
+Auto endorsement of transactions is configured via the `/allow/{publish-data,schema,credential-definition}` endpoints
 
 Each endpoint supports a `GET`, `POST` and `DELETE` for listing the
-allowed automatically endorsable transactions, adding new transaction
-to be automatically endorsed, and delete transactions.
+allowed automatically endorsable transactions, adding new transactions to be automatically endorsed, and deleting transactions.
 
-Any requests using the `POST` method supports using "*" to indicate a
+Any requests using the `POST` method support using "*" to indicate a
 wild card.
+
+#### Configuration with CSV files
+
+Auto endorsement of transactions can be configured via the `/allow/config` endpoints
+
+This endpoint supports `PUT` and `POST` which will allow you to bulk modify a list of allowed automatically endorsable transactions.
+
+- POST: This method will replace the current configuration with the data from the uploaded CSV file.
+
+- PUT: In contrast, the PUT method appends the data from the CSV file to the existing configuration, preserving the current state.
+
+Each of these endpoints supports uploading a CSV file for `publish-data`, schema, and `credential-definition`.
+
+The fields of these CSVs follow the format used in the `POST /allow/{publish-data,schema,credential-definition}` endpoints
+
+For example, the description for the `POST /allow/`schema` endpoint and the CSV equivalent is
+
+| Name          | Description | Default           |
+|---------------|-------------|-------------------|
+| `author_did`  | string      | Default value : * |
+| `schema_name` | string      | Default value : * |
+| `version`     | string      | Default value : * |
+
+and the CSV equivalent is
+
+```csv
+author_did,schema_name,version
+"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+"9d885f64-5717-4562-b3fc-2c963f66adl1","myschema","2.0"
+```
+
+NOTE: The header (aka `author_did,schema_name,version`) is used to identify each of the fields
+
+To append this to the Endorser's list of allowed schemas the
+corresponding curl command would be
+
+```sh
+curl -X 'PUT' \
+  'http://ENDORSERURL/v1/allow/config' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer YOUR_TOKEN_HERE' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'publish_did=' \
+  -F 'schema=@YOURFILE.csv' \
+  -F 'credential_definition='
+```
+
+For the updated descriptions of the allow lists start the endorser service and open http://localhost:5050/endorser/docs in your browser
+
+The `POST /allow/`{publish-data,` `schema``,credential-definition`}` describes the corresponding CSV file format.
+
+#### CSV Input Description
+##### public_did
+
+| Name             | Description | Default |
+|------------------|-------------|---------|
+| `registered_did` | string      | "*"     |
+
+Example
+
+```csv
+registered_did,
+"5NzdaLiTEpvy5MK5fLiBMV",
+"5NzdaLiTEpvy5MK5fLiBMV",
+```
+##### schema
+
+| Name          | Description | Default |
+|---------------|-------------|---------|
+| `author_did`  | string      | "*"     |
+| `schema_name` | string      | "*"     |
+| `version`     | string      | "*"     |
+	
+Example:
+
+```csv
+author_did,schema_name,version
+"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+```
+
+
+##### credential_definition
+
+| Name            | Description | Default |
+|-----------------|-------------|---------|
+| `issuer_did`    | string      | "*"     |
+| `author_did`    | string      | "*"     |
+| `schema_name`   | string      | "*"     |
+| `version`       | string      | "*"     |
+| `tag`           | string      | "*"     |
+| `rev_reg_def`   | boolean     | True    |
+| `rev_reg_entry` | boolean     | True    |
+
+Example:
+
+```csv
+issuer_did,author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry
+"5NzdaLiTEpvy5MK5fLiBMV","4NzdaLiTEpvy5MK5fLiBMV","demoschema","2.0","test_tag",True,False
+```
 
 ## Testing - Integration tests using Behave
 
@@ -128,7 +226,7 @@ When you start the endorser service, you can optionally start an additional Auth
 ./manage start-bdd --logs
 ```
 
-Or, if you want to connect to the wallet directly (rather than using an ngrok-exposed port), run this instead:
+Or, if you want to connect to the wallet directly (rather than using a ngrok-exposed port), run this instead:
 
 ```bash
 ENDORSER_ENV=bdd ./manage start-bdd --logs
@@ -160,7 +258,7 @@ LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage
 LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd -t @DIDs-006
 ```
 
-Note that because these tests run on your local (rather than in a docker container) you need to specify the *local* url to the ledger and tails servers.
+Note that because these tests run on your local (rather than in a docker container) you need to specify the *local* URL to the ledger and tails servers.
 
 
 ## Testing - Other

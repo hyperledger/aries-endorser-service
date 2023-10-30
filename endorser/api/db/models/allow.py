@@ -8,6 +8,7 @@ from datetime import datetime
 
 from sqlmodel import Field
 from sqlalchemy import Column, func, text
+from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 
 from api.db.models.base import BaseModel
@@ -39,6 +40,14 @@ class AllowedPublicDid(BaseModel, table=True):
     )
 
 
+def allowed_schema_uuid(context: DefaultExecutionContext):
+    pr = context.get_current_parameters()
+    return uuid.uuid5(
+        uuid.NAMESPACE_OID,
+        pr["author_did"] + pr["schema_name"] + pr["version"],
+    )
+
+
 class AllowedSchema(BaseModel, table=True):
     """AllowedSchema
 
@@ -53,19 +62,19 @@ class AllowedSchema(BaseModel, table=True):
       updated_at: Timestamp when record was last modified
     """
 
-    allowed_schema_id: uuid.UUID = Field(
-        sa_column=Column(
-            UUID(as_uuid=True),
-            primary_key=True,
-            server_default=text("gen_random_uuid()"),
-        )
-    )
-
     # acapy data ---
     author_did: str = Field(nullable=False, default=None)
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
     # --- acapy data
+
+    allowed_schema_id: uuid.UUID = Field(
+        sa_column=Column(
+            UUID(as_uuid=True),
+            default=allowed_schema_uuid,
+            primary_key=True,
+        )
+    )
 
     created_at: datetime = Field(
         sa_column=Column(TIMESTAMP, nullable=False, server_default=func.now())
@@ -74,6 +83,22 @@ class AllowedSchema(BaseModel, table=True):
         sa_column=Column(
             TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
         )
+    )
+
+
+def allowed_cred_def_uuid(context: DefaultExecutionContext):
+    pr = context.get_current_parameters()
+    return uuid.uuid5(
+        uuid.NAMESPACE_OID,
+        pr["issuer_did"]
+        + pr["author_did"]
+        + pr["schema_name"]
+        + pr["version"]
+        + pr["tag"]
+        # We don't include rev_reg_def or rev_reg_entry since they
+        # describe what a credential definition supports not the
+        # credential-definition its self
+        ,
     )
 
 
@@ -99,14 +124,6 @@ class AllowedCredentialDefinition(BaseModel, table=True):
 
     """
 
-    allowed_cred_def_id: uuid.UUID = Field(
-        sa_column=Column(
-            UUID(as_uuid=True),
-            primary_key=True,
-            server_default=text("gen_random_uuid()"),
-        )
-    )
-
     # acapy data ---
     issuer_did: str = Field(nullable=False, default=None)
     author_did: str = Field(nullable=False, default=None)
@@ -116,6 +133,14 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     rev_reg_def: bool = Field(nullable=False, default=None)
     rev_reg_entry: bool = Field(nullable=False, default=None)
     # --- acapy data
+
+    allowed_cred_def_id: uuid.UUID = Field(
+        sa_column=Column(
+            UUID(as_uuid=True),
+            default=allowed_cred_def_uuid,
+            primary_key=True,
+        )
+    )
 
     created_at: datetime = Field(
         sa_column=Column(TIMESTAMP, nullable=False, server_default=func.now())

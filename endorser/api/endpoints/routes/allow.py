@@ -1,8 +1,9 @@
 import logging
 from typing import Optional, TypeVar
+from csv import DictReader
+from codecs import iterdecode
 from uuid import UUID
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from starlette import status
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from sqlalchemy.sql.functions import func
@@ -57,7 +58,7 @@ async def updated_allowed(db: AsyncSession) -> None:
                 await endorse_transaction(db, transaction)
     except Exception as e:
         # try to retrieve and print text on error
-        logger.error("Failed to update pending transactions ", e)
+        logger.error(f"Failed to update pending transactions {e}")
 
 
 T = TypeVar("T")
@@ -79,7 +80,7 @@ async def select_from_table(
     count_q = select([func.count()]).select_from(base_q)
     q = base_q.limit(page_size).offset(skip)
     count_result = await db.execute(count_q)
-    total_count: int = count_result.scalar()
+    total_count: int = count_result.scalar() or 0
 
     result = await db.execute(q)
     db_txn: list[T] = result.scalars().all()
@@ -321,7 +322,6 @@ async def add_allowed_cred_def(
             author_did=author_did,
             schema_name=schema_name,
             tag=tag,
-            # TODO drop the str when changed back to boolians
             rev_reg_def=rev_reg_def,
             rev_reg_entry=rev_reg_entry,
             version=version,
@@ -352,5 +352,79 @@ async def delete_allowed_cred_def(
         await db.execute(q)
         await updated_allowed(db)
         return {}
+    except Exception as e:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+async def update_allowed_config(k, v, db):
+    csvReader = DictReader(iterdecode(k.file, "utf-8"))
+    tmp = {
+        "file_name": k.filename,
+        "contents": [v(**i) for i in csvReader],
+    }
+    for i in tmp["contents"]:
+        db.add(i)
+    return tmp
+
+
+async def update_full_config(
+    publish_did: Optional[UploadFile],
+    schema: Optional[UploadFile],
+    credential_definition: Optional[UploadFile],
+    db: AsyncSession,
+    delete_contents: bool,
+):
+    correlated_tables = {
+        publish_did: AllowedPublicDid,
+        schema: AllowedSchema,
+        credential_definition: AllowedCredentialDefinition,
+    }
+    modifications = {}
+    for k, v in correlated_tables.items():
+        if k:
+            if delete_contents:
+                await db.execute(delete(v))
+            modifications[v.__name__] = await update_allowed_config(k, v, db)
+    await db.commit()
+    await updated_allowed(db)
+    return modifications
+
+
+@router.post(
+    "/config",
+    status_code=status.HTTP_200_OK,
+    response_model=dict,
+    description="Upload a new csv config replacing the existing configuration",
+)
+async def set_config(
+    publish_did: Optional[UploadFile] = File(None),
+    schema: Optional[UploadFile] = File(None),
+    credential_definition: Optional[UploadFile] = File(None),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    try:
+        return await update_full_config(
+            publish_did, schema, credential_definition, db, True
+        )
+    except Exception as e:
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.put(
+    "/config",
+    status_code=status.HTTP_200_OK,
+    response_model=dict,
+    description="Upload a new csv config appending to the existing configuration",
+)
+async def append_config(
+    publish_did: Optional[UploadFile] = File(None),
+    schema: Optional[UploadFile] = File(None),
+    credential_definition: Optional[UploadFile] = File(None),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    try:
+        return await update_full_config(
+            publish_did, schema, credential_definition, db, False
+        )
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

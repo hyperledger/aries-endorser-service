@@ -134,8 +134,11 @@ class SchemaCriteria:
     Version: str
 
 
-def eq_or_wild(indb, clause):
-    return or_(indb == clause, indb == "*")
+def eq_or_wild(indb, clause: str | Any):
+    if isinstance(clause, str):
+        return or_(indb == clause, indb == "*")
+    else:
+        return indb == clause
 
 
 async def check_auto_endorse(
