@@ -6,7 +6,7 @@ and related data.
 """
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlmodel import Field
 from sqlalchemy import Column, func, text, String
@@ -42,7 +42,7 @@ class EndorseRequest(BaseModel, table=True):
 
     # acapy data ---
     transaction_id: uuid.UUID = Field(nullable=False)
-    author_goal_code: str = Field(nullable=False)
+    author_goal_code: Optional[str] = Field(nullable=True)
     tags: List[str] = Field(sa_column=Column(ARRAY(String)))
     connection_id: uuid.UUID = Field(nullable=False)
     endorser_did: str = Field(nullable=False)

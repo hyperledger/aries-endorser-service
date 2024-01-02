@@ -146,7 +146,9 @@ def db_to_txn_object(
     else:
         transaction_response = {}
     txn: EndorseTransaction = EndorseTransaction(
-        author_goal_code=str(txn_request.author_goal_code),
+        author_goal_code=str(txn_request.author_goal_code)
+        if txn_request.author_goal_code
+        else None,
         connection_id=txn_request.connection_id,
         transaction_id=txn_request.transaction_id,
         tags=txn_request.tags,

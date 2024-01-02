@@ -1,8 +1,8 @@
-"""updated to support Granular configuration of auto-endorsement
+"""updated to support granular configuration
 
-Revision ID: e6afa1dce289
+Revision ID: fb66f2d55aee
 Revises: d925cb39480e
-Create Date: 2023-12-27 20:26:32.572959
+Create Date: 2024-01-02 23:41:41.952565
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "e6afa1dce289"
+revision = "fb66f2d55aee"
 down_revision = "d925cb39480e"
 branch_labels = None
 depends_on = None
@@ -83,7 +83,7 @@ def upgrade():
     op.add_column(
         "endorserequest",
         sa.Column(
-            "author_goal_code", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+            "author_goal_code", sqlmodel.sql.sqltypes.AutoString(), nullable=True
         ),
     )
     op.add_column(
