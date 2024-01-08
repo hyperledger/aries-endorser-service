@@ -156,7 +156,9 @@ def db_to_txn_object(
         endorser_did=txn_request.endorser_did,
         author_did=txn_request.author_did,
         transaction=json.loads(txn_request.ledger_txn),
-        transaction_request=json.loads(txn_request.ledger_txn_request),
+        transaction_request=json.loads(txn_request.ledger_txn_request)
+        if txn_request.ledger_txn_request
+        else None,
         transaction_type=txn_request.transaction_type,
         transaction_response=transaction_response,
     )
