@@ -43,7 +43,7 @@ class EndorseTransaction(BaseModel):
     tags: list[str]
     created_at: str | None = None
     state: str
-    transaction_request: dict
+    transaction_request: dict | None = None
     endorser_did: str
     author_did: str | None = None
     transaction: dict | None = None
