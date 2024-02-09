@@ -76,6 +76,16 @@ ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 
 By default, the `./manage` script will start an ngrok process to expose the Endorser agent's endpoint, and the Endorser agent will use the ngrok URL when publishing their endpoint.
 
+### Auth
+
+Each developer must apply for an Ngrok token [here](https://dashboard.ngrok.com/get-started/your-authtoken). Then place the token into an `.env` file within the **docker** directory with the contents below.
+
+```
+NGROK_AUTH=<your token here>
+```
+
+### Bypassing Ngrok
+
 If you don't want to do this (or if ngrok isn't workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitly.
 
 For example, to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
