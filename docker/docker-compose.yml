@@ -31,9 +31,10 @@ services:
     environment:
       - CADDY_AGENT_PORT=${CADDY_AGENT_PORT}
       - CADDY_HOST=${CADDY_HOST}
+      - NGROK_AUTH=${NGROK_AUTH}
     ports:
       - ${NGROK_ENDORSER_AGENT_PORT_EXPOSED}:${NGROK_ENDORSER_AGENT_PORT}
-    command: ngrok http ${CADDY_HOST}:${CADDY_AGENT_PORT} --log stdout
+    command: ngrok http ${CADDY_HOST}:${CADDY_AGENT_PORT} --authtoken ${NGROK_AUTH} --log stdout
 
   aries-endorser-agent:
     build:
