@@ -81,7 +81,7 @@ By default, the `./manage` script will start an ngrok process to expose the Endo
 Each developer must apply for an Ngrok token [here](https://dashboard.ngrok.com/get-started/your-authtoken). Then place the token into an `.env` file within the **docker** directory with the contents below.
 
 ```
-NGROK_AUTH=<your token here>
+NGROK_AUTHTOKEN=<your token here>
 ```
 
 ### Bypassing Ngrok
