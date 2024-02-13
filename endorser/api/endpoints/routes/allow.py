@@ -91,7 +91,7 @@ async def select_from_table(
     "/publish-did",
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDidList,
-    description="Get a list of DID that\
+    description="Get a list of DIDs that will be auto endorsed\
     when sent to the ledger by an author",
 )
 async def get_allowed_dids(
