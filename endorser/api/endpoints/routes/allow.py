@@ -91,7 +91,7 @@ async def select_from_table(
     "/publish-did",
     status_code=status.HTTP_200_OK,
     response_model=AllowedPublicDidList,
-    description="Get a list of DID that\
+    description="Get a list of DIDs that will be auto endorsed\
     when sent to the ledger by an author",
 )
 async def get_allowed_dids(
@@ -116,7 +116,7 @@ async def get_allowed_dids(
             page_num=page_num,
             total_count=total_count,
             count=len(db_txn),
-            connections=db_txn,
+            dids=db_txn,
         )
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -196,7 +196,7 @@ async def get_allowed_schemas(
             page_num=page_num,
             total_count=total_count,
             count=len(db_txn),
-            connections=db_txn,
+            schemas=db_txn,
         )
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -292,7 +292,7 @@ async def get_allowed_cred_def(
             page_num=page_num,
             total_count=total_count,
             count=len(db_txn),
-            connections=db_txn,
+            credentials=db_txn,
         )
     except Exception as e:
         raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
