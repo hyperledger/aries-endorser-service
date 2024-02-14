@@ -17,7 +17,7 @@ class AllowedPublicDidList(BaseModel):
     page_num: int
     count: int
     total_count: int
-    connections: list[AllowedPublicDid]
+    dids: list[AllowedPublicDid]
 
 
 class AllowedSchemaList(BaseModel):
@@ -25,7 +25,7 @@ class AllowedSchemaList(BaseModel):
     page_num: int
     count: int
     total_count: int
-    connections: list[AllowedSchema]
+    schemas: list[AllowedSchema]
 
 
 class AllowedCredentialDefinitionList(BaseModel):
@@ -33,4 +33,4 @@ class AllowedCredentialDefinitionList(BaseModel):
     page_num: int
     count: int
     total_count: int
-    connections: list[AllowedCredentialDefinition]
+    credentials: list[AllowedCredentialDefinition]
