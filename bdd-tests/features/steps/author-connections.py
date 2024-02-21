@@ -95,7 +95,7 @@ def step_impl(context, author: str):
         "label": author_name,
         "wallet_key": author_name,
         "wallet_name": author_name,
-        "wallet_type": "indy",
+        "wallet_type": "askar",
     }
 
     author_wallet = call_agency_service(context, POST, "/multitenancy/wallet", data=data)
