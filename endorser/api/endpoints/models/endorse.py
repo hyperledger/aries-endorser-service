@@ -155,6 +155,7 @@ def db_to_txn_object(
         state=acapy_txn.get("state") if acapy_txn else txn_request.state,
         endorser_did=txn_request.endorser_did,
         author_did=txn_request.author_did,
+        created_at=str(txn_request.created_at),
         transaction=json.loads(txn_request.ledger_txn),
         transaction_request=json.loads(txn_request.ledger_txn_request)
         if txn_request.ledger_txn_request
