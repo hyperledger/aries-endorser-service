@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 
 from sqlmodel import Field
-from sqlalchemy import Column, func, text
+from sqlalchemy import Column, func
 from sqlalchemy.engine.default import DefaultExecutionContext
 from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 
@@ -24,10 +24,12 @@ class AllowedPublicDid(BaseModel, table=True):
       registered_did: DIDs allowed to be registered
       created_at:     Timestamp when record was created
       updated_at:     Timestamp when record was last modified
+      details:        Additional details related to this schema
     """
 
     # acapy data ---
     registered_did: str = Field(nullable=False, default=None, primary_key=True)
+    details: str = Field(nullable=True, default=None)
     # --- acapy data
 
     created_at: datetime = Field(
@@ -60,12 +62,14 @@ class AllowedSchema(BaseModel, table=True):
       version: Version of this schema
       created_at: Timestamp when record was created
       updated_at: Timestamp when record was last modified
+      details: Additional details related to this schema
     """
 
     # acapy data ---
     author_did: str = Field(nullable=False, default=None)
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
+    details: str = Field(nullable=True, default=None)
     # --- acapy data
 
     allowed_schema_id: uuid.UUID = Field(
@@ -121,7 +125,7 @@ class AllowedCredentialDefinition(BaseModel, table=True):
                    credential should be endorsed
       rev_reg_entry: If the revocation registration entry for this
                      credential should be endorsed
-
+      details: Additional details related to this credential definition
     """
 
     # acapy data ---
@@ -132,6 +136,7 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     tag: str = Field(nullable=False, default=None)
     rev_reg_def: bool = Field(nullable=False, default=None)
     rev_reg_entry: bool = Field(nullable=False, default=None)
+    details: str = Field(nullable=True, default=None)
     # --- acapy data
 
     allowed_cred_def_id: uuid.UUID = Field(
