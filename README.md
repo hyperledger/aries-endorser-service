@@ -40,7 +40,7 @@ cd aries-endorser-service/docker
 ./manage start --logs
 ```
 
-You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured ID and password (endorser-admin/change-me).  (The webhooks API is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
+You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured ID and password (endorser-admin/change-me). (The webhooks API is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
 
 To shut down the service:
 
@@ -57,7 +57,7 @@ To run against the BCovrin Test ledger (http://test.bcovrin.vonx.io/) and tails 
 LEDGER_URL=http://test.bcovrin.vonx.io TAILS_SERVER_URL=https://tails-test.vonx.io ./manage start --logs
 ```
 
-You can also use the `GENESIS_URL` parameter to run against a non-von-network ledger.  For example, the SOVRIN staging ledger's transactions can be found [here](https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/sovrin/pool_transactions_sandbox_genesis).
+You can also use the `GENESIS_URL` parameter to run against a non-von-network ledger. For example, the SOVRIN staging ledger's transactions can be found [here](https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/sovrin/pool_transactions_sandbox_genesis).
 
 ```bash
 GENESIS_URL=https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/sovrin/pool_transactions_sandbox_genesis ./manage start --logs
@@ -65,12 +65,11 @@ GENESIS_URL=https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/so
 
 (And, with the above, you need to provide a suitable tails server parameter.)
 
-By default, the `./manage` script will use a random seed to generate the Endorser's public DID.  Author agents will need to know this public DID to create transactions for endorsement.  If you need to start the Endorser using a "well-known DID" you can start with the `ENDORSER_SEED` parameter:
+By default, the `./manage` script will use a random seed to generate the Endorser's public DID. Author agents will need to know this public DID to create transactions for endorsement. If you need to start the Endorser using a "well-known DID" you can start with the `ENDORSER_SEED` parameter:
 
 ```bash
 ENDORSER_SEED=<your 32 char seed> ./manage start --logs
 ```
-
 
 ## Exposing the Endorser Agent using Ngrok
 
@@ -88,12 +87,11 @@ NGROK_AUTHTOKEN=<your token here>
 
 If you don't want to do this (or if ngrok isn't workin' for ya) you can override this behaviour - just set environment variable `ENDORSER_ENV` to something other than `local`, and then set `ACAPY_ENDPOINT` explicitly.
 
-For example, to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ...  see later section ...):
+For example, to startup the Endorser to run exclusively within a docker network (for example to run the BDD tests ... see later section ...):
 
 ```bash
 ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage start-bdd --logs
 ```
-
 
 ## Endorser Configuration
 
@@ -101,10 +99,10 @@ Three "global" configuration options can be set using environment variables or c
 
 - `ENDORSER_AUTO_ACCEPT_CONNECTIONS`: set to `true` for the Endorser service to auto-accept connections (otherwise they must be manually accepted)
 - `ENDORSER_AUTO_ACCEPT_AUTHORS`: set to `true` for the Endorser service to auto-configure new connections to be "authors", otherwise author meta-data must be manually set
-- `ENDORSER_AUTO_ENDORSE_REQUESTS`: set to `true` for the Endorser service to auto-accept all "endorse transaction" requests (otherwise they must be manually endorsed) 
+- `ENDORSER_AUTO_ENDORSE_REQUESTS`: set to `true` for the Endorser service to auto-accept all "endorse transaction" requests (otherwise they must be manually endorsed)
 - `ENDORSER_REJECT_BY_DEFAULT`: set to `true` for the Endorser service to auto-reject any "endorse transaction" request that cannot automatically be endorsed (see granular auto-endorse configuration)
 
-These parameters can be set using the `POST /endorser/v1/admin/config/<env var name>?config_value=<value>` admin API, and the setting is stored in the database (the database setting will override the environment variable).  You can see the configured values using the `GET /endorser/v1/admin/config/<env var name>` endpoint (and it will let you know if the configuration is using a value from the database or environment variable).
+These parameters can be set using the `POST /endorser/v1/admin/config/<env var name>?config_value=<value>` admin API, and the setting is stored in the database (the database setting will override the environment variable). You can see the configured values using the `GET /endorser/v1/admin/config/<env var name>` endpoint (and it will let you know if the configuration is using a value from the database or environment variable).
 
 There are 2 endpoints to set connection-specific (i.e. author-specific) configuration.
 
@@ -115,7 +113,7 @@ There are 2 endpoints to set connection-specific (i.e. author-specific) configur
 - `author_status` - `Active` or `Suspended` - if not Active, all requests from this connection will be ignored
 - `endorse_status` - `AutoEndorse`, `ManualEndorse` or `AutoReject` - the "auto" options will automatically endorse or refuse endorsement requests (respectively), for the "manual" option the requests must be manually endorsed
 
-Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUESTS` setting is `true` *or* if the `endorse_status` is set to `AutoEndorse` on the connection.  So, if manual endorsements are desired, `ENDORSER_AUTO_ENDORSE_REQUESTS` should be set to `false` *and* each connection should be set to `ManualEndorse` (which is the default).
+Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUESTS` setting is `true` _or_ if the `endorse_status` is set to `AutoEndorse` on the connection. So, if manual endorsements are desired, `ENDORSER_AUTO_ENDORSE_REQUESTS` should be set to `false` _and_ each connection should be set to `ManualEndorse` (which is the default).
 
 ### Granular Configuration of Auto Endorsement
 
@@ -124,7 +122,7 @@ Auto endorsement of transactions is configured via the `/allow/{publish-data,sch
 Each endpoint supports a `GET`, `POST` and `DELETE` for listing the
 allowed automatically endorsable transactions, adding new transactions to be automatically endorsed, and deleting transactions.
 
-Any requests using the `POST` method support using "*" to indicate a
+Any requests using the `POST` method support using "\*" to indicate a
 wild card.
 
 #### Configuration with CSV files
@@ -143,11 +141,11 @@ The fields of these CSVs follow the format used in the `POST /allow/{publish-dat
 
 For example, the description for the `POST /allow/`schema` endpoint and the CSV equivalent is
 
-| Name          | Description | Default           |
-|---------------|-------------|-------------------|
-| `author_did`  | string      | Default value : * |
-| `schema_name` | string      | Default value : * |
-| `version`     | string      | Default value : * |
+| Name          | Description | Default            |
+| ------------- | ----------- | ------------------ |
+| `author_did`  | string      | Default value : \* |
+| `schema_name` | string      | Default value : \* |
+| `version`     | string      | Default value : \* |
 
 and the CSV equivalent is
 
@@ -178,52 +176,53 @@ For the updated descriptions of the allow lists start the endorser service and o
 The `POST /allow/`{publish-data,` `schema``,credential-definition`}` describes the corresponding CSV file format.
 
 #### CSV Input Description
+
 ##### public_did
 
 | Name             | Description | Default |
-|------------------|-------------|---------|
-| `registered_did` | string      | "*"     |
+| ---------------- | ----------- | ------- |
+| `registered_did` | string      | "\*"    |
 
 Example
 
 ```csv
-registered_did,
-"5NzdaLiTEpvy5MK5fLiBMV",
-"5NzdaLiTEpvy5MK5fLiBMV",
+registered_did,details
+5NzdaLiTEpvy5MK5fLiBMV,A public DID
+5NzdaLiTEpvy5MK5fLiBMV,Same public DID
 ```
+
 ##### schema
 
 | Name          | Description | Default |
-|---------------|-------------|---------|
-| `author_did`  | string      | "*"     |
-| `schema_name` | string      | "*"     |
-| `version`     | string      | "*"     |
-	
+| ------------- | ----------- | ------- |
+| `author_did`  | string      | "\*"    |
+| `schema_name` | string      | "\*"    |
+| `version`     | string      | "\*"    |
+
 Example:
 
 ```csv
-author_did,schema_name,version
-"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
+author_did,schema_name,version,details
+5NzdaLiTEpvy5MK5fLiBMV,myschema,1.0,My test schema
 ```
-
 
 ##### credential_definition
 
 | Name            | Description | Default |
-|-----------------|-------------|---------|
-| `issuer_did`    | string      | "*"     |
-| `author_did`    | string      | "*"     |
-| `schema_name`   | string      | "*"     |
-| `version`       | string      | "*"     |
-| `tag`           | string      | "*"     |
+| --------------- | ----------- | ------- |
+| `issuer_did`    | string      | "\*"    |
+| `author_did`    | string      | "\*"    |
+| `schema_name`   | string      | "\*"    |
+| `version`       | string      | "\*"    |
+| `tag`           | string      | "\*"    |
 | `rev_reg_def`   | boolean     | True    |
 | `rev_reg_entry` | boolean     | True    |
 
 Example:
 
 ```csv
-issuer_did,author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry
-"5NzdaLiTEpvy5MK5fLiBMV","4NzdaLiTEpvy5MK5fLiBMV","demoschema","2.0","test_tag",True,False
+issuer_did,author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry,details
+5NzdaLiTEpvy5MK5fLiBMV,4NzdaLiTEpvy5MK5fLiBMV,demoschema,2.0,test_tag,True,False,My test credential definition
 ```
 
 ## Testing - Integration tests using Behave
@@ -268,14 +267,13 @@ LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage
 LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd -t @DIDs-006
 ```
 
-Note that because these tests run on your local (rather than in a docker container) you need to specify the *local* URL to the ledger and tails servers.
-
+Note that because these tests run on your local (rather than in a docker container) you need to specify the _local_ URL to the ledger and tails servers.
 
 ## Testing - Other
 
 You can also test using [traction](https://github.com/bcgov/traction).
 
-(Note that this describes the "old" traction integration tests.  There are new tests in traction using behave, this doc should be updated to reflect the latest traction.)
+(Note that this describes the "old" traction integration tests. There are new tests in traction using behave, this doc should be updated to reflect the latest traction.)
 
 Open a bash shell and startup the endorser services:
 
@@ -299,7 +297,7 @@ docker-compose build
 docker-compose up
 ```
 
-Then open up yet another bash shell and run the traction integration tests.  Traction tenants will connect to the endorser service for creating schemas, credential definitions etc.
+Then open up yet another bash shell and run the traction integration tests. Traction tenants will connect to the endorser service for creating schemas, credential definitions etc.
 
 ```bash
 cd <traction/scripts directory from above>
