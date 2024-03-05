@@ -141,18 +141,19 @@ The fields of these CSVs follow the format used in the `POST /allow/{publish-dat
 
 For example, the description for the `POST /allow/`schema` endpoint and the CSV equivalent is
 
-| Name          | Description | Default            |
-| ------------- | ----------- | ------------------ |
-| `author_did`  | string      | Default value : \* |
-| `schema_name` | string      | Default value : \* |
-| `version`     | string      | Default value : \* |
+| Name          | Description | Default |
+| ------------- | ----------- | ------- |
+| `author_did`  | string      | \*      |
+| `schema_name` | string      | \*      |
+| `version`     | string      | \*      |
+| `details`     | string      | null    |
 
 and the CSV equivalent is
 
 ```csv
-author_did,schema_name,version
-"3fa85f64-5717-4562-b3fc-2c963f66afa6","myschema","1.0"
-"9d885f64-5717-4562-b3fc-2c963f66adl1","myschema","2.0"
+author_did,schema_name,version,details
+3fa85f64-5717-4562-b3fc-2c963f66afa6,myschema,1.0,Some details
+9d885f64-5717-4562-b3fc-2c963f66adl1,myschema,2.0,Other details
 ```
 
 NOTE: The header (aka `author_did,schema_name,version`) is used to identify each of the fields
@@ -182,6 +183,7 @@ The `POST /allow/`{publish-data,` `schema``,credential-definition`}` describes t
 | Name             | Description | Default |
 | ---------------- | ----------- | ------- |
 | `registered_did` | string      | "\*"    |
+| `details`        | string      | null    |
 
 Example
 
@@ -198,6 +200,7 @@ registered_did,details
 | `author_did`  | string      | "\*"    |
 | `schema_name` | string      | "\*"    |
 | `version`     | string      | "\*"    |
+| `details`     | string      | null    |
 
 Example:
 
@@ -217,6 +220,7 @@ author_did,schema_name,version,details
 | `tag`           | string      | "\*"    |
 | `rev_reg_def`   | boolean     | True    |
 | `rev_reg_entry` | boolean     | True    |
+| `details`       | string      | null    |
 
 Example:
 
