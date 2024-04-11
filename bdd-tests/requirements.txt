@@ -48,7 +48,7 @@ pyrsistent==0.18.1
 python-dateutil==2.8.2
 python-dotenv==0.19.2
 python-jose==3.3.0
-python-multipart==0.0.5
+python-multipart==0.0.7
 PyYAML==6.0
 requests==2.27.1
 rfc3986==1.5.0
