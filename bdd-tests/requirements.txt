@@ -67,5 +67,5 @@ virtualenv==20.13.1
 watchgod==0.7
 websocket-client==0.59.0
 websockets==10.1
-Werkzeug==2.0.2
+Werkzeug==2.3.8
 yarl==1.7.2
