@@ -26,6 +26,7 @@ from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
 )
+from api.db.models.base import BaseModel
 from api.db.models.endorse_request import EndorseRequest
 from api.db.errors import AlreadyExists
 
@@ -49,7 +50,7 @@ def db_to_http_exception(e: Exception) -> int:
             return HTTP_500_INTERNAL_SERVER_ERROR
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 J = TypeVar("J")
 
 
