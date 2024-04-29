@@ -118,10 +118,11 @@ async def get_allowed_dids(
 )
 async def add_allowed_did(
     did: str = "*",
+    details: str | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> AllowedPublicDid:
     try:
-        adid = AllowedPublicDid(registered_did=did)
+        adid = AllowedPublicDid(registered_did=did, details=details)
         return await add_to_allow_list(db, adid)
     except Exception as e:
         raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
@@ -198,11 +199,15 @@ async def add_allowed_schema(
     author_did: str = "*",
     schema_name: str = "*",
     version: str = "*",
+    details: str | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> AllowedSchema:
     try:
         tmp = AllowedSchema(
-            author_did=author_did, schema_name=schema_name, version=version
+            author_did=author_did,
+            schema_name=schema_name,
+            version=version,
+            details=details,
         )
         return await add_to_allow_list(db, tmp)
     except Exception as e:
@@ -293,6 +298,7 @@ async def add_allowed_cred_def(
     schema_name: str = "*",
     version: str = "*",
     tag: str = "*",
+    details: str | None = None,
     rev_reg_def: bool = True,
     rev_reg_entry: bool = True,
     db: AsyncSession = Depends(get_db),
@@ -306,6 +312,7 @@ async def add_allowed_cred_def(
             rev_reg_def=rev_reg_def,
             rev_reg_entry=rev_reg_entry,
             version=version,
+            details=details,
         )
         return await add_to_allow_list(db, acreddef)
     except Exception as e:
