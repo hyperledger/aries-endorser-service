@@ -17,6 +17,7 @@ from api.db.errors import AlreadyExists
 
 logger = logging.getLogger(__name__)
 
+
 async def updated_allowed(db: AsyncSession) -> None:
     try:
         q = select(EndorseRequest).where(
@@ -41,7 +42,9 @@ async def updated_allowed(db: AsyncSession) -> None:
         logger.error(f"Failed to update pending transactions {e}")
 
 
-B = TypeVar('B', bound=BaseModel)
+B = TypeVar("B", bound=BaseModel)
+
+
 async def add_to_allow_list(db: AsyncSession, a: B) -> B:
     try:
         db.add(a)

@@ -124,7 +124,7 @@ Feature: Author Creates various tranactions and asks for endorsement
         And "bob" has an active credential definition on the ledger
 
     @Endorsements-008
-    Scenario: Endorser adds a 2 duplicate schemas causing a rollback without losing the previous state of the db
+    Scenario: Endorser adds a 2 duplicate schemas causing a rollback without losing the previous state of the db using the csv
         Given There is a new agent "bob" that is connected to the endorser and has a public DID
         And "bob" has an "active" connection to the endorser
         And the endorser has an "active" connection with "bob"
@@ -134,3 +134,14 @@ Feature: Author Creates various tranactions and asks for endorsement
         Then the endorser allows "bob" last schema from file via "POST"
         And the endorser fails to allow duplicate schemas from file
         And "bob" has an active schema on the ledger
+
+    @Endorsements-009
+    Scenario: Endorser adds a 2 duplicate schemas causing a rollback without losing the previous state of the db
+        Given There is a new agent "bob" that is connected to the endorser and has a public DID
+        And "bob" has an "active" connection to the endorser
+        And the endorser has an "active" connection with "bob"
+        And "bob" has a public DID
+        And the endorser has an "active" connection with "bob"
+        When "bob" creates a new schema
+        Then the endorser allows "bob" last schema from file via "POST"
+        And the endorser fails to allow "bob" duplicate schemas

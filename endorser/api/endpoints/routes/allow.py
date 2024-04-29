@@ -10,10 +10,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.functions import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from api.endpoints.models.endorse import (
-    EndorseTransactionState,
-    db_to_txn_object,
-)
 
 from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.allow import (
@@ -27,13 +23,8 @@ from api.db.models.allow import (
     AllowedCredentialDefinition,
 )
 from api.db.models.base import BaseModel
-from api.db.models.endorse_request import EndorseRequest
 from api.db.errors import AlreadyExists
 
-from api.services.endorse import (
-    endorse_transaction,
-)
-from api.services.auto_state_handlers import is_endorsable_transaction
 from api.services.allow_lists import updated_allowed, add_to_allow_list
 
 router = APIRouter()
@@ -109,6 +100,7 @@ async def get_allowed_dids(
         )
     except Exception as e:
         raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
+
 
 @router.post(
     "/publish-did/{did}",
