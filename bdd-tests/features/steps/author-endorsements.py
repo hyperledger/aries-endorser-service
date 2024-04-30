@@ -153,8 +153,32 @@ def step_impl(context):
                 ),
             ],
         )
-    except HTTPError:
-        pass
+        assert False
+    except HTTPError as e:
+        assert e.response.status_code == 409
+
+
+@when('the endorser fails to allow "{author}" duplicate schemas')
+@then('the endorser fails to allow "{author}" duplicate schemas')
+def step_impl(context, author: str):
+    try:
+        schema = get_author_context(context, author, "current_schema")
+        resp = call_author_service(
+            context,
+            author,
+            GET,
+            f"/wallet/did/public",
+        )
+        public_did = resp["result"]["did"]
+        resp = set_endorser_allowed_schema(
+            context,
+            author_did=public_did,
+            schema_name=schema["schema_name"],
+            version=schema["schema_version"],
+        )
+        assert False
+    except HTTPError as e:
+        assert e.response.status_code == 409
 
 
 @when('"{author}" has an active schema on the ledger')

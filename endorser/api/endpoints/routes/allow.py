@@ -5,15 +5,11 @@ from codecs import iterdecode
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from starlette import status
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.functions import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-
-from api.endpoints.models.endorse import (
-    EndorseTransactionState,
-    db_to_txn_object,
-)
 
 from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.allow import (
@@ -26,42 +22,26 @@ from api.db.models.allow import (
     AllowedSchema,
     AllowedCredentialDefinition,
 )
-from api.db.models.endorse_request import EndorseRequest
+from api.db.models.base import BaseModel
+from api.db.errors import AlreadyExists
 
-from api.services.endorse import (
-    endorse_transaction,
-)
-from api.services.auto_state_handlers import is_endorsable_transaction
+from api.services.allow_lists import updated_allowed, add_to_allow_list
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-async def updated_allowed(db: AsyncSession) -> None:
-    try:
-        q = select(EndorseRequest).where(
-            EndorseRequest.state == EndorseTransactionState.request_received
-        )
-        result = await db.execute(q)
-        db_txns: list[EndorseRequest] = result.scalars().all()
-        for txn in db_txns:
-            transaction = db_to_txn_object(txn, acapy_txn=None)
-            logger.debug(
-                f">>> from updated_allowed: the current transaction is {transaction}"
-            )
-            was_allowed = await is_endorsable_transaction(db, transaction)
-            logger.debug(f">>> from updated_allowed: this was allowed? {was_allowed}")
-            if was_allowed:
-                logger.debug(
-                    f">>> from updated_allowed: endorsing transaction: {transaction}"
-                )
-                await endorse_transaction(db, transaction)
-    except Exception as e:
-        # try to retrieve and print text on error
-        logger.error(f"Failed to update pending transactions {e}")
+def db_to_http_exception(e: Exception) -> int:
+    match e:
+        case IntegrityError():
+            return HTTP_409_CONFLICT
+        case AlreadyExists():
+            return HTTP_409_CONFLICT
+        case _:
+            return HTTP_500_INTERNAL_SERVER_ERROR
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 J = TypeVar("J")
 
 
@@ -119,7 +99,7 @@ async def get_allowed_dids(
             dids=db_txn,
         )
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.post(
@@ -136,12 +116,9 @@ async def add_allowed_did(
 ) -> AllowedPublicDid:
     try:
         adid = AllowedPublicDid(registered_did=did, details=details)
-        db.add(adid)
-        await db.commit()
-        await updated_allowed(db)
-        return adid
+        return await add_to_allow_list(db, adid)
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.delete(
@@ -161,7 +138,7 @@ async def delete_allowed_did(
         await updated_allowed(db)
         return {}
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.get(
@@ -200,7 +177,7 @@ async def get_allowed_schemas(
             schemas=db_txn,
         )
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.post(
@@ -225,12 +202,9 @@ async def add_allowed_schema(
             version=version,
             details=details,
         )
-        db.add(tmp)
-        await db.commit()
-        await updated_allowed(db)
-        return tmp
+        return await add_to_allow_list(db, tmp)
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.delete(
@@ -252,7 +226,7 @@ async def delete_allowed_schema(
         await updated_allowed(db)
         return {}
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.get(
@@ -300,7 +274,7 @@ async def get_allowed_cred_def(
             credentials=db_txn,
         )
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.post(
@@ -333,12 +307,9 @@ async def add_allowed_cred_def(
             version=version,
             details=details,
         )
-        db.add(acreddef)
-        await db.commit()
-        await updated_allowed(db)
-        return acreddef
+        return await add_to_allow_list(db, acreddef)
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.delete(
@@ -360,7 +331,7 @@ async def delete_allowed_cred_def(
         await updated_allowed(db)
         return {}
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 async def update_allowed_config(k, v, db):
@@ -414,7 +385,7 @@ async def set_config(
             publish_did, schema, credential_definition, db, True
         )
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
 @router.put(
@@ -434,4 +405,4 @@ async def append_config(
             publish_did, schema, credential_definition, db, False
         )
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
