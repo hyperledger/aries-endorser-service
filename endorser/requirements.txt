@@ -10,7 +10,7 @@ fastapi==0.109.1
 greenlet==1.1.2
 gunicorn==22.0.0
 h11==0.13.0
-httptools==0.3.0
+httptools==0.6.1
 idna==3.7
 itsdangerous==2.0.1
 Jinja2==3.1.3
