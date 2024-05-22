@@ -26,7 +26,7 @@ python-multipart==0.0.7
 PyYAML==6.0
 requests==2.31.0
 sniffio==1.2.0
-SQLAlchemy==1.4.27
+SQLAlchemy==1.4.52
 sqlalchemy2-stubs==0.0.2a19
 sqlmodel==0.0.6
 starlette==0.35.1
