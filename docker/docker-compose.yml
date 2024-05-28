@@ -80,7 +80,7 @@ services:
       - host.docker.internal:host-gateway
 
   aries-endorser-wallet:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
@@ -96,8 +96,8 @@ services:
 
   aries-endorser-api:
     build:
-      context: ../endorser
-      dockerfile: Dockerfile.endorser
+      context: ..
+      dockerfile: ./endorser/Dockerfile.endorser
     depends_on:
       aries-endorser-agent:
         condition: service_started
@@ -132,7 +132,7 @@ services:
       - host.docker.internal:host-gateway
 
   aries-endorser-api-db:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       - POSTGRES_USER=${POSTGRESQL_USER}
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
@@ -218,7 +218,7 @@ services:
       - host.docker.internal:host-gateway
 
   aries-author-wallet:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${AUTHOR_WALLET_POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${AUTHOR_WALLET_POSTGRESQL_PASSWORD}
