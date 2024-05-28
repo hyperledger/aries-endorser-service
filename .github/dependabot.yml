@@ -4,19 +4,7 @@ version: 2
 updates:
   # Maintain dependencies for Python Packages
   - package-ecosystem: "pip"
-    directory: "/bdd-tests"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-      timezone: "Canada/Pacific"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-
-  # Maintain dependencies for Python Packages
-  - package-ecosystem: "pip"
-    directory: "/endorser"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -38,6 +26,15 @@ updates:
   # Maintain dependencies for docker
   - package-ecosystem: "docker"
     directory: "/endorser"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Canada/Pacific"
+  
+  # Maintain dependencies for dev Container
+  - package-ecosystem: "devcontainers"
+    directory: "/.devcontainer"
     schedule:
       interval: "weekly"
       day: "monday"
