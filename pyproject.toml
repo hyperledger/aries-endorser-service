@@ -52,37 +52,11 @@ ruff = "0.4.4"
 black = "24.4.2"
 
 # testing
+behave = "^1.2.6"
 pytest = "^8.2.0"
 pytest-asyncio = "^0.23.6"
 pytest-cov = "^5.0.0"
 pytest-ruff = "^0.3.2"
-behave = "^1.2.6"
-
-
-async-timeout = "^4.0.1"
-attrs = "^21.4.0"
-chardet = "^4.0.0"
-distro = "^1.6.0"
-docopt = "^0.6.2"
-ecdsa = "^0.17.0"
-exrex = "^0.10.5"
-Faker = "^11.3.0"
-iniconfig = "^1.1.1"
-jsonschema = "^3.2.0"
-paramiko = "^3.4.0"
-py = "^1.11.0"
-pyasn1 = "^0.4.8"
-pydantic-factories = "^1.2.3"
-PyNaCl = "^1.5.0"
-pyparsing = "^3.0.7"
-pyrsistent = "^0.18.1"
-rfc3986 = "^1.5.0"
-rsa = "^4.8"
-texttable = "^1.6.4"
-toml = "^0.10.2"
-virtualenv = "^20.13.1"
-websocket-client = "^0.59.0"
-yarl = "^1.7.2"
 
 
 [tool.poetry.extras]
