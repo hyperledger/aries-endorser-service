@@ -98,6 +98,23 @@ services:
     build:
       context: ..
       dockerfile: ./endorser/Dockerfile.endorser
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      if [ $DEBUGGER ] && [ "$DEBUGGER" == "true" ]; then
+        echo 'Starting in debug mode...'
+        pip install debugpy -t /tmp;
+        python3 -m alembic upgrade head
+        if [ $? == 0 ]; then
+          python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn api.main:app --reload --host 0.0.0.0 --port 5000;
+        else
+          echo 'Alembic db upgrade failed...'
+          exit 1
+        fi
+      else
+        echo 'Starting in production mode...'
+        /app/docker-entrypoint.sh;
+      fi"
     depends_on:
       aries-endorser-agent:
         condition: service_started
@@ -126,9 +143,13 @@ services:
       - LOG_LEVEL=${API_LOG_LEVEL}
       - ENDORSER_PUBLIC_NAME=${ENDORSER_PUBLIC_NAME}
       - ENDORSER_PUBLIC_DESC=${ENDORSER_PUBLIC_DESC}
-      - SQLALCHEMY_WARN_20=1 
+      - DEBUGGER=${DEBUGGER:-false}
+      - SQLALCHEMY_WARN_20=1
+    volumes:
+      - ../endorser:/app:rw
     ports:
       - ${ENDORSER_SERVICE_PORT_EXPOSED}:${ENDORSER_SERVICE_PORT}
+      - 5678:5678
     extra_hosts:
       - host.docker.internal:host-gateway
 

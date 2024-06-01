@@ -58,5 +58,10 @@
   },
 
   "mounts": [],
-  "postCreateCommand": "bash ./.devcontainer/post-install.sh"
+  "postCreateCommand": "bash ./.devcontainer/post-install.sh",
+  "portsAttributes": {
+    "5050": {
+      "label": "endorser-api"
+    }
+  }
 }
