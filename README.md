@@ -247,19 +247,7 @@ ENDORSER_ENV=bdd ./manage start-bdd --logs
 
 The Author agent (which is configured as multi-tenant) exposes its Admin API on http://localhost:8061/api/doc
 
-Open a second bash shell (cd to the directory where you have checked out this repository) and run:
-
-```bash
-virtualenv venv
-source ./venv/bin/activate
-pip install -r endorser/requirements.txt
-pip install -r bdd-tests/requirements.txt
-cd docker
-```
-
-(Note that the above are one-time commands)
-
-To run the BDD tests just run:
+Open a second bash shell (cd to the directory where you have checked out this repository) and run the BDD tests with:
 
 ```bash
 LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd
