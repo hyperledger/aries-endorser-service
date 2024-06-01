@@ -37,7 +37,7 @@ class EndorseTransactionType(str, Enum):
 
 
 class EndorseTransaction(BaseModel):
-    author_goal_code: str | None
+    author_goal_code: str | None = None
     connection_id: UUID
     transaction_id: UUID
     tags: list[str]

@@ -4,7 +4,8 @@ from enum import Enum
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import BaseSettings, PostgresDsn
+from pydantic import PostgresDsn
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 logger = logging.getLogger(__name__)
@@ -76,11 +77,11 @@ class GlobalConfig(BaseSettings):
 
     # application connection is async
     # fmt: off
-    SQLALCHEMY_DATABASE_URI: PostgresDsn = (
+    SQLALCHEMY_DATABASE_URI: str = (
         f"postgresql+asyncpg://{PSQL_USER}:{PSQL_PASS}@{PSQL_HOST}:{PSQL_PORT}/{PSQL_DB}"  # noqa: E501
     )
     # migrations connection uses owner role and is synchronous
-    SQLALCHEMY_DATABASE_ADMIN_URI: PostgresDsn = (
+    SQLALCHEMY_DATABASE_ADMIN_URI: str = (
         f"postgresql://{PSQL_ADMIN_USER}:{PSQL_ADMIN_PASS}@{PSQL_HOST}:{PSQL_PORT}/{PSQL_DB}"  # noqa: E501
     )
     # fmt: on
@@ -95,28 +96,26 @@ class GlobalConfig(BaseSettings):
     ENDORSER_WEBHOOK_URL: str = os.environ.get(
         "ENDORSER_WEBHOOK_URL", "http://aries-endorser-api:5000/webhook"
     )
-    ACAPY_WEBHOOK_URL_API_KEY_NAME = "x-api-key"
+    ACAPY_WEBHOOK_URL_API_KEY_NAME: str = "x-api-key"
     ACAPY_WEBHOOK_URL_API_KEY: str = os.environ.get("ACAPY_WEBHOOK_URL_API_KEY", "")
 
     DB_ECHO_LOG: bool = False
 
     # Api V1 prefix
-    API_V1_STR = "/v1"
+    API_V1_STR: str = "/v1"
 
     # openssl rand -hex 32
-    JWT_SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-    JWT_ALGORITHM = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 300
-
-    class Config:
-        case_sensitive = True
+    JWT_SECRET_KEY: str = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 300
+    model_config = SettingsConfigDict(case_sensitive=True)
 
 
 class LocalConfig(GlobalConfig):
     """Local configurations."""
 
     DEBUG: bool = True
-    DB_ECHO_LOG = True
+    DB_ECHO_LOG: bool = True
     ENVIRONMENT: EnvironmentEnum = EnvironmentEnum.LOCAL
 
 

@@ -3,15 +3,14 @@ from datetime import datetime
 from typing import Optional
 
 import pydantic
-from sqlmodel import Field, SQLModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import Column, func, text
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
+from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
+from sqlmodel import Field, SQLModel
 
 
 class BaseSchema(pydantic.BaseModel):
-    class Config(pydantic.BaseModel.Config):
-        orm_mode = True
-        read_with_orm_mode = True
+    model_config = SettingsConfigDict(from_attributes=True, read_with_orm_mode=True)
 
 
 class BaseModel(SQLModel, BaseSchema):
@@ -22,17 +21,19 @@ class BaseTable(BaseModel):
     # the following are marked optional because they are generated on the server
     # these will be included in each class where we set table=true (our table classes)
     id: Optional[uuid.UUID] = Field(
+        None,
         sa_column=Column(
             UUID(as_uuid=True),
             primary_key=True,
             server_default=text("gen_random_uuid()"),
-        )
+        ),
     )
     created_at: Optional[datetime] = Field(
-        sa_column=Column(TIMESTAMP, nullable=False, server_default=func.now())
+        None, sa_column=Column(TIMESTAMP, nullable=False, server_default=func.now())
     )
     updated_at: Optional[datetime] = Field(
+        None,
         sa_column=Column(
             TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now()
-        )
+        ),
     )

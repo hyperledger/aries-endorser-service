@@ -16,20 +16,17 @@ repository = "https://github.com/hyperledger/aries-endorser-service"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiohttp = "^3.7.4"
-alembic = "^1.7.5"
-asyncpg = "^0.24.0"
-fastapi = "^0.109.1"
-psycopg2-binary = "^2.9.2"
-pydantic = "^1.10.13"
+aiohttp = "^3.9.5"
+alembic = "^1.13.1"
+asyncpg = "^0.29.0"
+fastapi = "^0.111.0"
+psycopg2-binary = "^2.9.9"
+pydantic-settings = "^2.2.1"
 python-jose = {version = "^3.3.0", extras = ["cyptography"]}
-python-multipart = "^0.0.9"
-requests = "^2.31.0"
-SQLAlchemy = "^1.4.27"
-sqlmodel = "~0.0.6"
-starlette = "^0.35.1"
-starlette-context = "^0.3.3"
-uvicorn = "^0.17.0"
+requests = "^2.32.3"
+SQLAlchemy = {version = "^2.0.30", extras = ["asyncio"]}
+sqlmodel = "~0.0.18"
+starlette-context = "^0.3.6"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "~3.7.0"

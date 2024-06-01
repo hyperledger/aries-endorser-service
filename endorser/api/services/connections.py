@@ -1,26 +1,25 @@
 import logging
 from typing import cast
 from uuid import UUID
+
+from sqlalchemy import desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
 
-from api.endpoints.models.endorse import (
-    EndorserRoleType,
-)
+import api.acapy_utils as au
+from api.db.errors import DoesNotExist
+from api.db.models.contact import Contact
 from api.endpoints.models.connections import (
-    ConnectionProtocolType,
     AuthorStatusType,
-    EndorseStatusType,
     Connection,
+    ConnectionProtocolType,
+    EndorseStatusType,
     connection_to_db_object,
     db_to_connection_object,
 )
-from api.db.models.contact import Contact
-from api.db.errors import DoesNotExist
-
-import api.acapy_utils as au
-
+from api.endpoints.models.endorse import (
+    EndorserRoleType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +72,7 @@ async def db_get_contact_records(
     base_q = select(Contact).filter(*filters)
 
     # get a count of ALL records matching our base query
-    count_q = select([func.count()]).select_from(base_q)
+    count_q = base_q.with_only_columns(func.count()).order_by(None)
     count_q_rec = await db.execute(count_q)
     total_count = cast(int, count_q_rec.scalar())
 

@@ -2,19 +2,18 @@ import logging
 from typing import cast
 from uuid import UUID
 
+from sqlalchemy import desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, desc
 from sqlalchemy.sql.functions import func
-from api.endpoints.models.endorse import (
-    EndorseTransaction,
-    txn_to_db_object,
-    db_to_txn_object,
-)
-from api.db.models.endorse_request import EndorseRequest
-from api.db.errors import DoesNotExist
 
 import api.acapy_utils as au
-
+from api.db.errors import DoesNotExist
+from api.db.models.endorse_request import EndorseRequest
+from api.endpoints.models.endorse import (
+    EndorseTransaction,
+    db_to_txn_object,
+    txn_to_db_object,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ async def db_get_txn_records(
     base_q = select(EndorseRequest).filter(*filters)
 
     # get a count of ALL records matching our base query
-    count_q = select([func.count()]).select_from(base_q)
+    count_q = base_q.with_only_columns(func.count()).order_by(None)
     count_q_rec = await db.execute(count_q)
     total_count: int = count_q_rec.scalar() or 0
 
