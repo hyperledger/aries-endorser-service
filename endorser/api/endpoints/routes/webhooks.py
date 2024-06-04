@@ -1,16 +1,17 @@
-from enum import Enum
 import logging
 import traceback
+from enum import Enum
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
-from fastapi.security.api_key import APIKeyHeader, APIKey
+from fastapi.security.api_key import APIKey, APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_403_FORBIDDEN
 
+import api.services as api_services
 from api.core.config import settings
 from api.endpoints.dependencies.db import get_db
-import api.services as api_services
-
+from api.endpoints.models.connections import Connection
+from api.endpoints.models.endorse import EndorseTransaction
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ def get_webhookapp() -> FastAPI:
     return application
 
 
-@router.post("/topic/{topic}/", response_model=dict)
+@router.post("/topic/{topic}/", response_model=dict | Connection | EndorseTransaction)
 async def process_webhook(
     topic: WebhookTopicType,
     payload: dict,

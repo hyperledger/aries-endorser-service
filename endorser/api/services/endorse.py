@@ -40,8 +40,7 @@ async def db_fetch_db_txn_record(
         raise DoesNotExist(
             f"{EndorseRequest.__name__}<transaction_id:{transaction_id}> does not exist"
         )
-    db_txn: EndorseRequest = EndorseRequest.from_orm(result_rec)
-    return db_txn
+    return result_rec
 
 
 async def db_update_db_txn_record(

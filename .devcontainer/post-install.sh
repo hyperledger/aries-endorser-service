@@ -6,3 +6,4 @@ WORKSPACE_DIR=$(pwd)
 
 # upgrade pip
 python -m pip install --upgrade pip
+poetry install --sync

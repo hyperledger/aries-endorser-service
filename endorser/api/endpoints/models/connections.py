@@ -1,10 +1,9 @@
-from enum import Enum
 import logging
+from enum import Enum
 from uuid import UUID
-from pydantic import BaseModel
 
+from api.db.models.base import BaseModel
 from api.db.models.contact import Contact
-
 
 logger = logging.getLogger(__name__)
 

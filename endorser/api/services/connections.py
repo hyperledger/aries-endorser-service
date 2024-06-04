@@ -39,8 +39,7 @@ async def db_fetch_db_contact_record(db: AsyncSession, connection_id: UUID) -> C
         raise DoesNotExist(
             f"{Contact.__name__}<connection_id:{connection_id}> does not exist"
         )
-    db_contact: Contact = Contact.from_orm(result_rec)
-    return db_contact
+    return result_rec
 
 
 async def db_update_db_contact_record(db: AsyncSession, db_contact: Contact) -> Contact:

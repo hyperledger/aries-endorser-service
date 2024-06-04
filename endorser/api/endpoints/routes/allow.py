@@ -1,7 +1,7 @@
 import logging
 from codecs import iterdecode
 from csv import DictReader
-from typing import Optional, TypeVar
+from typing import Annotated, Optional, TypeVar
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -375,9 +375,15 @@ async def update_full_config(
     description="Upload a new csv config replacing the existing configuration",
 )
 async def set_config(
-    publish_did: Optional[UploadFile] = File(None),
-    schema: Optional[UploadFile] = File(None),
-    credential_definition: Optional[UploadFile] = File(None),
+    publish_did: Annotated[
+        UploadFile, File(description="List of DIDs authorized to become public")
+    ] = None,
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
+    ] = None,
+    credential_definition: Annotated[
+        UploadFile, File(description="List of creddefs authorized to be published")
+    ] = None,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
@@ -395,9 +401,15 @@ async def set_config(
     description="Upload a new csv config appending to the existing configuration",
 )
 async def append_config(
-    publish_did: Optional[UploadFile] = File(None),
-    schema: Optional[UploadFile] = File(None),
-    credential_definition: Optional[UploadFile] = File(None),
+    publish_did: Annotated[
+        UploadFile, File(description="List of DIDs authorized to become public")
+    ] = None,
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
+    ] = None,
+    credential_definition: Annotated[
+        UploadFile, File(description="List of creddefs authorized to be published")
+    ] = None,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
