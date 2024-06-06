@@ -1,41 +1,22 @@
-import json
-import time
 import os
 import pprint
 import random
 import time
 from typing import Literal
-from requests import HTTPError
 
 from behave import *
-from starlette import status
-
+from requests import HTTPError
 from util import (
-    authenticate_endorser_service,
-    call_endorser_service,
-    call_agency_service,
-    call_author_service,
-    call_http_service,
-    set_endorser_allowed_from_file,
-    set_endorser_config,
-    set_endorser_allowed_credential_definition,
-    set_endorser_allowed_schema,
-    get_endorsers_author_connection,
-    get_authors_endorser_connection,
-    get_endorser_transaction_record,
-    get_author_transaction_record,
     GET,
     POST,
-    HEAD,
-    ENDORSER_URL_PREFIX,
+    call_author_service,
     get_author_context,
+    get_author_transaction_record,
     put_author_context,
-    clear_author_context,
-    get_endorser_context,
-    put_endorser_context,
-    clear_endorser_context,
+    set_endorser_allowed_credential_definition,
+    set_endorser_allowed_from_file,
+    set_endorser_allowed_schema,
 )
-
 
 MAX_INC = 10
 SLEEP_INC = 2
@@ -70,7 +51,7 @@ def step_impl(context, author: str):
         context,
         author,
         POST,
-        f"/schemas",
+        "/schemas",
         data=schema,
     )
     assert "txn" in resp, pprint.pp(resp)
@@ -88,7 +69,7 @@ def step_impl(context, author: str):
         context,
         author,
         GET,
-        f"/wallet/did/public",
+        "/wallet/did/public",
     )
     public_did = resp["result"]["did"]
 
@@ -102,7 +83,6 @@ def step_impl(context, author: str):
 
 from util import (
     AllowedCredentialDefinition,
-    AllowedPublicDid,
     AllowedSchema,
 )
 
@@ -115,7 +95,7 @@ def step_impl(context, author: str, POST_or_PUT: Literal["POST"] | Literal["PUT"
         context,
         author,
         GET,
-        f"/wallet/did/public",
+        "/wallet/did/public",
     )
     public_did = resp["result"]["did"]
 
@@ -167,7 +147,7 @@ def step_impl(context, author: str):
             context,
             author,
             GET,
-            f"/wallet/did/public",
+            "/wallet/did/public",
         )
         public_did = resp["result"]["did"]
         resp = set_endorser_allowed_schema(
@@ -198,7 +178,7 @@ def step_impl(context, author: str):
         context,
         author,
         GET,
-        f"/schemas/created",
+        "/schemas/created",
     )
     assert schema_id in schemas_created["schema_ids"], pprint.pp(schemas_created)
 
@@ -236,7 +216,7 @@ def step_impl(context, author: str, with_or_without: str):
         context,
         author,
         POST,
-        f"/credential-definitions",
+        "/credential-definitions",
         data=cred_def,
     )
     assert "txn" in resp, pprint.pp(resp)
@@ -259,7 +239,7 @@ def step_impl(context, author: str, with_or_without: str):
         context,
         author,
         GET,
-        f"/wallet/did/public",
+        "/wallet/did/public",
     )
     public_did = resp["result"]["did"]
 
@@ -294,7 +274,7 @@ def step_impl(
         context,
         author,
         GET,
-        f"/wallet/did/public",
+        "/wallet/did/public",
     )
     public_did = resp["result"]["did"]
 
@@ -334,7 +314,7 @@ def step_impl(context, author: str):
         context,
         author,
         GET,
-        f"/credential-definitions/created",
+        "/credential-definitions/created",
     )
     assert cred_def_id in cred_defs_created["credential_definition_ids"], pprint.pp(
         cred_defs_created

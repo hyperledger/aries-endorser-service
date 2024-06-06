@@ -421,7 +421,7 @@ def set_endorser_allowed_from_file(
     # print(f"content of creddef file is now: {credential_definition_contents}")
     resp = call_endorser_service(
         context,
-        POST if method == "POST" else PUT,
+        method,
         f"{ENDORSER_URL_PREFIX}/allow/config",
         files={
             "publish_did": publish_did_contents,
