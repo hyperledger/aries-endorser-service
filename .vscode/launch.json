@@ -1,0 +1,23 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "Python: Debug Endorser API",
+            "type": "python",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}/endorser",
+                    "remoteRoot": "/app"
+                },
+                // {
+                //     "localRoot": "${workspaceFolder}/.venv/Lib/site-packages",
+                //     "remoteRoot": "/usr/local/lib/python3.11/site-packages"
+                // }
+            ],
+            "justMyCode": false
+        }
+    ]
+}

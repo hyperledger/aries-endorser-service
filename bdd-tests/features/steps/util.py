@@ -1,16 +1,13 @@
-from dataclasses import dataclass
+import csv
+import io
 import json
 import os
-import io
-from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Collection, Iterable, Literal
 import pprint
-import requests
 import time
-import csv
+from dataclasses import dataclass
+from typing import Any, Collection, Iterable, Literal, Mapping
 
-
-from typing import Any, Mapping
+import requests
 from behave import *
 from starlette import status
 
@@ -357,7 +354,6 @@ def set_endorser_allowed_from_file(
     schemas: list[AllowedSchema] | None = None,
     credential_definition: list[AllowedCredentialDefinition] | None = None,
 ) -> dict:
-    print(f"schemas are {schemas}")
 
     schema_contents = (
         generate_dict_str(
@@ -420,10 +416,12 @@ def set_endorser_allowed_from_file(
         if credential_definition
         else ""
     )
-    print(f"content of file is now {schema_contents}")
+    # print(f"content of DIDs file is now: {publish_did_contents}")
+    # print(f"content of schemas file is now: {schema_contents}")
+    # print(f"content of creddef file is now: {credential_definition_contents}")
     resp = call_endorser_service(
         context,
-        POST,
+        method,
         f"{ENDORSER_URL_PREFIX}/allow/config",
         files={
             "publish_did": publish_did_contents,
@@ -629,7 +627,7 @@ def get_author_context(context, author: str, context_str: str):
 
 
 def put_author_context(context, author: str, context_str: str, context_val):
-    if not f"{author}_config" in context.config.userdata:
+    if f"{author}_config" not in context.config.userdata:
         context.config.userdata[f"{author}_config"] = {}
     context.config.userdata[f"{author}_config"][context_str] = context_val
 

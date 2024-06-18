@@ -80,7 +80,7 @@ services:
       - host.docker.internal:host-gateway
 
   aries-endorser-wallet:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${WALLET_POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${WALLET_POSTGRESQL_PASSWORD}
@@ -96,8 +96,25 @@ services:
 
   aries-endorser-api:
     build:
-      context: ../endorser
-      dockerfile: Dockerfile.endorser
+      context: ..
+      dockerfile: ./endorser/Dockerfile.endorser
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      if [ $DEBUGGER ] && [ "$DEBUGGER" == "true" ]; then
+        echo 'Starting in debug mode...'
+        pip install debugpy -t /tmp;
+        python3 -m alembic upgrade head
+        if [ $? == 0 ]; then
+          python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn api.main:app --reload --host 0.0.0.0 --port 5000;
+        else
+          echo 'Alembic db upgrade failed...'
+          exit 1
+        fi
+      else
+        echo 'Starting in production mode...'
+        /app/docker-entrypoint.sh;
+      fi"
     depends_on:
       aries-endorser-agent:
         condition: service_started
@@ -126,13 +143,18 @@ services:
       - LOG_LEVEL=${API_LOG_LEVEL}
       - ENDORSER_PUBLIC_NAME=${ENDORSER_PUBLIC_NAME}
       - ENDORSER_PUBLIC_DESC=${ENDORSER_PUBLIC_DESC}
+      - DEBUGGER=${DEBUGGER:-false}
+      - SQLALCHEMY_WARN_20=1
+    volumes:
+      - ../endorser:/app:rw
     ports:
       - ${ENDORSER_SERVICE_PORT_EXPOSED}:${ENDORSER_SERVICE_PORT}
+      - 5678:5678
     extra_hosts:
       - host.docker.internal:host-gateway
 
   aries-endorser-api-db:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       - POSTGRES_USER=${POSTGRESQL_USER}
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
@@ -218,7 +240,7 @@ services:
       - host.docker.internal:host-gateway
 
   aries-author-wallet:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${AUTHOR_WALLET_POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${AUTHOR_WALLET_POSTGRESQL_PASSWORD}

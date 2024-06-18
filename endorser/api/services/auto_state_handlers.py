@@ -1,49 +1,44 @@
 import logging
 import traceback
-from typing import cast, Any
+from typing import Any, cast
 
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from attr import dataclass
+from sqlalchemy import or_, select
 from sqlalchemy.engine.row import Row
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import api.acapy_utils as au
-
 from api.db.models.allow import (
-    AllowedSchema,
     AllowedCredentialDefinition,
+    AllowedSchema,
 )
 from api.endpoints.models.allow import (
     AllowedPublicDid,
 )
-from api.endpoints.models.endorse import EndorseTransactionType
-
-from attr import dataclass
-
+from api.endpoints.models.connections import (
+    AuthorStatusType,
+    Connection,
+    EndorseStatusType,
+    webhook_to_connection_object,
+)
 from api.endpoints.models.endorse import (
     EndorseTransaction,
+    EndorseTransactionType,
     webhook_to_txn_object,
-)
-from api.endpoints.models.connections import (
-    webhook_to_connection_object,
-    AuthorStatusType,
-    EndorseStatusType,
-    Connection,
-)
-from api.services.connections import (
-    accept_connection_request,
-    get_connection_object,
 )
 from api.services.configurations import (
     get_bool_config,
     get_config,
 )
+from api.services.connections import (
+    accept_connection_request,
+    get_connection_object,
+)
 from api.services.endorse import (
     endorse_transaction,
-    reject_transaction,
     get_endorser_did,
+    reject_transaction,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +84,7 @@ async def auto_step_ping_received(
 
 async def auto_step_connections_request(
     db: AsyncSession, payload: dict, handler_result: dict
-) -> dict:
+) -> dict | Connection:
     # auto-accept connection?
     connection: Connection = webhook_to_connection_object(payload)
     if await get_bool_config(db, "ENDORSER_AUTO_ACCEPT_CONNECTIONS"):

@@ -6,9 +6,7 @@ Generic single-database configuration with an async dbapi.
 
 Add a new python model file in the `endorser/api/db/models` directory.  You can review the existing model files for examples.
 
-To generate new alembic revision (this will go in the `db/migrations` directory), first update the model file(s) and then from /scripts folder:
-
-From the root of the `endorser` directory:
+To generate new alembic revision (this will go in the `db/migrations` directory), first update the model file(s) and then from the root of the `endorser` directory:
 
 ```shell
 alembic revision --autogenerate -m "comment"

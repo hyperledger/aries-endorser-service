@@ -1,20 +1,19 @@
 import logging
 import os
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.db.errors import DoesNotExist
+from api.db.models.configuration import ConfigurationDB
 from api.endpoints.models.configurations import (
-    ConfigurationType,
     CONFIG_DEFAULTS,
-    ConfigurationSource,
     Configuration,
+    ConfigurationSource,
+    ConfigurationType,
     config_to_db_object,
     db_to_config_object,
 )
-from api.db.models.configuration import ConfigurationDB
-from api.db.errors import DoesNotExist
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +37,7 @@ async def db_fetch_db_config_record(
         raise DoesNotExist(
             f"{ConfigurationDB.__name__}<config_name:{config_name}> does not exist"
         )
-    db_config: ConfigurationDB = ConfigurationDB.from_orm(result_rec)
-    return db_config
+    return result_rec
 
 
 async def db_update_db_config_record(

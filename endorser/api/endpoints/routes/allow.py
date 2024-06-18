@@ -1,31 +1,31 @@
 import logging
-from typing import Optional, TypeVar
-from csv import DictReader
 from codecs import iterdecode
+from csv import DictReader
+from typing import Annotated, Optional, TypeVar
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import func
 from starlette import status
 from starlette.status import HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.sql.functions import func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
 
-from api.endpoints.dependencies.db import get_db
-from api.endpoints.models.allow import (
-    AllowedPublicDid,
-    AllowedSchemaList,
-    AllowedCredentialDefinitionList,
-    AllowedPublicDidList,
-)
+from api.db.errors import AlreadyExists
 from api.db.models.allow import (
-    AllowedSchema,
     AllowedCredentialDefinition,
+    AllowedSchema,
 )
 from api.db.models.base import BaseModel
-from api.db.errors import AlreadyExists
-
-from api.services.allow_lists import updated_allowed, add_to_allow_list
+from api.endpoints.dependencies.db import get_db
+from api.endpoints.models.allow import (
+    AllowedCredentialDefinitionList,
+    AllowedPublicDid,
+    AllowedPublicDidList,
+    AllowedSchemaList,
+)
+from api.services.allow_lists import add_to_allow_list, updated_allowed
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ async def select_from_table(
         cond == value if value else True for value, cond in filters.items()
     ]
     base_q = select(table).filter(*filter_conditions)
-    count_q = select([func.count()]).select_from(base_q)
+    count_q = base_q.with_only_columns(func.count()).order_by(None)
     q = base_q.limit(page_size).offset(skip)
     count_result = await db.execute(count_q)
     total_count: int = count_result.scalar() or 0
@@ -375,9 +375,15 @@ async def update_full_config(
     description="Upload a new csv config replacing the existing configuration",
 )
 async def set_config(
-    publish_did: Optional[UploadFile] = File(None),
-    schema: Optional[UploadFile] = File(None),
-    credential_definition: Optional[UploadFile] = File(None),
+    publish_did: Annotated[
+        UploadFile, File(description="List of DIDs authorized to become public")
+    ] = None,
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
+    ] = None,
+    credential_definition: Annotated[
+        UploadFile, File(description="List of creddefs authorized to be published")
+    ] = None,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
@@ -395,9 +401,15 @@ async def set_config(
     description="Upload a new csv config appending to the existing configuration",
 )
 async def append_config(
-    publish_did: Optional[UploadFile] = File(None),
-    schema: Optional[UploadFile] = File(None),
-    credential_definition: Optional[UploadFile] = File(None),
+    publish_did: Annotated[
+        UploadFile, File(description="List of DIDs authorized to become public")
+    ] = None,
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
+    ] = None,
+    credential_definition: Annotated[
+        UploadFile, File(description="List of creddefs authorized to be published")
+    ] = None,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     try:

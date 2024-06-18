@@ -1,26 +1,26 @@
 import logging
 from typing import Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from api.endpoints.dependencies.db import get_db
 from api.endpoints.models.connections import (
-    ConnectionStateType,
     AuthorStatusType,
-    EndorseStatusType,
     Connection,
     ConnectionList,
+    ConnectionStateType,
+    EndorseStatusType,
 )
 from api.services.connections import (
-    get_connections_list,
-    get_connection_object,
     accept_connection_request,
-    update_connection_info,
+    get_connection_object,
+    get_connections_list,
     update_connection_config,
+    update_connection_info,
 )
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-
 
 logger = logging.getLogger(__name__)
 

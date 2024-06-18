@@ -1,15 +1,14 @@
+import logging
 import os
 import time
-import logging
 from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
 
-from api.endpoints.routes.webhooks import get_webhookapp
 from api.core.config import settings
 from api.endorser_main import get_endorserapp
-
+from api.endpoints.routes.webhooks import get_webhookapp
 
 # setup loggers
 # TODO: set config via env parameters...
@@ -48,13 +47,13 @@ app.mount("/endorser", endorser_app)
 @app.on_event("startup")
 async def on_endorser_startup():
     """Register any events we need to respond to."""
-    logger.warn(">>> Starting up app ...")
+    logger.warning(">>> Starting up app ...")
 
 
 @app.on_event("shutdown")
 def on_endorser_shutdown():
     """TODO no-op for now."""
-    logger.warn(">>> Sutting down app ...")
+    logger.warning(">>> Sutting down app ...")
     pass
 
 
