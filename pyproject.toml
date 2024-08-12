@@ -16,7 +16,7 @@ repository = "https://github.com/hyperledger/aries-endorser-service"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiohttp = "^3.9.5"
+aiohttp = "^3.10.3"
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
 fastapi = "^0.111.0"
