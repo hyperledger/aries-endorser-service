@@ -29,7 +29,7 @@ sqlmodel = "~0.0.18"
 starlette-context = "^0.3.6"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "~3.7.0"
+pre-commit = "~3.8.0"
 # Sync with version in .pre-commit-config.yaml
 ruff = "^0.5.5"
 # Sync with version in .github/workflows/blackformat.yml
