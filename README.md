@@ -40,6 +40,8 @@ cd aries-endorser-service/docker
 ./manage start --logs
 ```
 
+**Note:** if running in the devcontainer, two folders have been prepared to check-out von-network and indy-tails server in the `/workspaces` directory.
+
 You can open the Endorser Admin API in your browser at http://localhost:5050/endorser/docs - you will need to authenticate using the configured ID and password (endorser-admin/change-me). (The webhooks API is at http://localhost:5050/webhook/docs, although you shouldn't need to use this one directly.)
 
 To shut down the service:
