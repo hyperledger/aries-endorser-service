@@ -15,7 +15,7 @@ repository = "https://github.com/hyperledger/aries-endorser-service"
 
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 aiohttp = "^3.9.5"
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
@@ -25,7 +25,7 @@ pydantic-settings = "^2.2.1"
 python-jose = {version = "^3.3.0", extras = ["cyptography"]}
 requests = "^2.32.3"
 SQLAlchemy = {version = "^2.0.30", extras = ["asyncio"]}
-sqlmodel = "~0.0.18"
+sqlmodel = "0.0.19" # see https://github.com/fastapi/sqlmodel/discussions/1048 before upgrading
 starlette-context = "^0.3.6"
 
 [tool.poetry.group.dev.dependencies]

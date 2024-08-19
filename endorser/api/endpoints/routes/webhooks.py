@@ -74,15 +74,15 @@ async def process_webhook(
     """Called by aca-py agent."""
     state = payload.get("state")
     if state:
-        logger.info(f">>> Called webhook for endorser: {topic} / {state}")
+        logger.info(f">>> Called webhook for endorser: {topic.name} / {state}")
     else:
-        logger.info(f">>> Called webhook for endorser: {topic}")
+        logger.info(f">>> Called webhook for endorser: {topic.name}")
     logger.debug(f">>> payload: {payload}")
 
     # call the handler to process the hook, if present
     result = {}
     try:
-        handler = f"handle_{topic}_{state}" if state else f"handle_{topic}"
+        handler = f"handle_{topic.name}_{state}" if state else f"handle_{topic.name}"
         handler = handler.replace("-", "_")
         if hasattr(api_services, handler):
             result = await getattr(api_services, handler)(db, payload)
@@ -96,7 +96,9 @@ async def process_webhook(
 
     try:
         # call the "auto-stepper" if we have one, to move to the next state
-        stepper = f"auto_step_{topic}_{state}" if state else f"auto_step_{topic}"
+        stepper = (
+            f"auto_step_{topic.name}_{state}" if state else f"auto_step_{topic.name}"
+        )
         stepper = stepper.replace("-", "_")
         if hasattr(api_services, stepper):
             _stepper_result = await getattr(api_services, stepper)(db, payload, result)
