@@ -250,13 +250,13 @@ The Author agent (which is configured as multi-tenant) exposes its Admin API on 
 Open a second bash shell (cd to the directory where you have checked out this repository) and run the BDD tests with:
 
 ```bash
-LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd
+LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 poetry run ./manage run-bdd
 ```
 
 ... or to run a specific test (or group of tests), for example:
 
 ```bash
-LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd -t @DIDs-006
+LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 poetry run ./manage run-bdd -t @DIDs-006
 ```
 
 Note that because these tests run on your local (rather than in a docker container) you need to specify the _local_ URL to the ledger and tails servers.

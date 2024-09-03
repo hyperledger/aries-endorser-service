@@ -87,8 +87,8 @@ from util import (
 )
 
 
-@when('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
-@then('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
+@when('the endorser allows "{author}" last schema from file via "{POST_or_PUT}"')
+@then('the endorser allows "{author}" last schema from file via "{POST_or_PUT}"')
 def step_impl(context, author: str, POST_or_PUT: Literal["POST"] | Literal["PUT"]):
     schema = get_author_context(context, author, "current_schema")
     resp = call_author_service(
@@ -257,10 +257,10 @@ def step_impl(context, author: str, with_or_without: str):
 
 
 @then(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via "{POST_or_PUT}"'
 )
 @when(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via "{POST_or_PUT}"'
 )
 def step_impl(
     context,
