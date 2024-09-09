@@ -347,6 +347,7 @@ def construct_allowed_credential_definition(cd):
         tag=f"{cd['tag']}",
         rev_reg_def=maybe_str_to_bool(cd["rev_reg_def"]),
         rev_reg_entry=maybe_str_to_bool(cd["rev_reg_entry"]),
+        details=f"{cd['details']}",
     )
 
 
