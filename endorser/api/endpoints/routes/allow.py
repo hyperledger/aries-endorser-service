@@ -339,15 +339,10 @@ def maybe_str_to_bool(s: str) -> str | bool:
 
 
 def construct_allowed_credential_definition(cd):
-    return AllowedCredentialDefinition(
-        issuer_did=f"{cd['issuer_did']}",
-        author_did=f"{cd['author_did']}",
-        schema_name=f"{cd['schema_name']}",
-        version=f"{cd['version']}",
-        tag=f"{cd['tag']}",
-        rev_reg_def=maybe_str_to_bool(cd["rev_reg_def"]),
-        rev_reg_entry=maybe_str_to_bool(cd["rev_reg_entry"]),
-    )
+    ncd = AllowedCredentialDefinition(**cd)
+    ncd.rev_reg_def = maybe_str_to_bool(cd["rev_reg_def"])
+    ncd.rev_reg_entry = maybe_str_to_bool(cd["rev_reg_entry"])
+    return ncd
 
 
 async def update_allowed_config(k, v, db):
