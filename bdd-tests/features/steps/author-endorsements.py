@@ -87,8 +87,8 @@ from util import (
 )
 
 
-@when('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
-@then('the endorser allows "{author}" last schema from file via {POST_or_PUT}')
+@when('the endorser allows "{author}" last schema from file via "{POST_or_PUT}"')
+@then('the endorser allows "{author}" last schema from file via "{POST_or_PUT}"')
 def step_impl(context, author: str, POST_or_PUT: Literal["POST"] | Literal["PUT"]):
     schema = get_author_context(context, author, "current_schema")
     resp = call_author_service(
@@ -226,6 +226,38 @@ def step_impl(context, author: str, with_or_without: str):
     put_author_context(context, author, "current_cred_def", cred_def)
 
 
+@when(
+    '"{author}" creates a new credential definition with the last schema from "{schema_author}" "{with_or_without}" revocation support'
+)
+@then(
+    '"{author}" creates a new credential definition with the last schema from "{schema_author}" "{with_or_without}" revocation support'
+)
+def step_impl(context, author: str, schema_author: str, with_or_without: str):
+    # POST /credential-definitions
+    schema = get_author_context(context, schema_author, "current_schema")
+    schema_id = schema["id"]
+    tag = "test_tag"
+    cred_def = {
+        "schema_id": schema_id,
+        "tag": tag,
+    }
+    if with_or_without.lower() == "with":
+        cred_def["support_revocation"] = True
+        cred_def["revoc_reg_count"] = REVOC_REG_COUNT
+    resp = call_author_service(
+        context,
+        author,
+        POST,
+        "/credential-definitions",
+        data=cred_def,
+    )
+    assert "txn" in resp, pprint.pp(resp)
+    assert "transaction_id" in resp["txn"], pprint.pp(resp)
+    # save into context
+    put_author_context(context, author, "current_transaction", resp["txn"])
+    put_author_context(context, author, "current_cred_def", cred_def)
+
+
 @then(
     'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support'
 )
@@ -257,10 +289,39 @@ def step_impl(context, author: str, with_or_without: str):
 
 
 @then(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
+    'the endorser allows "{author}" last credential definition with schema created by "{schema_author}" "{with_or_without}" revocation support'
 )
 @when(
-    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via {POST_or_PUT}'
+    'the endorser allows "{author}" last credential definition with schema created by "{schema_author}" "{with_or_without}" revocation support'
+)
+def step_impl(context, author: str, schema_author: str, with_or_without: str):
+    schema = get_author_context(context, schema_author, "current_schema")
+    cred_def = get_author_context(context, author, "current_cred_def")
+    author_public_did = call_author_service(
+        context,
+        author,
+        GET,
+        "/wallet/did/public",
+    )["result"]["did"]
+
+    schema_id = schema["id"].split(":")
+    resp = set_endorser_allowed_credential_definition(
+        context,
+        tag=cred_def["tag"],
+        rev_reg_def=with_or_without.lower() == "with",
+        rev_reg_entry=with_or_without.lower() == "with",
+        author_did=author_public_did,
+        issuer_did=schema_id[0],  # schema author's did
+        schema_name=schema_id[2],
+        version=schema_id[3],
+    )
+
+
+@then(
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via "{POST_or_PUT}"'
+)
+@when(
+    'the endorser allows "{author}" last credential definition "{with_or_without}" revocation support from file via "{POST_or_PUT}"'
 )
 def step_impl(
     context,
