@@ -286,8 +286,8 @@ async def get_allowed_cred_def(
     Any field marked with a * or left empty match on any value.",
 )
 async def add_allowed_cred_def(
-    issuer_did: str = "*",
-    author_did: str = "*",
+    schema_issuer_did: str = "*",
+    creddef_author_did: str = "*",
     schema_name: str = "*",
     version: str = "*",
     tag: str = "*",
@@ -298,8 +298,8 @@ async def add_allowed_cred_def(
 ) -> AllowedCredentialDefinition:
     try:
         acreddef = AllowedCredentialDefinition(
-            issuer_did=issuer_did,
-            author_did=author_did,
+            issuer_did=schema_issuer_did,
+            author_did=creddef_author_did,
             schema_name=schema_name,
             tag=tag,
             rev_reg_def=rev_reg_def,
@@ -339,9 +339,11 @@ def maybe_str_to_bool(s: str) -> str | bool:
 
 
 def construct_allowed_credential_definition(cd):
+    cd["issuer_did"] = cd.pop("schema_issuer_did")
+    cd["author_did"] = cd.pop("creddef_author_did")
+    cd["rev_reg_def"] = maybe_str_to_bool(cd["rev_reg_def"])
+    cd["rev_reg_entry"] = maybe_str_to_bool(cd["rev_reg_entry"])
     ncd = AllowedCredentialDefinition(**cd)
-    ncd.rev_reg_def = maybe_str_to_bool(cd["rev_reg_def"])
-    ncd.rev_reg_entry = maybe_str_to_bool(cd["rev_reg_entry"])
     return ncd
 
 

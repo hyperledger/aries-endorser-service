@@ -392,8 +392,8 @@ def set_endorser_allowed_from_file(
     credential_definition_contents = (
         generate_dict_str(
             [
-                "issuer_did",
-                "author_did",
+                "schema_issuer_did",
+                "creddef_author_did",
                 "schema_name",
                 "version",
                 "tag",
@@ -402,8 +402,8 @@ def set_endorser_allowed_from_file(
             ],
             [
                 {
-                    "issuer_did": f"{cd.issuer_did}",
-                    "author_did": f"{cd.author_did}",
+                    "schema_issuer_did": f"{cd.issuer_did}",
+                    "creddef_author_did": f"{cd.author_did}",
                     "schema_name": f"{cd.schema_name}",
                     "version": f"{cd.version}",
                     "tag": f"{cd.tag}",
@@ -447,8 +447,8 @@ def set_endorser_allowed_credential_definition(
         POST,
         f"{ENDORSER_URL_PREFIX}/allow/credential-definition",
         params={
-            "issuer_did": issuer_did,
-            "author_did": author_did,
+            "schema_issuer_did": issuer_did,
+            "creddef_author_did": author_did,
             "schema_name": schema_name,
             "version": version,
             "tag": tag,
