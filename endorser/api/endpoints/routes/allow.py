@@ -334,11 +334,30 @@ async def delete_allowed_cred_def(
         raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
 
 
+def maybe_str_to_bool(s: str) -> str | bool:
+    return s == "True" if isinstance(s, str) else s
+
+
+def construct_allowed_credential_definition(cd):
+    ncd = AllowedCredentialDefinition(**cd)
+    ncd.rev_reg_def = maybe_str_to_bool(cd["rev_reg_def"])
+    ncd.rev_reg_entry = maybe_str_to_bool(cd["rev_reg_entry"])
+    return ncd
+
+
 async def update_allowed_config(k, v, db):
     csvReader = DictReader(iterdecode(k.file, "utf-8"))
+    constructed_classes = [
+        (
+            construct_allowed_credential_definition(i)
+            if v is AllowedCredentialDefinition
+            else v(**i)
+        )
+        for i in csvReader
+    ]
     tmp = {
         "file_name": k.filename,
-        "contents": [v(**i) for i in csvReader],
+        "contents": constructed_classes,
     }
     for i in tmp["contents"]:
         db.add(i)
