@@ -213,23 +213,25 @@ author_did,schema_name,version,details
 
 ##### credential_definition
 
-| Name            | Description | Default |
-| --------------- | ----------- | ------- |
-| `issuer_did`    | string      | "\*"    |
-| `author_did`    | string      | "\*"    |
-| `schema_name`   | string      | "\*"    |
-| `version`       | string      | "\*"    |
-| `tag`           | string      | "\*"    |
-| `rev_reg_def`   | boolean     | True    |
-| `rev_reg_entry` | boolean     | True    |
-| `details`       | string      | null    |
+| Name                 | Description | Default |
+|----------------------|-------------|---------|
+| `schema_issuer_did`  | string      | "\*"    |
+| `creddef_author_did` | string      | "\*"    |
+| `schema_name`        | string      | "\*"    |
+| `version`            | string      | "\*"    |
+| `tag`                | string      | "\*"    |
+| `rev_reg_def`        | boolean     | True    |
+| `rev_reg_entry`      | boolean     | True    |
+| `details`            | string      | null    |
 
 Example:
 
 ```csv
-issuer_did,author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry,details
+schema_issuer_did,creddef_author_did,schema_name,version,tag,rev_reg_def,rev_reg_entry,details
 5NzdaLiTEpvy5MK5fLiBMV,4NzdaLiTEpvy5MK5fLiBMV,demoschema,2.0,test_tag,True,False,My test credential definition
 ```
+
+**NOTE**: `schema_issuer_did` is the DID of the creator of the schema the credential definition is based on. `creddef_author_did` is the DID of the creator of this credential definition
 
 ## Testing - Integration tests using Behave
 
