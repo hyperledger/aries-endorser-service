@@ -34,7 +34,7 @@ MAX_INC = 10
 SLEEP_INC = 2
 
 
-@given('the endorser service is running')
+@given("the endorser service is running")
 def step_impl(context):
     # check that the endorser service is running
     endorser_status = call_endorser_service(context, GET, "/")
@@ -42,21 +42,29 @@ def step_impl(context):
 
     # authenticate the service and save our auth token
     endorser_auth_status = authenticate_endorser_service(context)
-    assert endorser_auth_status["Authorization"].startswith("Bearer "), pprint.pp(endorser_auth_status)
+    assert endorser_auth_status["Authorization"].startswith("Bearer "), pprint.pp(
+        endorser_auth_status
+    )
 
     # set "auto" configs to False
     resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_CONNECTIONS", "false")
     resp = set_endorser_config(context, "ENDORSER_REJECT_BY_DEFAULT", "false")
     resp = set_endorser_config(context, "ENDORSER_AUTO_ACCEPT_AUTHORS", "false")
     resp = set_endorser_config(context, "ENDORSER_AUTO_ENDORSE_REQUESTS", "false")
-    resp = set_endorser_config(context, "ENDORSER_AUTO_ENDORSE_TXN_TYPES", "1,100,101,102,113,114")
+    resp = set_endorser_config(
+        context, "ENDORSER_AUTO_ENDORSE_TXN_TYPES", "1,100,101,102,113,114"
+    )
 
 
-@given('the endorser has a well-known public DID')
+@given("the endorser has a well-known public DID")
 def step_impl(context):
     # fetch the endorser public DID and save in context
-    endorser_config = call_endorser_service(context, GET, f"{ENDORSER_URL_PREFIX}/admin/config")
-    assert "public_did" in endorser_config["endorser_config"], pprint.pp(endorser_config)
+    endorser_config = call_endorser_service(
+        context, GET, f"{ENDORSER_URL_PREFIX}/admin/config"
+    )
+    assert "public_did" in endorser_config["endorser_config"], pprint.pp(
+        endorser_config
+    )
 
     # save for future reference
     endorser_did = endorser_config["endorser_config"]["public_did"]
@@ -69,16 +77,24 @@ def step_impl(context, config_name: str, config_value: str):
     assert resp["config_value"] == config_value, pprint.pp(resp)
 
 
-@given('the endorser has "{author}" connection info "{author_alias}" and "{public_did}"')
+@given(
+    'the endorser has "{author}" connection info "{author_alias}" and "{public_did}"'
+)
 def step_impl(context, author: str, author_alias: str, public_did: str):
-    resp = set_endorser_author_connection_info(context, author, author_alias, public_did)
+    resp = set_endorser_author_connection_info(
+        context, author, author_alias, public_did
+    )
     assert resp["author_status"] == author_status, pprint.pp(resp)
     assert resp["public_did"] == public_did, pprint.pp(resp)
 
 
-@given('the endorser has "{author}" connection configuration "{author_status}" and "{endorse_status}"')
+@given(
+    'the endorser has "{author}" connection configuration "{author_status}" and "{endorse_status}"'
+)
 def step_impl(context, author: str, author_status: str, endorse_status: str):
-    resp = set_endorser_author_connection_config(context, author, author_status, endorse_status)
+    resp = set_endorser_author_connection_config(
+        context, author, author_status, endorse_status
+    )
     assert resp["author_status"] == author_status, pprint.pp(resp)
     assert resp["endorse_status"] == endorse_status, pprint.pp(resp)
 
@@ -88,7 +104,7 @@ def step_impl(context, author: str):
     # create (and authenticate) a new author agent
     clear_author_context(context, author)
 
-    rand_suffix = ("000000" + str(random.randint(1,100000)))[-6:]
+    rand_suffix = ("000000" + str(random.randint(1, 100000)))[-6:]
     author_name = f"{author}_{rand_suffix}"
     data = {
         "key_management_mode": "managed",
@@ -98,7 +114,9 @@ def step_impl(context, author: str):
         "wallet_type": "askar",
     }
 
-    author_wallet = call_agency_service(context, POST, "/multitenancy/wallet", data=data)
+    author_wallet = call_agency_service(
+        context, POST, "/multitenancy/wallet", data=data
+    )
     assert "token" in author_wallet, pprint.pp(author_wallet)
 
     put_author_context(context, author, "wallet", author_wallet)
@@ -159,9 +177,7 @@ def step_impl(context, author: str):
     # endorser accept the connection request
     auth_conn_id = author_conn_request["connection_id"]
     resp = call_endorser_service(
-        context,
-        POST,
-        f"{ENDORSER_URL_PREFIX}/connections/{auth_conn_id}/accept"
+        context, POST, f"{ENDORSER_URL_PREFIX}/connections/{auth_conn_id}/accept"
     )
 
     # verify meta-data on the connection
@@ -178,10 +194,7 @@ def step_impl(context, author: str):
     inc = 0
     while not endorser_connection:
         endorser_connection = call_author_service(
-            context,
-            author,
-            GET,
-            f"/connections/{connection_id}"
+            context, author, GET, f"/connections/{connection_id}"
         )
         if not endorser_connection:
             time.sleep(1)
@@ -219,9 +232,13 @@ def step_impl(context, author: str, connection_status: str):
     # verify the state of the author connection
     connection_request = get_author_context(context, author, "endorser_connection")
     connection_id = connection_request["connection_id"]
-    endorser_connection = get_authors_endorser_connection(context, author, connection_id, connection_status)
+    endorser_connection = get_authors_endorser_connection(
+        context, author, connection_id, connection_status
+    )
 
-    assert endorser_connection["state"] == connection_status, pprint.pp(endorser_connection)
+    assert endorser_connection["state"] == connection_status, pprint.pp(
+        endorser_connection
+    )
 
 
 @given('the endorser has an "{connection_status}" connection with "{author}"')
@@ -230,9 +247,13 @@ def step_impl(context, connection_status: str, author: str):
     # verify the state of the endorser connection
     author_wallet = get_author_context(context, author, "wallet")
     author_alias = author_wallet["settings"]["default_label"]
-    author_conn_request = get_endorsers_author_connection(context, author_alias, connection_status)
+    author_conn_request = get_endorsers_author_connection(
+        context, author_alias, connection_status
+    )
 
-    assert author_conn_request["state"] == connection_status, pprint.pp(author_conn_request)
+    assert author_conn_request["state"] == connection_status, pprint.pp(
+        author_conn_request
+    )
 
 
 ## COMPOSED ACTIONS
@@ -253,7 +274,9 @@ def step_impl(context, author):
 
 
 ## COMPOSED ACTIONS
-@given('There is a new agent "{author}" that is connected to the endorser (with auto-accept)')
+@given(
+    'There is a new agent "{author}" that is connected to the endorser (with auto-accept)'
+)
 def step_impl(context, author):
     context.execute_steps(
         f"""

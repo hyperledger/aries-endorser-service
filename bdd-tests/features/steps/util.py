@@ -58,9 +58,9 @@ class AllowedCredentialDefinition:
     (postgresql specific dialects in use).
 
     Attributes:
-      issuer_did: DID of the issuer of the schema associated with this
+      schema_issuer_did: str: DID of the issuer of the schema associated with this
                   credential definition
-      author_did: DID of the author publishing the creddef
+      creddef_author_did: DID of the author publishing the creddef
       schema_name: Name of the schema
       version: Version of this schema
       tag: tag of the creddef
@@ -73,8 +73,8 @@ class AllowedCredentialDefinition:
 
     """
 
-    issuer_did: str
-    author_did: str
+    schema_issuer_did: str
+    creddef_author_did: str
     schema_name: str
     version: str
     tag: str
@@ -402,8 +402,8 @@ def set_endorser_allowed_from_file(
             ],
             [
                 {
-                    "schema_issuer_did": f"{cd.issuer_did}",
-                    "creddef_author_did": f"{cd.author_did}",
+                    "schema_issuer_did": f"{cd.schema_issuer_did}",
+                    "creddef_author_did": f"{cd.creddef_author_did}",
                     "schema_name": f"{cd.schema_name}",
                     "version": f"{cd.version}",
                     "tag": f"{cd.tag}",
@@ -434,8 +434,8 @@ def set_endorser_allowed_from_file(
 
 def set_endorser_allowed_credential_definition(
     context,
-    issuer_did: str = "*",
-    author_did: str = "*",
+    schema_issuer_did: str = "*",
+    creddef_author_did: str = "*",
     schema_name: str = "*",
     version: str = "*",
     tag: str = "*",
@@ -447,14 +447,14 @@ def set_endorser_allowed_credential_definition(
         POST,
         f"{ENDORSER_URL_PREFIX}/allow/credential-definition",
         params={
-            "schema_issuer_did": issuer_did,
-            "creddef_author_did": author_did,
+            "schema_issuer_did": schema_issuer_did,
+            "creddef_author_did": creddef_author_did,
             "schema_name": schema_name,
             "version": version,
             "tag": tag,
             "rev_reg_def": rev_reg_def,
             "rev_reg_entry": rev_reg_entry,
-            "author_did": author_did,
+            "creddef_author_did": creddef_author_did,
             "schema_name": schema_name,
             "version": version,
         },

@@ -281,8 +281,8 @@ def step_impl(context, author: str, with_or_without: str):
         tag=cred_def["tag"],
         rev_reg_def=with_or_without.lower() == "with",
         rev_reg_entry=with_or_without.lower() == "with",
-        author_did=public_did,
-        issuer_did=schema_id[0],
+        creddef_author_did=public_did,
+        schema_issuer_did=schema_id[0],
         schema_name=schema_id[2],
         version=schema_id[3],
     )
@@ -310,8 +310,8 @@ def step_impl(context, author: str, schema_author: str, with_or_without: str):
         tag=cred_def["tag"],
         rev_reg_def=with_or_without.lower() == "with",
         rev_reg_entry=with_or_without.lower() == "with",
-        author_did=author_public_did,
-        issuer_did=schema_id[0],  # schema author's did
+        creddef_author_did=author_public_did,
+        schema_issuer_did=schema_id[0],  # schema author's did
         schema_name=schema_id[2],
         version=schema_id[3],
     )
@@ -348,8 +348,8 @@ def step_impl(
                 tag=cred_def["tag"],
                 rev_reg_def=with_or_without.lower() == "with",
                 rev_reg_entry=with_or_without.lower() == "with",
-                author_did=public_did,
-                issuer_did=schema_id[0],
+                creddef_author_did=public_did,
+                schema_issuer_did=schema_id[0],
                 schema_name=schema_id[2],
                 version=schema_id[3],
             )
