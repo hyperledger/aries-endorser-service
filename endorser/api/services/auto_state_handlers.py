@@ -175,8 +175,11 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
         db,
         AllowedCredentialDefinition,
         [
-            (AllowedCredentialDefinition.author_did, creddef_trans.DID),
-            (AllowedCredentialDefinition.issuer_did, creddef_trans.Schema_Issuer_DID),
+            (AllowedCredentialDefinition.creddef_author_did, creddef_trans.DID),
+            (
+                AllowedCredentialDefinition.schema_issuer_did,
+                creddef_trans.Schema_Issuer_DID,
+            ),
             (AllowedCredentialDefinition.schema_name, creddef_trans.Schema_Name),
             (AllowedCredentialDefinition.version, creddef_trans.Schema_Version),
             (AllowedCredentialDefinition.tag, creddef_trans.Tag),
@@ -184,7 +187,9 @@ async def allowed_creddef(db: AsyncSession, creddef_trans: CreddefCriteria) -> b
     )
 
 
-async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction) -> bool:
+async def is_endorsable_transaction(
+    db: AsyncSession, trans: EndorseTransaction
+) -> bool:
     logger.debug(">>> from is_endorsable_transaction: entered")
 
     # Publishing/registering a public did on the ledger
@@ -196,9 +201,12 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
             db,
             # The location of the DID depends on if the author already
             # has a public DID or not
-            str(trans.transaction_request.get("did"))
-            if trans.author_goal_code == "aries.transaction.register_public_did" and trans.transaction_request.get("did")
-            else str(trans.transaction.get("dest")),
+            (
+                str(trans.transaction_request.get("did"))
+                if trans.author_goal_code == "aries.transaction.register_public_did"
+                and trans.transaction_request.get("did")
+                else str(trans.transaction.get("dest"))
+            ),
         )
     else:
         # The author must already have a DID and a transaction in
@@ -208,14 +216,18 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
 
         match trans.transaction_type:
             case EndorseTransactionType.revoc_registry:
-                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation registry")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} was a revocation registry"
+                )
                 # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
                 credDefId: list[str] = trans.transaction["credDefId"].split(":")
                 cred_auth_did = credDefId[0]
                 sequence_num = int(credDefId[3])
                 tag = credDefId[4]
 
-                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} awaiting schema"
+                )
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
@@ -225,8 +237,8 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                     db,
                     AllowedCredentialDefinition,
                     [
-                        (AllowedCredentialDefinition.author_did, cred_auth_did),
-                        (AllowedCredentialDefinition.issuer_did, schema_id[0]),
+                        (AllowedCredentialDefinition.creddef_author_did, cred_auth_did),
+                        (AllowedCredentialDefinition.schema_issuer_did, schema_id[0]),
                         (AllowedCredentialDefinition.schema_name, schema_id[2]),
                         (AllowedCredentialDefinition.version, schema_id[3]),
                         (AllowedCredentialDefinition.tag, tag),
@@ -234,7 +246,9 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                     ],
                 )
             case EndorseTransactionType.revoc_entry:
-                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation entry")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} was a revocation entry"
+                )
                 # ex "3w88pmVPfeVaz8bMukH2uR:3:CL:81268:default"
                 revocRegDefId: list[str] = trans.transaction["revocRegDefId"].split(":")
 
@@ -242,19 +256,23 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                 sequence_num = int(revocRegDefId[5])
                 tag = revocRegDefId[6]
 
-                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} awaiting schema"
+                )
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )
                 schema_id: list[str] = response["schema"]["id"].split(":")
-                logger.debug(f">>> from is_endorsable_transaction: {trans} was a revocation entry")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} was a revocation entry"
+                )
                 # raise Exception("revoc_entry not implemented", trans)
                 return await check_auto_endorse(
                     db,
                     AllowedCredentialDefinition,
                     [
-                        (AllowedCredentialDefinition.author_did, cred_auth_did),
-                        (AllowedCredentialDefinition.issuer_did, schema_id[0]),
+                        (AllowedCredentialDefinition.creddef_author_did, cred_auth_did),
+                        (AllowedCredentialDefinition.schema_issuer_did, schema_id[0]),
                         (AllowedCredentialDefinition.schema_name, schema_id[2]),
                         (AllowedCredentialDefinition.version, schema_id[3]),
                         (AllowedCredentialDefinition.tag, tag),
@@ -262,18 +280,26 @@ async def is_endorsable_transaction(db: AsyncSession, trans: EndorseTransaction)
                     ],
                 )
             case EndorseTransactionType.schema:
-                logger.debug(f">>> from is_endorsable_transaction: {trans} was a schema request")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} was a schema request"
+                )
                 schema = trans.transaction["data"]
                 s = SchemaCriteria(trans.author_did, schema["name"], schema["version"])
-                logger.debug(f">>> from is_endorsable_transaction: {trans} with schema {s}")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} with schema {s}"
+                )
                 return await allowed_schema(db, s)
 
             case EndorseTransactionType.cred_def:
-                logger.debug(f">>> from is_endorsable_transaction: {trans} was a cred_def request")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} was a cred_def request"
+                )
 
                 sequence_num: int = cast(int, trans.transaction.get("ref"))
 
-                logger.debug(f">>> from is_endorsable_transaction: {trans} awaiting schema")
+                logger.debug(
+                    f">>> from is_endorsable_transaction: {trans} awaiting schema"
+                )
                 response = cast(
                     dict, await au.acapy_GET("schemas/" + str(sequence_num))
                 )

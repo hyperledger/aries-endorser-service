@@ -238,8 +238,8 @@ async def delete_allowed_schema(
 )
 async def get_allowed_cred_def(
     allowed_cred_def_id: Optional[UUID] = None,
-    issuer_did: Optional[str] = None,
-    author_did: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    creddef_author_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     version: Optional[str] = None,
     tag: Optional[str] = None,
@@ -252,8 +252,8 @@ async def get_allowed_cred_def(
     try:
         filters = {
             allowed_cred_def_id: AllowedCredentialDefinition.allowed_cred_def_id,
-            issuer_did: AllowedCredentialDefinition.issuer_did,
-            author_did: AllowedCredentialDefinition.author_did,
+            schema_issuer_did: AllowedCredentialDefinition.schema_issuer_did,
+            creddef_author_did: AllowedCredentialDefinition.creddef_author_did,
             schema_name: AllowedCredentialDefinition.schema_name,
             version: AllowedCredentialDefinition.version,
             tag: AllowedCredentialDefinition.tag,
@@ -286,8 +286,8 @@ async def get_allowed_cred_def(
     Any field marked with a * or left empty match on any value.",
 )
 async def add_allowed_cred_def(
-    issuer_did: str = "*",
-    author_did: str = "*",
+    schema_issuer_did: str = "*",
+    creddef_author_did: str = "*",
     schema_name: str = "*",
     version: str = "*",
     tag: str = "*",
@@ -298,8 +298,8 @@ async def add_allowed_cred_def(
 ) -> AllowedCredentialDefinition:
     try:
         acreddef = AllowedCredentialDefinition(
-            issuer_did=issuer_did,
-            author_did=author_did,
+            schema_issuer_did=schema_issuer_did,
+            creddef_author_did=creddef_author_did,
             schema_name=schema_name,
             tag=tag,
             rev_reg_def=rev_reg_def,
@@ -339,9 +339,9 @@ def maybe_str_to_bool(s: str) -> str | bool:
 
 
 def construct_allowed_credential_definition(cd):
+    cd["rev_reg_def"] = maybe_str_to_bool(cd["rev_reg_def"])
+    cd["rev_reg_entry"] = maybe_str_to_bool(cd["rev_reg_entry"])
     ncd = AllowedCredentialDefinition(**cd)
-    ncd.rev_reg_def = maybe_str_to_bool(cd["rev_reg_def"])
-    ncd.rev_reg_entry = maybe_str_to_bool(cd["rev_reg_entry"])
     return ncd
 
 
