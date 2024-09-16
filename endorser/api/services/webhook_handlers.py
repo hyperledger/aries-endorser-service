@@ -2,29 +2,25 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.endpoints.models.connections import ConnectionProtocolType
 from api.endpoints.models.connections import (
     Connection,
+    ConnectionProtocolType,
     webhook_to_connection_object,
 )
 from api.endpoints.models.endorse import (
-    EndorserRoleType,
     EndorseTransaction,
     webhook_to_txn_object,
 )
 from api.services.connections import (
+    set_connection_author_metadata,
     store_connection_request,
     update_connection_status,
-    set_connection_author_metadata,
 )
 from api.services.endorse import (
+    get_endorser_did,
     store_endorser_request,
     update_endorsement_status,
-    get_endorser_did,
 )
-
-import api.acapy_utils as au
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +31,7 @@ async def handle_ping_received(db: AsyncSession, payload: dict) -> dict:
 
 
 async def handle_connections_request(db: AsyncSession, payload: dict):
-    """Handle transaction endorse requests."""
+    """Handle connection requests."""
     logger.info(">>> in handle_connections_request() ...")
     connection: Connection = webhook_to_connection_object(payload)
     result = await store_connection_request(db, connection)

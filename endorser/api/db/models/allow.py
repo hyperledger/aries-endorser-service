@@ -3,6 +3,7 @@
 Models of the Endorser tables for allow list and related data.
 
 """
+
 import uuid
 from datetime import datetime
 
@@ -94,8 +95,8 @@ def allowed_cred_def_uuid(context: DefaultExecutionContext):
     pr = context.get_current_parameters()
     return uuid.uuid5(
         uuid.NAMESPACE_OID,
-        pr["issuer_did"]
-        + pr["author_did"]
+        pr["schema_issuer_did"]
+        + pr["creddef_author_did"]
         + pr["schema_name"]
         + pr["version"]
         + pr["tag"]
@@ -113,9 +114,9 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     (postgresql specific dialects in use).
 
     Attributes:
-      issuer_did: DID of the issuer of the schema associated with this
+      schema_issuer_did: DID of the issuer of the schema associated with this
                   credential definition
-      author_did: DID of the author publishing the creddef
+      creddef_author_did: DID of the author publishing the creddef
       schema_name: Name of the schema
       version: Version of this schema
       tag: tag of the creddef
@@ -129,8 +130,8 @@ class AllowedCredentialDefinition(BaseModel, table=True):
     """
 
     # acapy data ---
-    issuer_did: str = Field(nullable=False, default=None)
-    author_did: str = Field(nullable=False, default=None)
+    schema_issuer_did: str = Field(nullable=False, default=None)
+    creddef_author_did: str = Field(nullable=False, default=None)
     schema_name: str = Field(nullable=False, default=None)
     version: str = Field(nullable=False, default=None)
     tag: str = Field(nullable=False, default=None)
