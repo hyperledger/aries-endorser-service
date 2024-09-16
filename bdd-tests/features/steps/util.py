@@ -127,7 +127,7 @@ def authenticate_endorser_service(context):
     data = {
         "username": ENDORSER_API_USER,
         "password": ENDORSER_API_PASSWORD,
-        "grant_type": "",
+        "grant_type": "password",
         "scope": "",
     }
     response = requests.post(
