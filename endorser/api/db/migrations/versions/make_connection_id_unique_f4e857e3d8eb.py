@@ -1,8 +1,8 @@
 """make connection_id unique
 
-Revision ID: 30a321309310
-Revises: 9a8ef028a751
-Create Date: 2024-09-03 16:57:54.926251
+Revision ID: f4e857e3d8eb
+Revises: b1e41d72f00e
+Create Date: 2024-09-16 17:33:30.156800
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision = '30a321309310'
-down_revision = '9a8ef028a751'
+revision = 'f4e857e3d8eb'
+down_revision = 'b1e41d72f00e'
 branch_labels = None
 depends_on = None
 
