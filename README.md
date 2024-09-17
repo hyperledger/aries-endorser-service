@@ -101,7 +101,7 @@ Note that as of the latest version all connection_id's in the contact table is e
 ```
 sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) could not create unique index "contact_connection_id_key"
 ```
-then you will need to manually delete these duplicate entries. To list them you can preform the following sql query
+then you will need to manually delete these duplicate entries. To list them you can perform the following sql query
 
 ```
 select * from contact
