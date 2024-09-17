@@ -41,7 +41,7 @@ class Contact(BaseModel, table=True):
     tags: List[str] = Field(sa_column=Column(ARRAY(String)))
 
     # acapy data ---
-    connection_id: uuid.UUID = Field(nullable=False)
+    connection_id: uuid.UUID = Field(sa_column=Column(UUID(as_uuid=True), unique=True))
     connection_protocol: str = Field(nullable=False)
     connection_alias: str = Field(nullable=True, default=None)
     public_did: str = Field(nullable=True, default=None)
