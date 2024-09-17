@@ -203,7 +203,6 @@ def step_impl(context, author: str):
     assert endorser_connection, pprint.pp(endorser_connection)
 
     # author set meta-data on the connection
-    print(">>> endorser_connection:", endorser_connection)
     endorser_name = endorser_connection["alias"]
     endorser_public_did_config = get_endorser_context(context, "endorser_did")
     endorser_public_did = endorser_public_did_config["did"]

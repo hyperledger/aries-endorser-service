@@ -240,7 +240,6 @@ start-bdd|up-bdd)
   ;;
 run-bdd)
   exportEnvironment "$@"
-  # ${dockerCompose} run --name bdd --rm bdd-tests $@
   cd ../bdd-tests
   behave $@
   ;;
