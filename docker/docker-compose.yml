@@ -273,6 +273,8 @@ services:
       - TAILS_SERVER_URL=${TAILS_SERVER_URL}
       - ACAPY_AUTHOR_API_ADMIN_KEY=${ACAPY_AUTHOR_API_ADMIN_KEY}
       - ACAPY_AUTHOR_BASE_URL=http://aries-author-agent:8061
+      - AUTHOR_AGENT_NAME=${AUTHOR_AGENT_NAME}
+      - AUTHOR_ENDORSER_AlIAS=${AUTHOR_ENDORSER_AlIAS}
 
 volumes:
   endorser-wallet:
