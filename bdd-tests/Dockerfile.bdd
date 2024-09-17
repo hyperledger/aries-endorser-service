@@ -1,0 +1,8 @@
+FROM python:3.12
+
+# Install bdd dependencies
+COPY ./ /bdd-tests/
+WORKDIR /bdd-tests
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+ENTRYPOINT ["behave"]

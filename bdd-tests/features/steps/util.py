@@ -164,6 +164,8 @@ def call_endorser_service(
     # Let the requests library identify the Content-Type if this is a file
     if files:
         del headers["Content-Type"]
+    print(">>> endorser_url:", endorser_url)
+    print(">>> headers:", headers)
     return call_http_service(
         method,
         endorser_url,
