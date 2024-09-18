@@ -95,6 +95,20 @@ For example, to startup the Endorser to run exclusively within a docker network 
 ENDORSER_ENV=testing ACAPY_ENDPOINT=http://host.docker.internal:8050 ./manage start-bdd --logs
 ```
 
+## BREAKING CHANGES
+
+Note that as of the latest version all connection_id's in the contact table is expected to be unique. If upgrading fails with an error similar to 
+```
+sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) could not create unique index "contact_connection_id_key"
+```
+then you will need to manually delete these duplicate entries. To list them you can perform the following sql query
+
+```
+select * from contact
+group by contact_id, connection_id
+having COUNT(distinct(connection_id)) > 1
+```
+
 ## Endorser Configuration
 
 Three "global" configuration options can be set using environment variables or can be set using the Endorser Admin API, the environment variables are:
@@ -116,6 +130,7 @@ There are 2 endpoints to set connection-specific (i.e. author-specific) configur
 - `endorse_status` - `AutoEndorse`, `ManualEndorse` or `AutoReject` - the "auto" options will automatically endorse or refuse endorsement requests (respectively), for the "manual" option the requests must be manually endorsed
 
 Endorsement requests will be auto-endorsed if the `ENDORSER_AUTO_ENDORSE_REQUESTS` setting is `true` _or_ if the `endorse_status` is set to `AutoEndorse` on the connection. So, if manual endorsements are desired, `ENDORSER_AUTO_ENDORSE_REQUESTS` should be set to `false` _and_ each connection should be set to `ManualEndorse` (which is the default).
+
 
 ### Granular Configuration of Auto Endorsement
 
@@ -263,9 +278,9 @@ You can run the BDD tests in a docker container by running:
 ./manage run-bdd-docker -t @DIDs-006
 ```
 
-Or, historically, you can run the BDD tests locally.  Note that you need python version `3.12` or better installed locally.
+Or (historically) you can run the BDD tests locally.  Note that you need python version `3.12` or better installed locally.
 
-Open a second bash shell (cd to the directory where you have checked out this repository) and run the BDD tests with:
+Open a second bash shell within the poetry environment (cd to the directory where you have checked out this repository) and run the BDD tests with:
 
 ```bash
 LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd
@@ -276,6 +291,8 @@ LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage
 ```bash
 LEDGER_URL=http://localhost:9000 TAILS_SERVER_URL=http://localhost:6543 ./manage run-bdd -t @DIDs-006
 ```
+
+To enter the poetry environment you can make use of [devcontainers](https://containers.dev/)  or simply run `poetry shell`
 
 Note that because these tests run on your local (rather than in a docker container) you need to specify the _local_ URL to the ledger and tails servers.
 
