@@ -251,6 +251,20 @@ ENDORSER_ENV=bdd ./manage start-bdd --logs
 
 The Author agent (which is configured as multi-tenant) exposes its Admin API on http://localhost:8061/api/doc
 
+You can run the BDD tests in a docker container by running:
+
+```bash
+./manage run-bdd-docker
+```
+
+... or to run a specific test (or group of tests), for example:
+
+```bash
+./manage run-bdd-docker -t @DIDs-006
+```
+
+Or, historically, you can run the BDD tests locally.  Note that you need python version `3.12` or better installed locally.
+
 Open a second bash shell (cd to the directory where you have checked out this repository) and run the BDD tests with:
 
 ```bash
