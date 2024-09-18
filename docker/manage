@@ -31,6 +31,7 @@ usage() {
       start | up          - Run endorser service
       start-bdd | up-bdd  - Run endorser service and author agents (to support testing)
       run-bdd             - Run BDD tests (behave runs locally not in docker)
+      run-bdd-docker      - Run BDD tests (using a docker image)
       logs                - To tail the logs of running containers (ctrl-c to exit).
       stop | down         - Stop endorser
       rm                  - Stop endorser and remove volumes
@@ -241,6 +242,10 @@ run-bdd)
   exportEnvironment "$@"
   cd ../bdd-tests
   behave $@
+  ;;
+run-bdd-docker)
+  exportEnvironment "$@"
+  ${dockerCompose} run --name bdd --rm bdd-tests $@
   ;;
 logs)
   exportEnvironment "$@"
