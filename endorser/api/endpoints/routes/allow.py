@@ -397,9 +397,8 @@ async def set_config(
     publish_did: Annotated[
         UploadFile, File(description="List of DIDs authorized to become public")
     ] = None,
-    cred_schema: Annotated[
-        UploadFile,
-        File(description="List of schemas authorized to be published", alias="schema"),
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
     ] = None,
     credential_definition: Annotated[
         UploadFile, File(description="List of creddefs authorized to be published")
@@ -408,7 +407,7 @@ async def set_config(
 ) -> dict:
     try:
         return await update_full_config(
-            publish_did, cred_schema, credential_definition, db, True
+            publish_did, schema, credential_definition, db, True
         )
     except Exception as e:
         raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
@@ -424,9 +423,8 @@ async def append_config(
     publish_did: Annotated[
         UploadFile, File(description="List of DIDs authorized to become public")
     ] = None,
-    cred_schema: Annotated[
-        UploadFile,
-        File(description="List of schemas authorized to be published", alias="schema"),
+    schema: Annotated[
+        UploadFile, File(description="List of schemas authorized to be published")
     ] = None,
     credential_definition: Annotated[
         UploadFile, File(description="List of creddefs authorized to be published")
@@ -435,7 +433,7 @@ async def append_config(
 ) -> dict:
     try:
         return await update_full_config(
-            publish_did, cred_schema, credential_definition, db, False
+            publish_did, schema, credential_definition, db, False
         )
     except Exception as e:
         raise HTTPException(status_code=db_to_http_exception(e), detail=str(e))
